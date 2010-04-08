@@ -1,0 +1,53 @@
+*checksyntax.txt*  checksyntax -- Check syntax when saving a file (php, ruby, tex ...)
+
+Author: Thomas Link (micathom AT gmail com?subject=vim)
+
+-----------------------------------------------------------------------
+Install~
+
+Save checksyntax.vim in ~/.vim/plugin/.
+
+
+Description~
+This plugin is based on Klaus Horsten's php_console (vimscript #779) and 
+it is the successor of php_check_syntax.vim (vimscript #1272). In 
+opposition to php_console, it is not a php ftplugin but a general 
+solution for checking the syntax when saving a file (using the 
+appropriate interpreter, lint or whatsoever).
+
+By default, :CheckSyntax is mapped to <F5>. The :CheckSyntax takes one 
+optional argument: the mode (default: &filetype). The following modes 
+are pre-defined (and maybe some more):
+
+    javascript :: Check syntax via jsl
+    lua :: Parse file (luac -p)
+    php  :: Check syntax (php -l)
+    phpp :: Parse a file (php -f)
+    ruby :: Check syntax (ruby -c; no auto-checks)
+    tex, latex :: Parse file (chktex -q -v0; no auto-checks)
+
+You might want to set the following variables (mode is &filetype by default:
+
+    g:checksyntax_cmd_{mode}  :: The command line (String)
+    g:checksyntax_efm_{mode}  :: The error format (String)
+    g:checksyntax_auto_{mode} :: Check the syntax automatically on file 
+                                      saving (Boolean, 0/1)
+    g:checksyntax_okrx_{mode} :: A regexp that matches "no errors" 
+                                      command output (Regexp)
+
+and the following function:
+
+    CheckSyntax_prepare_{mode}() :: Make additional preparations
+
+
+                                                    *:CheckSyntax*
+Command:
+    :CheckSyntax[!] [type] :: Check the current buffer's syntax (type 
+                              defaults to &filetype)
+ 
+
+Alternative Checks:
+If the variable g:checksyntax_alt_{&filetype} is defined and if you call 
+the CheckSyntax! command with the bang flag (!), then an alternative syntax checker
+is invoked. E.g. in the case of "php", CheckSyntax! calls "phpp" (php -f).
+
