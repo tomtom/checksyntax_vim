@@ -1,0 +1,8 @@
+checksyntax (VIM plugin) -- checksyntax -- Check syntax when saving a file (php, ruby, tex ...)
+
+Status:
+Experimental (extracted from http://github.com/tomtom/vimtlib)
+
+Install:
+See http://github.com/tomtom/vimtlib/blob/master/INSTALL.TXT
+
