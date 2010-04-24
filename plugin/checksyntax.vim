@@ -2,8 +2,8 @@
 " @Author:      Tom Link (micathom AT gmail com)
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     04-Mai-2005.
-" @Last Change: 2010-04-07.
-" @Revision:    379
+" @Last Change: 2010-04-23.
+" @Revision:    380
 
 if exists('g:checksyntax')
     finish
@@ -11,13 +11,13 @@ endif
 let g:checksyntax = 6
 
 
-" #TPluginInclude
+" @TPluginInclude
 if !exists('g:checksyntax_auto')
     let g:checksyntax_auto = 1
 endif
 
 
-" #TPluginInclude
+" @TPluginInclude
 augroup CheckSyntax
     autocmd!
     if g:checksyntax_auto
@@ -29,7 +29,7 @@ augroup END
 command! -bang -nargs=? CheckSyntax call checksyntax#Check(1, "<bang>", <f-args>)
 
 
-" #TPluginInclude
+" @TPluginInclude
 if !hasmapto(':CheckSyntax')
     noremap <F5> :CheckSyntax<cr>
     inoremap <F5> <c-o>:CheckSyntax<cr>
