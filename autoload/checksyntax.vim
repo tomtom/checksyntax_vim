@@ -3,8 +3,8 @@
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2010-01-03.
-" @Last Change: 2010-02-24.
-" @Revision:    0.0.9
+" @Last Change: 2010-09-03.
+" @Revision:    0.0.54
 
 let s:save_cpo = &cpo
 set cpo&vim
@@ -58,15 +58,29 @@ autocmd CheckSyntax BufReadPost *.php if exists(':EclimValidate') && !empty(ecli
 
 
 """ JavaScript specific
-if !exists('g:checksyntax_cmd_javascript')
-    let g:checksyntax_cmd_javascript = 'jsl -nofilelisting -nocontext -nosummary -nologo -process'
+if exists('g:checksyntax_jslint') && g:checksyntax_jslint == 'gjslint'
+    " Support for: gjslint
+    if !exists('g:checksyntax_cmd_javascript')
+        let g:checksyntax_cmd_javascript = 'gjslint'
+    endif
+    if !exists('g:checksyntax_efm_javascript')
+        " let g:checksyntax_efm_javascript  = '%P-%+ %+FILE %+: %+%f %+-%+,Line %l%\, %t:%n: %m,%Q'
+        let g:checksyntax_efm_javascript  = '%P%*[^F]FILE%*[^:]: %f %*[-],Line %l%\, %t:%n: %m,%Q'
+    endif
+    " if !exists('g:checksyntax_okrx_javascript')
+    "     let g:checksyntax_okrx_javascript = '0 error(s), 0 warning(s)'
+    " endif
+else
+    if !exists('g:checksyntax_cmd_javascript')
+        let g:checksyntax_cmd_javascript = 'jsl -nofilelisting -nocontext -nosummary -nologo -process'
+    endif
+    if !exists('g:checksyntax_okrx_javascript')
+        let g:checksyntax_okrx_javascript = '0 error(s), 0 warning(s)'
+    endif
+    " if !exists('g:checksyntax_auto_javascript')
+    "     let g:checksyntax_auto_javascript = 0
+    " endif
 endif
-if !exists('g:checksyntax_okrx_javascript')
-    let g:checksyntax_okrx_javascript = '0 error(s), 0 warning(s)'
-endif
-" if !exists('g:checksyntax_auto_javascript')
-"     let g:checksyntax_auto_javascript = 0
-" endif
 
 
 """ Ruby specific
@@ -274,13 +288,13 @@ function! checksyntax#Check(manually, ...)
                 " TLogVAR &shellpipe
             endif
             if exists('g:checksyntax_efm_'. ft)
-                let &errorformat = g:checksyntax_efm_{ft}
+                let &l:errorformat = g:checksyntax_efm_{ft}
             else
-                set errorformat&
+                setlocal errorformat&
             endif
-            " TLogVAR &errorformat
+            " TLogVAR &l:errorformat
         endif
-        " TLogVAR &makeprg, &l:makeprg, &g:makeprg
+        " TLogVAR &makeprg, &l:makeprg, &g:makeprg, &errorformat
         if exists('*CheckSyntax_prepare_'. ft)
             call CheckSyntax_prepare_{ft}()
         endif
@@ -293,8 +307,10 @@ function! checksyntax#Check(manually, ...)
         "     call tlib#signs#Mark('CheckSyntax', getqflist())
         " endif
         let qfl = getqflist()
+        let bnr = bufnr('%')
         call filter(qfl, 'v:val.lnum != 0 || v:val.pattern != ""')
         call setqflist(qfl)
+        " echom "DBG 1" string(qfl)
         " if output == '' || (okrx != '' && output =~ okrx) || (failrx != '' && output !~ failrx)
         if len(qfl) == 0
             " TLogVAR output, okrx, failrx
@@ -306,7 +322,7 @@ function! checksyntax#Check(manually, ...)
         endif
     finally
         let &l:makeprg     = mp
-        let &errorformat = ef
+        let &l:errorformat = ef
         let &shellpipe   = sp
         " TLogVAR compiler, cc
         if !empty(compiler)
