@@ -3,8 +3,8 @@
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2010-01-03.
-" @Last Change: 2010-09-03.
-" @Revision:    192
+" @Last Change: 2010-09-04.
+" @Revision:    197
 
 let s:save_cpo = &cpo
 set cpo&vim
@@ -187,6 +187,8 @@ endif
 
 
 function! s:Make(def)
+    let bufnr = bufnr('%')
+    let pos = getpos('.')
     try
         if has_key(a:def, 'compiler')
 
@@ -244,6 +246,10 @@ function! s:Make(def)
         echohl Error
         echom v:errmsg
         echohl NONE
+    finally
+        if bufnr == bufnr('%')
+            call setpos('.', pos)
+        endif
     endtry
     return 0
 endf
