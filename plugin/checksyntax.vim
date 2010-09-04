@@ -2,13 +2,13 @@
 " @Author:      Tom Link (micathom AT gmail com)
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     04-Mai-2005.
-" @Last Change: 2010-04-23.
-" @Revision:    380
+" @Last Change: 2010-09-04.
+" @Revision:    385
 
-if exists('g:checksyntax')
+if exists('g:loaded_checksyntax')
     finish
 endif
-let g:checksyntax = 6
+let g:loaded_checksyntax = 100
 
 
 " @TPluginInclude
@@ -59,4 +59,10 @@ restored in the wrong window
 0.6
 - checksyntax_compiler_{&ft} & checksyntax_cmd_{&ft} variables can be 
 buffer local
+
+1.0
+- The info maintained as g:checksyntax_* variables is now kept in a 
+dictionary named g:checksyntax
+- Support for gjslint
+- Some bug fixes (e.g. tidy)
 
