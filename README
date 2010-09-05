@@ -1,6 +1,6 @@
 checksyntax (VIM plugin) -- checksyntax -- Check syntax when saving a file (php, ruby, tex ...)
 
-Status:  Experimental
+Status:  Works for me (there may be some minor quirks)
 Install: See http://github.com/tomtom/vimtlib/blob/master/INSTALL.TXT
 See http://github.com/tomtom for related plugins.
 
