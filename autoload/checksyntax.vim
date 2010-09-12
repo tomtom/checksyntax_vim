@@ -3,12 +3,8 @@
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2010-01-03.
-" @Last Change: 2010-09-04.
-" @Revision:    197
-
-let s:save_cpo = &cpo
-set cpo&vim
-" call tlog#Log('Load: '. expand('<sfile>')) " vimtlib-sfile
+" @Last Change: 2010-09-12.
+" @Revision:    205
 
 
 if !exists('g:checksyntax#failrx')
@@ -20,7 +16,26 @@ if !exists('g:checksyntax#okrx')
 endif
 
 if !exists('g:checksyntax')
-    " Syntax checkers
+    " A dictionary {name/filetype => definition} of syntax checkers, where 
+    " definition is a dictionary with the following fields:
+    " 
+    "   cmd  ... A shell command used as 'makeprg' to check the file.
+    "   exec ... A vim command used to check the file.
+    "   compiler ... A vim compiler that is used to check the file.
+    "
+    "   auto ... Run automatically when saving a file.
+    "   efm  ... An 'errorformat' string.
+    "   okrx ... A |regexp| matching the command output if no error were 
+    "            found.
+    "   failrx ... A |regexp| matching the command output if an error 
+    "            was found.
+    "   alt  ... The name of an alternative syntax checker (see 
+    "            |:CheckSyntax|).
+    "   prepare ... An ex command that is run before doing anything.
+    "   ignore_nr ... A list of error numbers that should be ignored.
+    "
+    " Either cmd, exec, or compiler must be defined. The other fields 
+    " are optional.
     let g:checksyntax = {}   "{{{2
 endif
 
@@ -328,6 +343,3 @@ function! s:FilterItem(def, val) "{{{3
     return 1
 endf
 
-
-let &cpo = s:save_cpo
-unlet s:save_cpo

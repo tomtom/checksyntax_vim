@@ -2,8 +2,8 @@
 " @Author:      Tom Link (micathom AT gmail com)
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     04-Mai-2005.
-" @Last Change: 2010-09-04.
-" @Revision:    385
+" @Last Change: 2010-09-12.
+" @Revision:    387
 
 if exists('g:loaded_checksyntax')
     finish
@@ -26,6 +26,12 @@ augroup CheckSyntax
 augroup END
 
 
+" :display: CheckSyntax[!] [NAME]
+" Check the current buffer's syntax (type defaults to &filetype).
+" Or use NAME instead of &filetype.
+"
+" With the bang !, use the alternative syntax checker (see 
+" |g:checksyntax|).
 command! -bang -nargs=? CheckSyntax call checksyntax#Check(1, "<bang>", <f-args>)
 
 

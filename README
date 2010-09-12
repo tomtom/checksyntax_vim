@@ -1,4 +1,30 @@
-checksyntax (VIM plugin) -- checksyntax -- Check syntax when saving a file (php, ruby, tex ...)
+*checksyntax.txt*   checksyntax -- Check syntax when saving a file (php, ruby, tex ...)
+
+By default, |:CheckSyntax| is mapped to <F5>. The |:CheckSyntax| command 
+takes one optional argument: the mode (default: &filetype). The 
+following modes are pre-defined (and maybe some more):
+
+    c, cpp :: Check syntax via splint
+    html :: Check syntax via tidy
+    javascript :: Check syntax via jsl or gjslint
+    java :: Check syntax via jlint or javaCheckstyle
+    lua :: Parse file (luac -p)
+    php  :: Check syntax (php -l)
+    phpp :: Parse a file (php -f)
+    ruby :: Check syntax (ruby -c; no auto-checks)
+    tex, latex :: Parse file (chktex -q -v0; no auto-checks)
+    xml, docbk :: Check syntax via xmllint
+
+See |g:checksyntax| for how to define your own syntax checkers.
+
+This plugin was originally based on Klaus Horsten's php_console 
+(vimscript #779) and it is the successor of php_check_syntax.vim 
+(vimscript #1272). In opposition to php_console, it is not a php 
+ftplugin but a general solution for checking the syntax when saving a 
+file (using the appropriate interpreter, lint or whatsoever).
+
+
+-----------------------------------------------------------------------
 
 Status:  Works for me (there may be some minor quirks)
 Install: See http://github.com/tomtom/vimtlib/blob/master/INSTALL.TXT
