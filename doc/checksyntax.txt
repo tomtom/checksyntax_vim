@@ -44,8 +44,6 @@ Contents~
         <F5> ....................... |<F5>|
         i_<F5> ..................... |i_<F5>|
         g:checksyntax .............. |g:checksyntax|
-        checksyntax#Jlint .......... |checksyntax#Jlint()|
-        CheckSyntaxFail ............ |CheckSyntaxFail()|
         checksyntax#Check .......... |checksyntax#Check()|
 
 
@@ -62,7 +60,6 @@ CheckSyntax[!] [NAME]
 
                                                     *<F5>*
 <F5> ... :CheckSyntax<cr>
-    @TPluginInclude
 
                                                     *i_<F5>*
 i_<F5> ... <c-o>:CheckSyntax<cr>
@@ -76,10 +73,12 @@ g:checksyntax                  (default: {})
     A dictionary {name/filetype => definition} of syntax checkers, where 
     definition is a dictionary with the following fields:
     
+    Mandatory (either one of the following):
       cmd  ... A shell command used as 'makeprg' to check the file.
       exec ... A vim command used to check the file.
       compiler ... A vim compiler that is used to check the file.
     
+    Optional:
       auto ... Run automatically when saving a file.
       efm  ... An 'errorformat' string.
       okrx ... A |regexp| matching the command output if no error were 
@@ -90,15 +89,6 @@ g:checksyntax                  (default: {})
                |:CheckSyntax|).
       prepare ... An ex command that is run before doing anything.
       ignore_nr ... A list of error numbers that should be ignored.
-    
-    Either cmd, exec, or compiler must be defined. The other fields 
-    are optional.
-
-                                                    *checksyntax#Jlint()*
-checksyntax#Jlint()
-
-                                                    *CheckSyntaxFail()*
-CheckSyntaxFail(manually)
 
                                                     *checksyntax#Check()*
 checksyntax#Check(manually, ?bang='', ?type=&ft)

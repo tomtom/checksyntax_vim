@@ -4,7 +4,7 @@
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2010-01-03.
 " @Last Change: 2010-09-12.
-" @Revision:    205
+" @Revision:    211
 
 
 if !exists('g:checksyntax#failrx')
@@ -19,10 +19,12 @@ if !exists('g:checksyntax')
     " A dictionary {name/filetype => definition} of syntax checkers, where 
     " definition is a dictionary with the following fields:
     " 
+    " Mandatory (either one of the following):
     "   cmd  ... A shell command used as 'makeprg' to check the file.
     "   exec ... A vim command used to check the file.
     "   compiler ... A vim compiler that is used to check the file.
-    "
+    " 
+    " Optional:
     "   auto ... Run automatically when saving a file.
     "   efm  ... An 'errorformat' string.
     "   okrx ... A |regexp| matching the command output if no error were 
@@ -33,9 +35,6 @@ if !exists('g:checksyntax')
     "            |:CheckSyntax|).
     "   prepare ... An ex command that is run before doing anything.
     "   ignore_nr ... A list of error numbers that should be ignored.
-    "
-    " Either cmd, exec, or compiler must be defined. The other fields 
-    " are optional.
     let g:checksyntax = {}   "{{{2
 endif
 
@@ -131,6 +130,7 @@ if !exists('g:checksyntax.java')
                     \ 'alt': 'javaCheckstyle'
                     \ }
 
+        " :nodoc:
         function! checksyntax#Jlint() "{{{3
             let filename = expand('%:r') .'.class'
             " TLogVAR filename
@@ -184,7 +184,8 @@ endif
 
 
 if !exists('*CheckSyntaxSucceed')
-    func! CheckSyntaxSucceed(manually)
+    " :nodoc:
+    function! CheckSyntaxSucceed(manually)
         cclose
         if a:manually
             echo
@@ -195,6 +196,7 @@ endif
 
 
 if !exists('*CheckSyntaxFail')
+    " :nodoc:
     function! CheckSyntaxFail(manually)
         copen
     endf

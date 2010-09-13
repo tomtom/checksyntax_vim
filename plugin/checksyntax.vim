@@ -3,7 +3,7 @@
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     04-Mai-2005.
 " @Last Change: 2010-09-12.
-" @Revision:    387
+" @Revision:    390
 
 if exists('g:loaded_checksyntax')
     finish
@@ -13,6 +13,7 @@ let g:loaded_checksyntax = 100
 
 " @TPluginInclude
 if !exists('g:checksyntax_auto')
+    " If non-null, enable automatic syntax checks after saving a file.
     let g:checksyntax_auto = 1
 endif
 

@@ -1,8 +1,6 @@
 :CheckSyntax	checksyntax.txt	/*:CheckSyntax*
 <F5>	checksyntax.txt	/*<F5>*
-CheckSyntaxFail()	checksyntax.txt	/*CheckSyntaxFail()*
 checksyntax#Check()	checksyntax.txt	/*checksyntax#Check()*
-checksyntax#Jlint()	checksyntax.txt	/*checksyntax#Jlint()*
 checksyntax.txt	checksyntax.txt	/*checksyntax.txt*
 g:checksyntax	checksyntax.txt	/*g:checksyntax*
 i_<F5>	checksyntax.txt	/*i_<F5>*
