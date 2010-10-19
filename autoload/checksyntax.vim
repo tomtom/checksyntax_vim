@@ -3,8 +3,8 @@
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2010-01-03.
-" @Last Change: 2010-09-12.
-" @Revision:    211
+" @Last Change: 2010-10-18.
+" @Revision:    214
 
 
 if !exists('g:checksyntax#failrx')
@@ -64,13 +64,13 @@ autocmd CheckSyntax BufReadPost *.php if exists(':EclimValidate') && !empty(ecli
 
 """ JavaScript
 if !exists('g:checksyntax.javascript')
-    if executable('gjslint')
+    if exists('g:checksyntax_javascript') ? (g:checksyntax_javascript == 'gjslint') : executable('gjslint')
         let g:checksyntax['javascript'] = {
                     \ 'cmd': 'gjslint',
                     \ 'ignore_nr': [1, 110],
                     \ 'efm': '%P%*[^F]FILE%*[^:]: %f %*[-],Line %l%\, %t:%n: %m,%Q',
                     \ }
-    elseif executable('jsl')
+    elseif exists('g:checksyntax_javascript') ? (g:checksyntax_javascript == 'jsl') : executable('jsl')
         let g:checksyntax['javascript'] = {
                     \ 'cmd': 'jsl -nofilelisting -nocontext -nosummary -nologo -process',
                     \ 'okrx': '0 error(s), 0 warning(s)',
