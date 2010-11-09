@@ -79,6 +79,21 @@ if !exists('g:checksyntax.javascript')
 endif
 
 
+""" Python
+if !exists('g:checksyntax.python')
+    let g:checksyntax['python'] = {
+                \ 'cmd': 'pyflakes',
+                \ 'alt': 'pylint'
+                \ }
+endif
+
+if !exists('g:checksyntax.pylint')
+    let g:checksyntax['pylint'] = {
+                \ 'compiler': 'pylint'
+                \ }
+endif
+
+
 """ Ruby
 if !exists('g:checksyntax.ruby')
     let g:checksyntax['ruby'] = {
