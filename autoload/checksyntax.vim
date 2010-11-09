@@ -3,8 +3,8 @@
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2010-01-03.
-" @Last Change: 2010-10-18.
-" @Revision:    214
+" @Last Change: 2010-11-09.
+" @Revision:    224
 
 
 if !exists('g:checksyntax#failrx')
@@ -333,12 +333,12 @@ function! checksyntax#Check(manually, ...)
         call map(qfl, 's:CompleteItem(def, v:val)')
         call setqflist(qfl)
         " echom "DBG 1" string(qfl)
+        redraw!
         if len(qfl) == 0
             call CheckSyntaxSucceed(a:manually)
         else
             call CheckSyntaxFail(a:manually)
         endif
-        redraw!
     endif
 endf
 
