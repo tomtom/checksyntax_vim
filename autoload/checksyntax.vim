@@ -3,8 +3,8 @@
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2010-01-03.
-" @Last Change: 2010-11-09.
-" @Revision:    224
+" @Last Change: 2010-11-11.
+" @Revision:    233
 
 
 if !exists('g:checksyntax#failrx')
@@ -279,9 +279,11 @@ function! s:Make(def)
         echom v:errmsg
         echohl NONE
     finally
-        if bufnr == bufnr('%')
-            call setpos('.', pos)
+        " TLogVAR pos, bufnr
+        if bufnr != bufnr('%')
+            exec bufnr 'buffer'
         endif
+        call setpos('.', pos)
     endtry
     return 0
 endf
