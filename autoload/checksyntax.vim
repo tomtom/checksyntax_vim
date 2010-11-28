@@ -3,8 +3,8 @@
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2010-01-03.
-" @Last Change: 2010-11-11.
-" @Revision:    233
+" @Last Change: 2010-11-27.
+" @Revision:    235
 
 
 if !exists('g:checksyntax#failrx')
@@ -302,6 +302,12 @@ endf
 
 " :def: function! checksyntax#Check(manually, ?bang='', ?type=&ft)
 function! checksyntax#Check(manually, ...)
+    if &modified
+        echohl WarningMsg
+        echom "Buffer was modified. Please save it before calling :CheckSyntax."
+        echohl NONE
+        return
+    end
     let bang = a:0 >= 1 && a:1 != '' ? 1 : 0
     let ft   = a:0 >= 2 && a:2 != '' ? a:2 : &filetype
     let def = a:manually ? {} : s:GetDef(ft .',auto')
@@ -320,10 +326,6 @@ function! checksyntax#Check(manually, ...)
     if !(a:manually || auto)
         return
     endif
-    if &modified
-        echom "Buffer was modified. Please save it before calling :CheckSyntax."
-        return
-    end
     " TLogVAR &makeprg, &l:makeprg, &g:makeprg, &errorformat
     exec get(def, 'prepare', '')
     if s:Make(def)
