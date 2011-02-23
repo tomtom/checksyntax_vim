@@ -3,8 +3,8 @@
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2010-01-03.
-" @Last Change: 2010-11-27.
-" @Revision:    235
+" @Last Change: 2011-02-23.
+" @Revision:    255
 
 
 if !exists('g:checksyntax#failrx')
@@ -49,6 +49,7 @@ if !exists('g:checksyntax.php')
                 \ 'alt': 'phpp'
                 \ }
 endif
+
 
 """""" Parse php
 if !exists('g:checksyntax.phpp')
@@ -302,17 +303,21 @@ endf
 
 " :def: function! checksyntax#Check(manually, ?bang='', ?type=&ft)
 function! checksyntax#Check(manually, ...)
-    if &modified
-        echohl WarningMsg
-        echom "Buffer was modified. Please save it before calling :CheckSyntax."
-        echohl NONE
-        return
-    end
     let bang = a:0 >= 1 && a:1 != '' ? 1 : 0
     let ft   = a:0 >= 2 && a:2 != '' ? a:2 : &filetype
     let def = a:manually ? {} : s:GetDef(ft .',auto')
     if empty(def)
         let def  = s:GetDef(ft)
+    endif
+    if &modified
+        if has_key(def, 'modified')
+            let def = s:GetDef(def.modified)
+        else
+            echohl WarningMsg
+            echom "Buffer was modified. Please save it before calling :CheckSyntax."
+            echohl NONE
+            return
+        endif
     endif
     if bang && has_key(def, 'alt')
         let def = s:GetDef(def.alt)
