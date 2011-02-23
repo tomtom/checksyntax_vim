@@ -1,0 +1,6 @@
+version: "1.01"
+  - Experimental support for python: pyflakes, pylint
+  - redraw before calling CheckSyntaxSucceed/CheckSyntaxFail
+  - Make sure we're in the right buffer
+  MD5 checksum: f94781c5748200e809a28562a692ed6b
+
