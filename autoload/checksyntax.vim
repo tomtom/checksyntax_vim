@@ -3,8 +3,8 @@
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2010-01-03.
-" @Last Change: 2011-02-23.
-" @Revision:    255
+" @Last Change: 2011-03-26.
+" @Revision:    257
 
 
 if !exists('g:checksyntax#failrx')
@@ -42,7 +42,7 @@ endif
 """ Php
 if !exists('g:checksyntax.php')
     let g:checksyntax['php'] = {
-                \ 'auto': 1,
+                \ 'auto': executable('php') == 1,
                 \ 'cmd': 'php -l',
                 \ 'efm': '%*[^:]: %m in %f on line %l',
                 \ 'okrx': 'No syntax errors detected in ',
@@ -169,7 +169,7 @@ endif
 if !exists('g:checksyntax.lua')
     " efm: File:Line:Column:Warning number:Warning message
     let g:checksyntax['lua'] = {
-                \ 'auto': 1,
+                \ 'auto': executable('luac') == 1,
                 \ 'cmd': 'luac -p',
                 \ 'efm': 'luac\:\ %f:%l:\ %m'
                 \ }
