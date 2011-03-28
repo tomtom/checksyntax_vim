@@ -3,8 +3,8 @@
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2010-01-03.
-" @Last Change: 2011-03-26.
-" @Revision:    257
+" @Last Change: 2011-03-28.
+" @Revision:    258
 
 
 if !exists('g:checksyntax#failrx')
@@ -60,7 +60,7 @@ if !exists('g:checksyntax.phpp')
                 \ }
 endif
 
-autocmd CheckSyntax BufReadPost *.php if exists(':EclimValidate') && !empty(eclim#project#util#GetCurrentProjectName()) | let b:checksyntax.php.auto = 0 | endif
+autocmd CheckSyntax BufReadPost *.php if exists(':EclimValidate') && !empty(eclim#project#util#GetCurrentProjectName()) | let g:checksyntax.php.auto = 0 | endif
 
 
 """ JavaScript
