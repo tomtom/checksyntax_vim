@@ -1,6 +1,7 @@
-By default, |:CheckSyntax| is mapped to <F5>. The |:CheckSyntax| command 
-takes one optional argument: the mode (default: &filetype). The 
-following modes are pre-defined (and maybe some more):
+By default, |:CheckSyntax| is mapped to <F5> (if not mapped already), and
+automatically executed when saving the buffer.
+The |:CheckSyntax| command takes one optional argument: the mode (default:
+&filetype). The following modes are pre-defined (and maybe some more):
 
     c, cpp :: Check syntax via splint
     html :: Check syntax via tidy

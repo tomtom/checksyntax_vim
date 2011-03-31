@@ -38,7 +38,7 @@ command! -bang -nargs=? CheckSyntax call checksyntax#Check(1, "<bang>", <f-args>
 
 
 " @TPluginInclude
-if !hasmapto(':CheckSyntax')
+if !hasmapto(':CheckSyntax') && empty(maparg('<F5>', 'n'))
     noremap <F5> :CheckSyntax<cr>
     inoremap <F5> <c-o>:CheckSyntax<cr>
 endif
