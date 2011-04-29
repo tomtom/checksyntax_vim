@@ -3,8 +3,8 @@
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2010-01-03.
-" @Last Change: 2011-03-28.
-" @Revision:    258
+" @Last Change: 2011-04-29.
+" @Revision:    277
 
 
 if !exists('g:checksyntax#failrx')
@@ -201,8 +201,8 @@ endif
 
 if !exists('*CheckSyntaxSucceed')
     " :nodoc:
-    function! CheckSyntaxSucceed(manually)
-        cclose
+    function! CheckSyntaxSucceed(type, manually)
+        call s:prototypes[a:type].Close()
         if a:manually
             echo
             echo 'Syntax ok.'
@@ -213,15 +213,60 @@ endif
 
 if !exists('*CheckSyntaxFail')
     " :nodoc:
-    function! CheckSyntaxFail(manually)
-        copen
+    function! CheckSyntaxFail(type, manually)
+        call s:prototypes[a:type].Show()
     endf
 endif
+
+
+let s:prototypes = {'loc': {}, 'qfl': {}}
+
+function! s:prototypes.loc.Close() dict "{{{3
+    lclose
+endf
+
+function! s:prototypes.loc.Open() dict "{{{3
+    lopen
+endf
+
+function! s:prototypes.loc.Make(args) dict "{{{3
+    exec 'silent lmake' a:args
+endf
+
+function! s:prototypes.loc.Get() dict "{{{3
+    return getloclist(0)
+endf
+
+function! s:prototypes.loc.Set(list) dict "{{{3
+    call setloclist(0, a:list)
+endf
+
+
+function! s:prototypes.qfl.Close() dict "{{{3
+    cclose
+endf
+
+function! s:prototypes.qfl.Open() dict "{{{3
+    copen
+endf
+
+function! s:prototypes.qfl.Make(args) dict "{{{3
+    exec 'silent make' a:args
+endf
+
+function! s:prototypes.qfl.Get() dict "{{{3
+    return getqflist()
+endf
+
+function! s:prototypes.qfl.Set(list) dict "{{{3
+    call setqflist(a:list)
+endf
 
 
 function! s:Make(def)
     let bufnr = bufnr('%')
     let pos = getpos('.')
+    let type = get(a:def, 'listtype', 'loc')
     try
         if has_key(a:def, 'compiler')
 
@@ -232,7 +277,7 @@ function! s:Make(def)
             endif
             try
                 exec 'compiler '. a:def.compiler
-                silent make
+                call s:prototypes[type].Make('')
                 return 1
             finally
                 if cc != ''
@@ -256,7 +301,7 @@ function! s:Make(def)
                 if has_key(a:def, 'cmd')
                     let &l:makeprg = a:def.cmd
                     " TLogVAR &l:makeprg, &l:errorformat
-                    silent make %
+                    call s:prototypes[type].Make('%')
                     return 1
                 elseif has_key(a:def, 'exec')
                     exec a:def.exec
@@ -336,17 +381,18 @@ function! checksyntax#Check(manually, ...)
     if s:Make(def)
         let failrx = get(def, 'failrx', g:checksyntax#failrx)
         let okrx   = get(def, 'okrx', g:checksyntax#okrx)
-        let qfl = getqflist()
+        let type = get(def, 'listtype', 'loc')
+        let list = s:prototypes[type].Get()
         let bnr = bufnr('%')
-        call filter(qfl, 's:FilterItem(def, v:val)')
-        call map(qfl, 's:CompleteItem(def, v:val)')
-        call setqflist(qfl)
-        " echom "DBG 1" string(qfl)
+        call filter(list, 's:FilterItem(def, v:val)')
+        call map(list, 's:CompleteItem(def, v:val)')
+        call s:prototypes[type].Set(list)
+        " echom "DBG 1" string(list)
         redraw!
-        if len(qfl) == 0
-            call CheckSyntaxSucceed(a:manually)
+        if len(list) == 0
+            call CheckSyntaxSucceed(type, a:manually)
         else
-            call CheckSyntaxFail(a:manually)
+            call CheckSyntaxFail(type, a:manually)
         endif
     endif
 endf
