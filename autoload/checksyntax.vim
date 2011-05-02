@@ -3,8 +3,8 @@
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2010-01-03.
-" @Last Change: 2011-04-29.
-" @Revision:    277
+" @Last Change: 2011-05-02.
+" @Revision:    278
 
 
 if !exists('g:checksyntax#failrx')
@@ -214,7 +214,7 @@ endif
 if !exists('*CheckSyntaxFail')
     " :nodoc:
     function! CheckSyntaxFail(type, manually)
-        call s:prototypes[a:type].Show()
+        call s:prototypes[a:type].Open()
     endf
 endif
 
