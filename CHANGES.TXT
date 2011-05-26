@@ -33,3 +33,14 @@ version: "1.01"
   - Make sure we're in the right buffer
   MD5 checksum: f94781c5748200e809a28562a692ed6b
 
+version: "1.01"
+  - checksyntax#Check: Check &modified before anything else
+  - .gitignore
+  - Support for "modified" property
+  - Check executable() when setting the *.auto property.
+  - When eclim is installed: Set g:checksyntax.php.auto, not b:checksyntax.php.auto
+  - Do not map `<F5>` if it is used already.
+  - Use either location list (default) or optionally the quickfix list
+  - CheckSyntaxFail(): call .Open(); fixes #6
+  MD5 checksum: 4425f1434baa8795fbccec38721eef67
+
