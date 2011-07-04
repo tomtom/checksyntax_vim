@@ -3,8 +3,8 @@
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2010-01-03.
-" @Last Change: 2011-05-02.
-" @Revision:    278
+" @Last Change: 2011-07-04.
+" @Revision:    283
 
 
 if !exists('g:checksyntax#failrx')
@@ -234,7 +234,7 @@ function! s:prototypes.loc.Make(args) dict "{{{3
 endf
 
 function! s:prototypes.loc.Get() dict "{{{3
-    return getloclist(0)
+    return copy(getloclist(0))
 endf
 
 function! s:prototypes.loc.Set(list) dict "{{{3
@@ -255,7 +255,7 @@ function! s:prototypes.qfl.Make(args) dict "{{{3
 endf
 
 function! s:prototypes.qfl.Get() dict "{{{3
-    return getqflist()
+    return copy(getqflist())
 endf
 
 function! s:prototypes.qfl.Set(list) dict "{{{3
@@ -383,9 +383,8 @@ function! checksyntax#Check(manually, ...)
         let okrx   = get(def, 'okrx', g:checksyntax#okrx)
         let type = get(def, 'listtype', 'loc')
         let list = s:prototypes[type].Get()
-        let bnr = bufnr('%')
-        call filter(list, 's:FilterItem(def, v:val)')
-        call map(list, 's:CompleteItem(def, v:val)')
+        let list = filter(list, 's:FilterItem(def, v:val)')
+        let list = map(list, 's:CompleteItem(def, v:val)')
         call s:prototypes[type].Set(list)
         " echom "DBG 1" string(list)
         redraw!
