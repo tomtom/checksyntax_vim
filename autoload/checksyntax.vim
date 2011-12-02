@@ -43,7 +43,7 @@ endif
 if !exists('g:checksyntax.php')
     let g:checksyntax['php'] = {
                 \ 'auto': executable('php') == 1,
-                \ 'cmd': 'php -l',
+                \ 'cmd': 'php -l -d error_reporting=E_PARSE -d display_errors=1',
                 \ 'efm': '%*[^:]: %m in %f on line %l',
                 \ 'okrx': 'No syntax errors detected in ',
                 \ 'alt': 'phpp'
