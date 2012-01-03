@@ -8,6 +8,9 @@ the |location-list| is opened (users can redefine |CheckSyntaxFail()| to change
 this behaviour). You can use any |location-list| related command to navigate 
 the list of syntax errors.
 
+If vimscript #2584 is installed, lines containing syntax errors will be marked 
+with signs.
+
 As the plugin doesn't provide syntax checks by its own, the external 
 syntax checker has to be installed on your computer.
 
