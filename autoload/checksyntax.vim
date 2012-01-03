@@ -3,8 +3,8 @@
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2010-01-03.
-" @Last Change: 2011-07-04.
-" @Revision:    283
+" @Last Change: 2012-01-03.
+" @Revision:    308
 
 
 if !exists('g:checksyntax#failrx')
@@ -35,11 +35,31 @@ if !exists('g:checksyntax')
     "            |:CheckSyntax|).
     "   prepare ... An ex command that is run before doing anything.
     "   ignore_nr ... A list of error numbers that should be ignored.
-    let g:checksyntax = {}   "{{{2
+    "   listtype ... Either loc (default) or qfl
+    "
+    " Pre-defined syntax checkers (the respective syntax checker has to 
+    " be installed):
+    "   php                           ... Syntax check; requires php
+    "   phpp (php alternative)        ... Parse php; requires php
+    "   javascript                    ... Syntax check; requires either gjslint or jsl
+    "   python                        ... Requires pyflakes
+    "   pylint (python alternative)   ... Requires pylint
+    "   ruby                          ... Requires ruby
+    "   viki                          ... Requires deplate
+    "   chktex (tex, latex)           ... Requires chktex
+    "   c, cpp                        ... Requires splint
+    "   java                          ... Requires jlint
+    "   checkstyle (java alternative) ... Requires checkstyle
+    "   lua                           ... Requires luac
+    "   html                          ... Requires tidy
+    "   xhtml                         ... Requires tidy
+    "   xml                           ... Requires xmllint
+    "   docbk                         ... Requires xmllint
+    "
+    " :read: let g:checksyntax = {...}   "{{{2
+    let g:checksyntax = {}
 endif
 
-
-""" Php
 if !exists('g:checksyntax.php')
     let g:checksyntax['php'] = {
                 \ 'auto': executable('php') == 1,
@@ -50,8 +70,6 @@ if !exists('g:checksyntax.php')
                 \ }
 endif
 
-
-"""""" Parse php
 if !exists('g:checksyntax.phpp')
     let g:checksyntax['phpp'] = {
                 \ 'cmd': 'php -f',
@@ -62,8 +80,6 @@ endif
 
 autocmd CheckSyntax BufReadPost *.php if exists(':EclimValidate') && !empty(eclim#project#util#GetCurrentProjectName()) | let g:checksyntax.php.auto = 0 | endif
 
-
-""" JavaScript
 if !exists('g:checksyntax.javascript')
     if exists('g:checksyntax_javascript') ? (g:checksyntax_javascript == 'gjslint') : executable('gjslint')
         let g:checksyntax['javascript'] = {
@@ -79,8 +95,6 @@ if !exists('g:checksyntax.javascript')
     endif
 endif
 
-
-""" Python
 if !exists('g:checksyntax.python')
     let g:checksyntax['python'] = {
                 \ 'cmd': 'pyflakes',
@@ -94,8 +108,6 @@ if !exists('g:checksyntax.pylint')
                 \ }
 endif
 
-
-""" Ruby
 if !exists('g:checksyntax.ruby')
     let g:checksyntax['ruby'] = {
                 \ 'prepare': 'compiler ruby',
@@ -104,16 +116,12 @@ if !exists('g:checksyntax.ruby')
                 \ }
 endif
 
-
-""" Viki
 if !exists('g:checksyntax.viki')
     let g:checksyntax['viki'] = {
                 \ 'cmd': 'deplate -f null',
                 \ }
 endif
 
-
-""" chktex (LaTeX)
 if !exists('g:checksyntax.tex')
     if executable('chktex')
         let g:checksyntax['tex'] = {
@@ -123,8 +131,6 @@ if !exists('g:checksyntax.tex')
     endif
 endif
 
-
-""" c, cpp
 if !exists('g:checksyntax.c')
     if executable('splint')
         let g:checksyntax['c'] = {
@@ -137,8 +143,6 @@ if !exists('g:checksyntax.cpp') && exists('g:checksyntax.c')
     let g:checksyntax['cpp'] = copy(g:checksyntax.c)
 endif
 
-
-""" java
 if !exists('g:checksyntax.java')
     if executable('jlint')
         let g:checksyntax['java'] = {
@@ -164,36 +168,32 @@ if !exists('g:checksyntax.javaCheckstyle')
     endif
 endif
 
-
-""" lua
 if !exists('g:checksyntax.lua')
-    " efm: File:Line:Column:Warning number:Warning message
     let g:checksyntax['lua'] = {
                 \ 'auto': executable('luac') == 1,
                 \ 'cmd': 'luac -p',
                 \ 'efm': 'luac\:\ %f:%l:\ %m'
                 \ }
+    " efm: File:Line:Column:Warning number:Warning message
 endif
 
-
-""" tidy (HTML)
 if !exists('g:checksyntax.html')
     let g:checksyntax['html'] = {
                 \ 'cmd': 'tidy -eq',
                 \ 'efm': 'line %l column %c - %m'
                 \ }
 endif
+
 if !exists('g:checksyntax.xhtml')
     let g:checksyntax['xhtml'] = copy(g:checksyntax.html)
 endif
 
-
-""" XML
 if !exists('g:checksyntax.xml')
     let g:checksyntax['xml'] = {
                 \ 'compiler': 'xmllint'
                 \ }
 endif
+
 if !exists('g:checksyntax.docbk')
     let g:checksyntax['docbk'] = copy(g:checksyntax.xml)
 endif

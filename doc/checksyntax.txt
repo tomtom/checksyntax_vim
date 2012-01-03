@@ -1,10 +1,22 @@
 *checksyntax.txt*   checksyntax -- Check syntax when saving a file (php, ruby, tex ...)
                     Author: Tom Link, micathom at gmail com
 
-By default, |:CheckSyntax| is mapped to <F5> (if not mapped already), and
-automatically executed when saving the buffer.
-The |:CheckSyntax| command takes one optional argument: the mode (default:
-&filetype). The following modes are pre-defined (and maybe some more):
+The checksyntax plugin runs an external syntax checker for the current buffer 
+whenever the buffer is saved (by calling the |:CheckSyntax| command). Syntax 
+errors are managed as location or quickfix lists. If any syntax error occurs, 
+the |location-list| is opened (users can redefine |CheckSyntaxFail()| to change 
+this behaviour). You can use any |location-list| related command to navigate 
+the list of syntax errors.
+
+As the plugin doesn't provide syntax checks by its own, the external 
+syntax checker has to be installed on your computer.
+
+By default, |:CheckSyntax| is mapped to <F5> (if not mapped already), 
+and automatically executed when saving the buffer. The |:CheckSyntax| 
+command takes one optional argument: the mode (default: &filetype).
+
+The following modes are pre-defined (syntax checking requires the 
+respective syntax checker software to be installed):
 
     c, cpp :: Check syntax via splint
     html :: Check syntax via tidy
@@ -19,7 +31,8 @@ The |:CheckSyntax| command takes one optional argument: the mode (default:
     tex, latex :: Parse file (chktex -q -v0; no auto-checks)
     xml, docbk :: Check syntax via xmllint
 
-See |g:checksyntax| for how to define your own syntax checkers.
+See |g:checksyntax| for a complete list. See |g:checksyntax| also for 
+how to define your own syntax checkers.
 
 This plugin was originally based on Klaus Horsten's php_console 
 (vimscript #779) and it is the successor of php_check_syntax.vim 
@@ -47,6 +60,8 @@ Contents~
         <F5> ....................... |<F5>|
         i_<F5> ..................... |i_<F5>|
         g:checksyntax .............. |g:checksyntax|
+        CheckSyntaxSucceed ......... |CheckSyntaxSucceed()|
+        CheckSyntaxFail ............ |CheckSyntaxFail()|
         checksyntax#Check .......... |checksyntax#Check()|
 
 
@@ -72,7 +87,7 @@ i_<F5> ... <c-o>:CheckSyntax<cr>
 autoload/checksyntax.vim~
 
                                                     *g:checksyntax*
-g:checksyntax                  (default: {})
+g:checksyntax                  (default: {...})
     A dictionary {name/filetype => definition} of syntax checkers, where 
     definition is a dictionary with the following fields:
     
@@ -92,6 +107,35 @@ g:checksyntax                  (default: {})
                |:CheckSyntax|).
       prepare ... An ex command that is run before doing anything.
       ignore_nr ... A list of error numbers that should be ignored.
+      listtype ... Either loc (default) or qfl
+    
+    Pre-defined syntax checkers (the respective syntax checker has to 
+    be installed):
+      php                           ... Syntax check; requires php
+      phpp (php alternative)        ... Parse php; requires php
+      javascript                    ... Syntax check; requires either gjslint or jsl
+      python                        ... Requires pyflakes
+      pylint (python alternative)   ... Requires pylint
+      ruby                          ... Requires ruby
+      viki                          ... Requires deplate
+      chktex (tex, latex)           ... Requires chktex
+      c, cpp                        ... Requires splint
+      java                          ... Requires jlint
+      checkstyle (java alternative) ... Requires checkstyle
+      lua                           ... Requires luac
+      html                          ... Requires tidy
+      xhtml                         ... Requires tidy
+      xml                           ... Requires xmllint
+      docbk                         ... Requires xmllint
+    
+
+                                                    *CheckSyntaxSucceed()*
+CheckSyntaxSucceed(type, manually)
+    This function is called when no syntax errors were found.
+
+                                                    *CheckSyntaxFail()*
+CheckSyntaxFail(type, manually)
+    This function is called when a syntax error was found.
 
                                                     *checksyntax#Check()*
 checksyntax#Check(manually, ?bang='', ?type=&ft)
