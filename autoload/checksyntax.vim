@@ -200,9 +200,9 @@ endif
 
 
 if !exists('*CheckSyntaxSucceed')
-    " :nodoc:
+    " This function is called when no syntax errors were found.
     function! CheckSyntaxSucceed(type, manually)
-        call s:prototypes[a:type].Close()
+        call g:checksyntax#prototypes[a:type].Close()
         if a:manually
             echo
             echo 'Syntax ok.'
@@ -212,53 +212,53 @@ endif
 
 
 if !exists('*CheckSyntaxFail')
-    " :nodoc:
+    " This function is called when a syntax error was found.
     function! CheckSyntaxFail(type, manually)
-        call s:prototypes[a:type].Open()
+        call g:checksyntax#prototypes[a:type].Open()
     endf
 endif
 
 
-let s:prototypes = {'loc': {}, 'qfl': {}}
+let g:checksyntax#prototypes = {'loc': {}, 'qfl': {}}
 
-function! s:prototypes.loc.Close() dict "{{{3
+function! g:checksyntax#prototypes.loc.Close() dict "{{{3
     lclose
 endf
 
-function! s:prototypes.loc.Open() dict "{{{3
+function! g:checksyntax#prototypes.loc.Open() dict "{{{3
     lopen
 endf
 
-function! s:prototypes.loc.Make(args) dict "{{{3
+function! g:checksyntax#prototypes.loc.Make(args) dict "{{{3
     exec 'silent lmake' a:args
 endf
 
-function! s:prototypes.loc.Get() dict "{{{3
+function! g:checksyntax#prototypes.loc.Get() dict "{{{3
     return copy(getloclist(0))
 endf
 
-function! s:prototypes.loc.Set(list) dict "{{{3
+function! g:checksyntax#prototypes.loc.Set(list) dict "{{{3
     call setloclist(0, a:list)
 endf
 
 
-function! s:prototypes.qfl.Close() dict "{{{3
+function! g:checksyntax#prototypes.qfl.Close() dict "{{{3
     cclose
 endf
 
-function! s:prototypes.qfl.Open() dict "{{{3
+function! g:checksyntax#prototypes.qfl.Open() dict "{{{3
     copen
 endf
 
-function! s:prototypes.qfl.Make(args) dict "{{{3
+function! g:checksyntax#prototypes.qfl.Make(args) dict "{{{3
     exec 'silent make' a:args
 endf
 
-function! s:prototypes.qfl.Get() dict "{{{3
+function! g:checksyntax#prototypes.qfl.Get() dict "{{{3
     return copy(getqflist())
 endf
 
-function! s:prototypes.qfl.Set(list) dict "{{{3
+function! g:checksyntax#prototypes.qfl.Set(list) dict "{{{3
     call setqflist(a:list)
 endf
 
@@ -277,7 +277,7 @@ function! s:Make(def)
             endif
             try
                 exec 'compiler '. a:def.compiler
-                call s:prototypes[type].Make('')
+                call g:checksyntax#prototypes[type].Make('')
                 return 1
             finally
                 if cc != ''
@@ -301,7 +301,7 @@ function! s:Make(def)
                 if has_key(a:def, 'cmd')
                     let &l:makeprg = a:def.cmd
                     " TLogVAR &l:makeprg, &l:errorformat
-                    call s:prototypes[type].Make('%')
+                    call g:checksyntax#prototypes[type].Make('%')
                     return 1
                 elseif has_key(a:def, 'exec')
                     exec a:def.exec
@@ -382,10 +382,10 @@ function! checksyntax#Check(manually, ...)
         let failrx = get(def, 'failrx', g:checksyntax#failrx)
         let okrx   = get(def, 'okrx', g:checksyntax#okrx)
         let type = get(def, 'listtype', 'loc')
-        let list = s:prototypes[type].Get()
+        let list = g:checksyntax#prototypes[type].Get()
         let list = filter(list, 's:FilterItem(def, v:val)')
         let list = map(list, 's:CompleteItem(def, v:val)')
-        call s:prototypes[type].Set(list)
+        call g:checksyntax#prototypes[type].Set(list)
         " echom "DBG 1" string(list)
         redraw!
         if len(list) == 0
