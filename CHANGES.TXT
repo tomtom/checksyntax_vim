@@ -44,3 +44,17 @@ version: "1.02"
   - CheckSyntaxFail(): call .Open(); fixes #6
   MD5 checksum: 4425f1434baa8795fbccec38721eef67
 
+version: "1.03"
+  - checksyntax#Check: Check &modified before anything else
+  - .gitignore
+  - Support for "modified" property
+  - Check executable() when setting the *.auto property.
+  - When eclim is installed: Set g:checksyntax.php.auto, not b:checksyntax.php.auto
+  - Do not map `<F5>` if it is used already.
+  - Use either location list (default) or optionally the quickfix list
+  - CheckSyntaxFail(): call .Open(); fixes #6
+  - Tackle issue #7 ... maybe
+  - php is now forced to display parse errors even when in production mode
+  - Rename s:prototypes to g:checksyntax#prototypes
+  MD5 checksum: dfe8b09008f5106fdf7886d4c4cd5fb6
+
