@@ -3,8 +3,8 @@
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2010-01-03.
-" @Last Change: 2012-01-03.
-" @Revision:    308
+" @Last Change: 2012-02-10.
+" @Revision:    340
 
 
 if !exists('g:checksyntax#failrx')
@@ -213,8 +213,9 @@ endif
 
 if !exists('*CheckSyntaxFail')
     " This function is called when a syntax error was found.
-    function! CheckSyntaxFail(type, manually)
-        call g:checksyntax#prototypes[a:type].Open()
+    function! CheckSyntaxFail(type, manually, bg)
+        " TLogVAR a:type, a:manually, a:bg
+        call g:checksyntax#prototypes[a:type].Open(a:bg)
     endf
 endif
 
@@ -225,8 +226,12 @@ function! g:checksyntax#prototypes.loc.Close() dict "{{{3
     lclose
 endf
 
-function! g:checksyntax#prototypes.loc.Open() dict "{{{3
+function! g:checksyntax#prototypes.loc.Open(bg) dict "{{{3
+    " TLogVAR a:bg
     lopen
+    if a:bg
+        wincmd p
+    endif
 endf
 
 function! g:checksyntax#prototypes.loc.Make(args) dict "{{{3
@@ -246,8 +251,11 @@ function! g:checksyntax#prototypes.qfl.Close() dict "{{{3
     cclose
 endf
 
-function! g:checksyntax#prototypes.qfl.Open() dict "{{{3
+function! g:checksyntax#prototypes.qfl.Open(bg) dict "{{{3
     copen
+    if a:bg
+        wincmd p
+    endif
 endf
 
 function! g:checksyntax#prototypes.qfl.Make(args) dict "{{{3
@@ -346,10 +354,12 @@ function! s:GetDef(ft) "{{{3
 endf
 
 
-" :def: function! checksyntax#Check(manually, ?bang='', ?type=&ft)
+" :def: function! checksyntax#Check(manually, ?bang='', ?type=&ft, ?background=1)
 function! checksyntax#Check(manually, ...)
     let bang = a:0 >= 1 && a:1 != '' ? 1 : 0
     let ft   = a:0 >= 2 && a:2 != '' ? a:2 : &filetype
+    let bg   = a:0 >= 3 && a:3 != '' ? a:3 : 0
+    " TLogVAR a:manually, bang, ft, bg
     let def = a:manually ? {} : s:GetDef(ft .',auto')
     if empty(def)
         let def  = s:GetDef(ft)
@@ -376,6 +386,11 @@ function! checksyntax#Check(manually, ...)
     if !(a:manually || auto)
         return
     endif
+    if !exists('b:checksyntax_runs')
+        let b:checksyntax_runs = 1
+    else
+        let b:checksyntax_runs += 1
+    endif
     " TLogVAR &makeprg, &l:makeprg, &g:makeprg, &errorformat
     exec get(def, 'prepare', '')
     if s:Make(def)
@@ -391,7 +406,10 @@ function! checksyntax#Check(manually, ...)
         if len(list) == 0
             call CheckSyntaxSucceed(type, a:manually)
         else
-            call CheckSyntaxFail(type, a:manually)
+            " TLogVAR type
+            " TLogVAR a:manually
+            " TLogVAR bg
+            call CheckSyntaxFail(type, a:manually, bg)
         endif
     endif
 endf

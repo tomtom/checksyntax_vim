@@ -2,9 +2,9 @@
 " @Author:      Tom Link (micathom AT gmail com)
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     04-Mai-2005.
-" @Last Change: 2011-05-26.
+" @Last Change: 2012-02-10.
 " GetLatestVimScripts: 1431 0 :AutoInstall: checksyntax.vim
-" @Revision:    396
+" @Revision:    407
 
 if exists('g:loaded_checksyntax')
     finish
@@ -12,18 +12,23 @@ endif
 let g:loaded_checksyntax = 103
 
 
-" @TPluginInclude
 if !exists('g:checksyntax_auto')
-    " If non-null, enable automatic syntax checks after saving a file.
+    " If 1, enable automatic syntax checks after saving a file.
+    " If 2, enable automatic syntax checks when saving and loading a 
+    " file.
     let g:checksyntax_auto = 1
 endif
 
 
-" @TPluginInclude
 augroup CheckSyntax
     autocmd!
-    if g:checksyntax_auto
+    if g:checksyntax_auto >= 1
         autocmd CheckSyntax BufWritePost * call checksyntax#Check(0)
+    endif
+    if g:checksyntax_auto >= 2
+        autocmd CheckSyntax BufEnter * if !exists('b:checksyntax_runs')
+                    \ | call checksyntax#Check(0, 0, &ft, 1)
+                    \ | endif
     endif
 augroup END
 
