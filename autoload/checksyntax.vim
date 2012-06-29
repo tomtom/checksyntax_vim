@@ -3,8 +3,8 @@
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2010-01-03.
-" @Last Change: 2012-02-10.
-" @Revision:    340
+" @Last Change: 2012-06-29.
+" @Revision:    347
 
 
 if !exists('g:checksyntax#failrx')
@@ -355,12 +355,29 @@ endf
 
 function! s:GetDef(ft) "{{{3
     if exists('b:checksyntax') && has_key(b:checksyntax, a:ft)
-        return b:checksyntax[a:ft]
+        let dict = b:checksyntax
+        let rv = b:checksyntax[a:ft]
     elseif has_key(g:checksyntax, a:ft)
-        return g:checksyntax[a:ft]
+        let dict = g:checksyntax
+        let rv = g:checksyntax[a:ft]
     else
-        return {}
+        let dict = {}
+        let rv = {}
     endif
+    if !empty(rv)
+        if !empty(dict) && has_key(rv, 'cmd')
+            let cmd = matchstr(rv.cmd, '^\(\\\s\|\S\+\|"\([^"]\|\\"\)\+"\)\+')
+            if empty(cmd) && g:checksyntax#debug
+                echom "CheckSyntax: Cannot determine executable name:" rv.cmd printf("(%s)", a:ft)
+            elseif executable(cmd) == 0
+                if g:checksyntax#debug
+                    echom "CheckSyntax: Not an executable, remove checker:" cmd printf("(%s)", a:ft)
+                endif
+                call remove(dict, a:ft)
+            endif
+        endif
+    endif
+    return rv
 endf
 
 
