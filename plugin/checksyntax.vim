@@ -2,9 +2,9 @@
 " @Author:      Tom Link (micathom AT gmail com)
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     04-Mai-2005.
-" @Last Change: 2012-02-10.
+" @Last Change: 2012-06-29.
 " GetLatestVimScripts: 1431 0 :AutoInstall: checksyntax.vim
-" @Revision:    407
+" @Revision:    408
 
 if exists('g:loaded_checksyntax')
     finish
@@ -16,6 +16,8 @@ if !exists('g:checksyntax_auto')
     " If 1, enable automatic syntax checks after saving a file.
     " If 2, enable automatic syntax checks when saving and loading a 
     " file.
+    " NOTE: This variable must be customized in vimrc before loading 
+    " this plugin.
     let g:checksyntax_auto = 1
 endif
 

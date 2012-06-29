@@ -62,6 +62,7 @@ Contents~
         :CheckSyntax ............... |:CheckSyntax|
         <F5> ....................... |<F5>|
         i_<F5> ..................... |i_<F5>|
+        g:checksyntax#auto_mode .... |g:checksyntax#auto_mode|
         g:checksyntax .............. |g:checksyntax|
         CheckSyntaxSucceed ......... |CheckSyntaxSucceed()|
         CheckSyntaxFail ............ |CheckSyntaxFail()|
@@ -88,6 +89,11 @@ i_<F5> ... <c-o>:CheckSyntax<cr>
 
 ========================================================================
 autoload/checksyntax.vim~
+
+                                                    *g:checksyntax#auto_mode*
+g:checksyntax#auto_mode        (default: 0)
+    If true, automatically run syntax checkers when saving a file by 
+    default.
 
                                                     *g:checksyntax*
 g:checksyntax                  (default: {...})
@@ -137,11 +143,11 @@ CheckSyntaxSucceed(type, manually)
     This function is called when no syntax errors were found.
 
                                                     *CheckSyntaxFail()*
-CheckSyntaxFail(type, manually)
+CheckSyntaxFail(type, manually, bg)
     This function is called when a syntax error was found.
 
                                                     *checksyntax#Check()*
-checksyntax#Check(manually, ?bang='', ?type=&ft)
+checksyntax#Check(manually, ?bang='', ?type=&ft, ?background=1)
 
 
 
