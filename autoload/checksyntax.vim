@@ -21,6 +21,10 @@ if !exists('g:checksyntax#auto_mode')
     let g:checksyntax#auto_mode = 0   "{{{2
 endif
 
+if !exists('g:checksyntax#debug')
+    let g:checksyntax#debug = 0
+endif
+
 if !exists('g:checksyntax')
     " A dictionary {name/filetype => definition} of syntax checkers, where 
     " definition is a dictionary with the following fields:
