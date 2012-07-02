@@ -16,9 +16,11 @@ if !exists('g:checksyntax#okrx')
 endif
 
 if !exists('g:checksyntax#auto_mode')
-    " If true, automatically run syntax checkers when saving a file by 
-    " default.
-    let g:checksyntax#auto_mode = 0   "{{{2
+    " If 1, enable automatically running syntax checkers when saving a 
+    " file.
+    " If 2, turn on automatic syntax checks for all known filetypes.
+    " If 0, disable automatic syntax checks.
+    let g:checksyntax#auto_mode = 1   "{{{2
 endif
 
 if !exists('g:checksyntax#debug')
@@ -408,7 +410,13 @@ function! checksyntax#Check(manually, ...)
     if empty(def)
         return
     endif
-    let auto = get(def, 'auto', g:checksyntax#auto_mode)
+    if g:checksyntax#auto_mode == 0
+        let auto = 0
+    elseif g:checksyntax#auto_mode == 1
+        let auto = get(def, 'auto', 0)
+    elseif g:checksyntax#auto_mode == 2
+        let auto = 1
+    endif
     " TLogVAR auto
     if !(a:manually || auto)
         return

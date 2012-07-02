@@ -91,9 +91,11 @@ i_<F5> ... <c-o>:CheckSyntax<cr>
 autoload/checksyntax.vim~
 
                                                     *g:checksyntax#auto_mode*
-g:checksyntax#auto_mode        (default: 0)
-    If true, automatically run syntax checkers when saving a file by 
-    default.
+g:checksyntax#auto_mode        (default: 1)
+    If 1, enable automatically running syntax checkers when saving a 
+    file.
+    If 2, turn on automatic syntax checks for all known filetypes.
+    If 0, disable automatic syntax checks.
 
                                                     *g:checksyntax*
 g:checksyntax                  (default: {...})
