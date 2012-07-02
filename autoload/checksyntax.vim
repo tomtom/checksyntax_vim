@@ -4,7 +4,7 @@
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2010-01-03.
 " @Last Change: 2012-07-02.
-" @Revision:    377
+" @Revision:    385
 
 
 if !exists('g:checksyntax#failrx')
@@ -75,145 +75,6 @@ if !exists('g:checksyntax')
     "
     " :read: let g:checksyntax = {...}   "{{{2
     let g:checksyntax = {}
-endif
-
-if !exists('g:checksyntax.php')
-    let g:checksyntax['php'] = {
-                \ 'auto': executable('php') == 1,
-                \ 'cmd': 'php -l -d error_reporting=E_PARSE',
-                \ 'efm': '%*[^:]: %m in %f on line %l',
-                \ 'okrx': 'No syntax errors detected in ',
-                \ 'alt': 'phpp'
-                \ }
-endif
-
-if !exists('g:checksyntax.phpp')
-    let g:checksyntax['phpp'] = {
-                \ 'cmd': 'php -f',
-                \ 'efm': g:checksyntax.php.efm,
-                \ 'okrx': g:checksyntax.php.okrx
-                \ }
-endif
-
-autocmd CheckSyntax BufReadPost *.php if exists(':EclimValidate') && !empty(eclim#project#util#GetCurrentProjectName()) | let g:checksyntax.php.auto = 0 | endif
-
-if !exists('g:checksyntax.javascript')
-    let g:checksyntax['javascript'] = {
-                \ 'alternatives': [
-                \     {
-                \         'cmd': 'gjslint',
-                \         'ignore_nr': [1, 110],
-                \         'efm': '%P%*[^F]FILE%*[^:]: %f %*[-],Line %l%\, %t:%n: %m,%Q',
-                \     },
-                \     {
-                \         'cmd': 'jsl -nofilelisting -nocontext -nosummary -nologo -process',
-                \         'okrx': '0 error(s), 0 warning(s)',
-                \     },
-                \ ]
-                \ }
-endif
-
-if !exists('g:checksyntax.python')
-    let g:checksyntax['python'] = {
-                \ 'cmd': 'pyflakes',
-                \ 'alt': 'pylint'
-                \ }
-endif
-
-if !exists('g:checksyntax.pylint')
-    let g:checksyntax['pylint'] = {
-                \ 'compiler': 'pylint'
-                \ }
-endif
-
-if !exists('g:checksyntax.ruby')
-    let g:checksyntax['ruby'] = {
-                \ 'prepare': 'compiler ruby',
-                \ 'cmd': 'ruby -c',
-                \ 'okrx': 'Syntax OK\|No Errors'
-                \ }
-endif
-
-if !exists('g:checksyntax.viki')
-    let g:checksyntax['viki'] = {
-                \ 'cmd': 'deplate -f null',
-                \ }
-endif
-
-if !exists('g:checksyntax.tex')
-    if executable('chktex')
-        let g:checksyntax['tex'] = {
-                    \ 'cmd': 'chktex -q -v0',
-                    \ 'efm': '%f:%l:%m',
-                    \ }
-    endif
-endif
-
-if !exists('g:checksyntax.c')
-    if executable('splint')
-        let g:checksyntax['c'] = {
-                    \ 'compiler': 'splint',
-                    \ }
-    endif
-endif
-
-if !exists('g:checksyntax.cpp') && exists('g:checksyntax.c')
-    let g:checksyntax['cpp'] = copy(g:checksyntax.c)
-endif
-
-if !exists('g:checksyntax.java')
-    if executable('jlint')
-        let g:checksyntax['java'] = {
-                    \ 'exec': 'call checksyntax#Jlint()',
-                    \ 'alt': 'javaCheckstyle'
-                    \ }
-
-        " :nodoc:
-        function! checksyntax#Jlint() "{{{3
-            let filename = expand('%:r') .'.class'
-            " TLogVAR filename
-            " echom '! jlint -done '. shellescape(filename)
-            exec '! jlint -done '. shellescape(filename)
-        endf
-    endif
-endif
-
-if !exists('g:checksyntax.javaCheckstyle')
-    if executable('checkstyle')
-        let g:checksyntax['javaCheckstyle'] = {
-                    \ 'compiler': 'checkstyle',
-                    \ }
-    endif
-endif
-
-if !exists('g:checksyntax.lua')
-    let g:checksyntax['lua'] = {
-                \ 'auto': executable('luac') == 1,
-                \ 'cmd': 'luac -p',
-                \ 'efm': 'luac\:\ %f:%l:\ %m'
-                \ }
-    " efm: File:Line:Column:Warning number:Warning message
-endif
-
-if !exists('g:checksyntax.html')
-    let g:checksyntax['html'] = {
-                \ 'cmd': 'tidy -eq',
-                \ 'efm': 'line %l column %c - %m'
-                \ }
-endif
-
-if !exists('g:checksyntax.xhtml')
-    let g:checksyntax['xhtml'] = copy(g:checksyntax.html)
-endif
-
-if !exists('g:checksyntax.xml')
-    let g:checksyntax['xml'] = {
-                \ 'compiler': 'xmllint'
-                \ }
-endif
-
-if !exists('g:checksyntax.docbk')
-    let g:checksyntax['docbk'] = copy(g:checksyntax.xml)
 endif
 
 
@@ -361,6 +222,17 @@ function! s:Make(def)
 endf
 
 
+let s:loaded_checkers = {}
+
+function! checksyntax#Require(filetype) "{{{3
+    if !has_key(s:loaded_checkers, a:filetype)
+        exec 'runtime! autoload/checksyntax/'. a:filetype .'.vim'
+        let s:loaded_checkers[a:filetype] = 1
+    endif
+    return has_key(g:checksyntax, a:filetype)
+endf
+
+
 function! s:GetDef(ft) "{{{3
     if exists('b:checksyntax') && has_key(b:checksyntax, a:ft)
         let dict = b:checksyntax
@@ -422,6 +294,7 @@ function! checksyntax#Check(manually, ...)
     let ft   = a:0 >= 2 && a:2 != '' ? a:2 : &filetype
     let bg   = a:0 >= 3 && a:3 != '' ? a:3 : 0
     " TLogVAR a:manually, bang, ft, bg
+    call checksyntax#Require(ft)
     let def = a:manually ? {} : s:GetDef(ft .',auto')
     if empty(def)
         let def  = s:GetDef(ft)
