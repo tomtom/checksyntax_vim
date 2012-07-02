@@ -2,14 +2,19 @@
 " @Author:      Tom Link (micathom AT gmail com)
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     04-Mai-2005.
-" @Last Change: 2012-06-29.
+" @Last Change: 2012-07-02.
 " GetLatestVimScripts: 1431 0 :AutoInstall: checksyntax.vim
-" @Revision:    408
+" @Revision:    409
 
 if exists('g:loaded_checksyntax')
     finish
 endif
 let g:loaded_checksyntax = 103
+
+
+if !exists('g:checksyntax')
+    let g:checksyntax = {}
+endif
 
 
 if !exists('g:checksyntax_auto')
