@@ -3,8 +3,8 @@
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2010-01-03.
-" @Last Change: 2012-06-29.
-" @Revision:    347
+" @Last Change: 2012-07-02.
+" @Revision:    376
 
 
 if !exists('g:checksyntax#failrx')
@@ -48,6 +48,11 @@ if !exists('g:checksyntax')
     "   prepare ... An ex command that is run before doing anything.
     "   ignore_nr ... A list of error numbers that should be ignored.
     "   listtype ... Either loc (default) or qfl
+    "   if   ... An expression to test *once* whether a syntax checker 
+    "            should be used.
+    "   alternatives ... A list of syntax checker definitions (the first 
+    "            one with a valid executable is used. If used, no other 
+    "            elements are allowed. This list is checked only once.
     "
     " Pre-defined syntax checkers (the respective syntax checker has to 
     " be installed):
@@ -93,18 +98,19 @@ endif
 autocmd CheckSyntax BufReadPost *.php if exists(':EclimValidate') && !empty(eclim#project#util#GetCurrentProjectName()) | let g:checksyntax.php.auto = 0 | endif
 
 if !exists('g:checksyntax.javascript')
-    if exists('g:checksyntax_javascript') ? (g:checksyntax_javascript == 'gjslint') : executable('gjslint')
-        let g:checksyntax['javascript'] = {
-                    \ 'cmd': 'gjslint',
-                    \ 'ignore_nr': [1, 110],
-                    \ 'efm': '%P%*[^F]FILE%*[^:]: %f %*[-],Line %l%\, %t:%n: %m,%Q',
-                    \ }
-    elseif exists('g:checksyntax_javascript') ? (g:checksyntax_javascript == 'jsl') : executable('jsl')
-        let g:checksyntax['javascript'] = {
-                    \ 'cmd': 'jsl -nofilelisting -nocontext -nosummary -nologo -process',
-                    \ 'okrx': '0 error(s), 0 warning(s)',
-                    \ }
-    endif
+    let g:checksyntax['javascript'] = {
+                \ 'alternatives': [
+                \     {
+                \         'cmd': 'gjslint',
+                \         'ignore_nr': [1, 110],
+                \         'efm': '%P%*[^F]FILE%*[^:]: %f %*[-],Line %l%\, %t:%n: %m,%Q',
+                \     },
+                \     {
+                \         'cmd': 'jsl -nofilelisting -nocontext -nosummary -nologo -process',
+                \         'okrx': '0 error(s), 0 warning(s)',
+                \     },
+                \ ]
+                \ }
 endif
 
 if !exists('g:checksyntax.python')
@@ -366,16 +372,43 @@ function! s:GetDef(ft) "{{{3
         let dict = {}
         let rv = {}
     endif
-    if !empty(rv)
-        if !empty(dict) && has_key(rv, 'cmd')
-            let cmd = matchstr(rv.cmd, '^\(\\\s\|\S\+\|"\([^"]\|\\"\)\+"\)\+')
-            if empty(cmd) && g:checksyntax#debug
-                echom "CheckSyntax: Cannot determine executable name:" rv.cmd printf("(%s)", a:ft)
-            elseif executable(cmd) == 0
-                if g:checksyntax#debug
-                    echom "CheckSyntax: Not an executable, remove checker:" cmd printf("(%s)", a:ft)
+    if !empty(dict)
+        let alternatives = get(rv, 'alternatives', [])
+        let use_alternatives = !empty(alternatives)
+        while !empty(rv) || use_alternatives
+            if !empty(alternatives)
+                let rv = remove(alternatives, 0)
+            endif
+            if has_key(rv, 'if')
+                if eval(rv.if)
+                    call remove(rv, 'if')
+                    break
+                else
+                    let rv = {}
+                    continue
                 endif
+            endif
+            if has_key(rv, 'cmd')
+                let cmd = matchstr(rv.cmd, '^\(\\\s\|\S\+\|"\([^"]\|\\"\)\+"\)\+')
+                if empty(cmd) && g:checksyntax#debug
+                    echom "CheckSyntax: Cannot determine executable name:" rv.cmd printf("(%s)", a:ft)
+                elseif executable(cmd) == 0
+                    if g:checksyntax#debug
+                        echom "CheckSyntax: Not an executable, remove checker:" cmd printf("(%s)", a:ft)
+                    endif
+                    let rv = {}
+                    continue
+                endif
+            endif
+            break
+        endwh
+        if empty(rv)
+            if !use_alternatives
                 call remove(dict, a:ft)
+            endif
+        else
+            if use_alternatives
+                let dict[a:ft] = rv
             endif
         endif
     endif

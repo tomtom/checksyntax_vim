@@ -119,6 +119,11 @@ g:checksyntax                  (default: {...})
       prepare ... An ex command that is run before doing anything.
       ignore_nr ... A list of error numbers that should be ignored.
       listtype ... Either loc (default) or qfl
+      if   ... An expression to test *once* whether a syntax checker 
+               should be used.
+      alternatives ... A list of syntax checker definitions (the first 
+               one with a valid executable is used. If used, no other 
+               elements are allowed. This list is checked only once.
     
     Pre-defined syntax checkers (the respective syntax checker has to 
     be installed):
