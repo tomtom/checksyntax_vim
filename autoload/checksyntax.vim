@@ -4,7 +4,7 @@
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2010-01-03.
 " @Last Change: 2012-07-02.
-" @Revision:    376
+" @Revision:    377
 
 
 if !exists('g:checksyntax#failrx')
@@ -403,7 +403,7 @@ function! s:GetDef(ft) "{{{3
             break
         endwh
         if empty(rv)
-            if !use_alternatives
+            if empty(alternatives)
                 call remove(dict, a:ft)
             endif
         else
