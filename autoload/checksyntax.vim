@@ -4,7 +4,7 @@
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2010-01-03.
 " @Last Change: 2012-07-08.
-" @Revision:    435
+" @Revision:    436
 
 
 if !exists('g:checksyntax#auto_mode')
@@ -358,7 +358,7 @@ function! checksyntax#Check(manually, ...)
     if s:Make(ft, def)
         let type = get(def, 'listtype', 'loc')
         let list = g:checksyntax#prototypes[type].Get()
-        TLogVAR len(list)
+        " TLogVAR len(list)
         let list = filter(list, 's:FilterItem(def, v:val)')
         let list = map(list, 's:CompleteItem(def, v:val)')
         call g:checksyntax#prototypes[type].Set(list)
