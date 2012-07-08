@@ -214,7 +214,7 @@ let s:loaded_checkers = {}
 
 function! checksyntax#Require(filetype) "{{{3
     if !has_key(s:loaded_checkers, a:filetype)
-        exec 'runtime! autoload/checksyntax/'. a:filetype .'.vim'
+        exec 'runtime! autoload/checksyntax/defs/'. a:filetype .'.vim'
         let s:loaded_checkers[a:filetype] = 1
     endif
     return has_key(g:checksyntax, a:filetype)

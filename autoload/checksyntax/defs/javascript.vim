@@ -2,8 +2,8 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2012-07-02.
-" @Last Change: 2012-07-02.
-" @Revision:    1
+" @Last Change: 2012-07-08.
+" @Revision:    2
 
 
 if !exists('g:checksyntax.javascript')
@@ -16,7 +16,6 @@ if !exists('g:checksyntax.javascript')
                 \     },
                 \     {
                 \         'cmd': 'jsl -nofilelisting -nocontext -nosummary -nologo -process',
-                \         'okrx': '0 error(s), 0 warning(s)',
                 \     },
                 \ ]
                 \ }

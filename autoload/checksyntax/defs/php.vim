@@ -3,7 +3,7 @@
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2012-07-02.
 " @Last Change: 2012-07-08.
-" @Revision:    4
+" @Revision:    5
 
 
 if executable('php')
@@ -13,7 +13,6 @@ if executable('php')
                     \ 'auto': 1,
                     \ 'cmd': 'php -l -d error_log= -d error_reporting=E_PARSE',
                     \ 'efm': '%*[^:]: %m in %f on line %l',
-                    \ 'okrx': 'No syntax errors detected in ',
                     \ 'alt': 'phpp'
                     \ }
     endif
@@ -23,7 +22,6 @@ if executable('php')
         let g:checksyntax['phpp'] = {
                     \ 'cmd': 'php -f',
                     \ 'efm': g:checksyntax.php.efm,
-                    \ 'okrx': g:checksyntax.php.okrx
                     \ }
     endif
 
