@@ -4,7 +4,7 @@
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2010-01-03.
 " @Last Change: 2012-07-08.
-" @Revision:    388
+" @Revision:    435
 
 
 if !exists('g:checksyntax#auto_mode')
@@ -66,6 +66,14 @@ if !exists('g:checksyntax')
 endif
 
 
+if !exists('g:checksyntax#syntastic_dir')
+    " The directory where the syntastic plugin is installed.
+    " If non-empty, use syntastic syntax checkers if available.
+    " NOTE: Experimental feature.
+    let g:checksyntax#syntastic_dir = ''   "{{{2
+endif
+
+
 if !exists('*CheckSyntaxSucceed')
     " This function is called when no syntax errors were found.
     function! CheckSyntaxSucceed(type, manually)
@@ -102,7 +110,7 @@ function! g:checksyntax#prototypes.loc.Open(bg) dict "{{{3
 endf
 
 function! g:checksyntax#prototypes.loc.Make(args) dict "{{{3
-    exec 'silent lmake' a:args
+    exec 'silent lmake!' a:args
 endf
 
 function! g:checksyntax#prototypes.loc.Get() dict "{{{3
@@ -126,7 +134,7 @@ function! g:checksyntax#prototypes.qfl.Open(bg) dict "{{{3
 endf
 
 function! g:checksyntax#prototypes.qfl.Make(args) dict "{{{3
-    exec 'silent make' a:args
+    exec 'silent make!' a:args
 endf
 
 function! g:checksyntax#prototypes.qfl.Get() dict "{{{3
@@ -138,7 +146,7 @@ function! g:checksyntax#prototypes.qfl.Set(list) dict "{{{3
 endf
 
 
-function! s:Make(def)
+function! s:Make(filetype, def)
     let bufnr = bufnr('%')
     let pos = getpos('.')
     let type = get(a:def, 'listtype', 'loc')
@@ -161,38 +169,20 @@ function! s:Make(def)
                 endif
             endtry
 
+        elseif has_key(a:def, 'syntastic')
+
+            try
+                call call(a:def.syntastic, [])
+                return 1
+            catch /^Vim\%((\a\+)\)\=:E117/
+                call remove(a:def, 'syntastic')
+                echom "CheckSytnax: Syntastic not supported for this filetype. Please add" a:filetype "to g:checksyntax#syntastic#blacklist (and report to the author of checksyntax.vim)"
+                call add(g:checksyntax#syntastic#blacklist, a:filetype)
+            endtry
+
         else
 
-            let makeprg = &makeprg
-            let shellpipe = &shellpipe
-            let errorformat = &errorformat
-            if has_key(a:def, 'shellpipe')
-                let &l:shellpipe = get(a:def, 'shellpipe')
-            endif
-            if has_key(a:def, 'efm')
-                let &l:errorformat = get(a:def, 'efm')
-            endif
-            try
-                if has_key(a:def, 'cmd')
-                    let &l:makeprg = a:def.cmd
-                    " TLogVAR &l:makeprg, &l:errorformat
-                    call g:checksyntax#prototypes[type].Make('%')
-                    return 1
-                elseif has_key(a:def, 'exec')
-                    exec a:def.exec
-                    return 1
-                endif
-            finally
-                if &l:makeprg != makeprg
-                    let &l:makeprg = makeprg
-                endif
-                if &l:shellpipe != shellpipe
-                    let &l:shellpipe = shellpipe
-                endif
-                if &l:errorformat != errorformat
-                    let &l:errorformat = errorformat
-                endif
-            endtry
+            return checksyntax#Make(a:def)
 
         endif
     catch
@@ -210,12 +200,55 @@ function! s:Make(def)
 endf
 
 
+function! checksyntax#Make(def) "{{{3
+    " TLogVAR a:def
+    let type = get(a:def, 'listtype', 'loc')
+    let makeprg = &makeprg
+    let shellpipe = &shellpipe
+    let errorformat = &errorformat
+    if has_key(a:def, 'shellpipe')
+        let &l:shellpipe = get(a:def, 'shellpipe')
+        " TLogVAR &l:shellpipe
+    endif
+    if has_key(a:def, 'efm')
+        let &l:errorformat = get(a:def, 'efm')
+        " TLogVAR &l:errorformat
+    endif
+    try
+        if has_key(a:def, 'cmd')
+            let &l:makeprg = a:def.cmd
+            " TLogVAR &l:makeprg
+            call g:checksyntax#prototypes[type].Make(get(a:def, 'args', '%'))
+            return 1
+        elseif has_key(a:def, 'exec')
+            exec a:def.exec
+            return 1
+        endif
+    finally
+        if &l:makeprg != makeprg
+            let &l:makeprg = makeprg
+        endif
+        if &l:shellpipe != shellpipe
+            let &l:shellpipe = shellpipe
+        endif
+        if &l:errorformat != errorformat
+            let &l:errorformat = errorformat
+        endif
+    endtry
+endf
+
+
 let s:loaded_checkers = {}
 
 function! checksyntax#Require(filetype) "{{{3
     if !has_key(s:loaded_checkers, a:filetype)
         exec 'runtime! autoload/checksyntax/defs/'. a:filetype .'.vim'
         let s:loaded_checkers[a:filetype] = 1
+        if !has_key(g:checksyntax, a:filetype)
+            if !empty(g:checksyntax#syntastic_dir)
+                call checksyntax#syntastic#Require(g:checksyntax, a:filetype)
+            endif
+        endif
     endif
     return has_key(g:checksyntax, a:filetype)
 endf
@@ -322,9 +355,10 @@ function! checksyntax#Check(manually, ...)
     endif
     " TLogVAR &makeprg, &l:makeprg, &g:makeprg, &errorformat
     exec get(def, 'prepare', '')
-    if s:Make(def)
+    if s:Make(ft, def)
         let type = get(def, 'listtype', 'loc')
         let list = g:checksyntax#prototypes[type].Get()
+        TLogVAR len(list)
         let list = filter(list, 's:FilterItem(def, v:val)')
         let list = map(list, 's:CompleteItem(def, v:val)')
         call g:checksyntax#prototypes[type].Set(list)
