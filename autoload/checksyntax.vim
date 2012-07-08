@@ -3,17 +3,9 @@
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2010-01-03.
-" @Last Change: 2012-07-02.
-" @Revision:    385
+" @Last Change: 2012-07-08.
+" @Revision:    388
 
-
-if !exists('g:checksyntax#failrx')
-    let g:checksyntax#failrx = '\ *\(\d \f\{-}:\)\?\d\{-}:'
-endif
-
-if !exists('g:checksyntax#okrx')
-    let g:checksyntax#okrx = ''
-endif
 
 if !exists('g:checksyntax#auto_mode')
     " If 1, enable automatically running syntax checkers when saving a 
@@ -39,10 +31,6 @@ if !exists('g:checksyntax')
     " Optional:
     "   auto ... Run automatically when saving a file.
     "   efm  ... An 'errorformat' string.
-    "   okrx ... A |regexp| matching the command output if no error were 
-    "            found.
-    "   failrx ... A |regexp| matching the command output if an error 
-    "            was found.
     "   alt  ... The name of an alternative syntax checker (see 
     "            |:CheckSyntax|).
     "   prepare ... An ex command that is run before doing anything.
@@ -335,8 +323,6 @@ function! checksyntax#Check(manually, ...)
     " TLogVAR &makeprg, &l:makeprg, &g:makeprg, &errorformat
     exec get(def, 'prepare', '')
     if s:Make(def)
-        let failrx = get(def, 'failrx', g:checksyntax#failrx)
-        let okrx   = get(def, 'okrx', g:checksyntax#okrx)
         let type = get(def, 'listtype', 'loc')
         let list = g:checksyntax#prototypes[type].Get()
         let list = filter(list, 's:FilterItem(def, v:val)')
