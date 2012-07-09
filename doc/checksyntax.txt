@@ -146,8 +146,13 @@ g:checksyntax                  (default: {...})
 
                                                     *g:checksyntax#syntastic_dir*
 g:checksyntax#syntastic_dir    (default: '')
-    The directory where the syntastic plugin is installed.
-    If non-empty, use syntastic syntax checkers if available.
+    The directory where the syntastic plugin (see 
+    https://github.com/scrooloose/syntastic/) is installed.
+    If non-empty, use syntastic syntax checkers if available and if 
+    checksyntax does not have one defined for the current filetype.
+    The syntastic directory does not have to be included in 
+    'runtimepath'.
+
     NOTE: Experimental feature.
 
                                                     *CheckSyntaxSucceed()*

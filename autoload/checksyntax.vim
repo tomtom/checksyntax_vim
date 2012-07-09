@@ -3,8 +3,8 @@
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2010-01-03.
-" @Last Change: 2012-07-08.
-" @Revision:    436
+" @Last Change: 2012-07-09.
+" @Revision:    441
 
 
 if !exists('g:checksyntax#auto_mode')
@@ -67,8 +67,13 @@ endif
 
 
 if !exists('g:checksyntax#syntastic_dir')
-    " The directory where the syntastic plugin is installed.
-    " If non-empty, use syntastic syntax checkers if available.
+    " The directory where the syntastic plugin (see 
+    " https://github.com/scrooloose/syntastic/) is installed.
+    " If non-empty, use syntastic syntax checkers if available and if 
+    " checksyntax does not have one defined for the current filetype.
+    " The syntastic directory does not have to be included in 
+    " 'runtimepath'.
+    "
     " NOTE: Experimental feature.
     let g:checksyntax#syntastic_dir = ''   "{{{2
 endif
