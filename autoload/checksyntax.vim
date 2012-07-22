@@ -3,8 +3,8 @@
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2010-01-03.
-" @Last Change: 2012-07-09.
-" @Revision:    441
+" @Last Change: 2012-07-20.
+" @Revision:    442
 
 
 if !exists('g:checksyntax#auto_mode')
@@ -246,16 +246,20 @@ endf
 let s:loaded_checkers = {}
 
 function! checksyntax#Require(filetype) "{{{3
-    if !has_key(s:loaded_checkers, a:filetype)
-        exec 'runtime! autoload/checksyntax/defs/'. a:filetype .'.vim'
-        let s:loaded_checkers[a:filetype] = 1
-        if !has_key(g:checksyntax, a:filetype)
-            if !empty(g:checksyntax#syntastic_dir)
-                call checksyntax#syntastic#Require(g:checksyntax, a:filetype)
+    if empty(a:filetype)
+        return 0
+    else
+        if !has_key(s:loaded_checkers, a:filetype)
+            exec 'runtime! autoload/checksyntax/defs/'. a:filetype .'.vim'
+            let s:loaded_checkers[a:filetype] = 1
+            if !has_key(g:checksyntax, a:filetype)
+                if !empty(g:checksyntax#syntastic_dir)
+                    call checksyntax#syntastic#Require(g:checksyntax, a:filetype)
+                endif
             endif
         endif
+        return has_key(g:checksyntax, a:filetype)
     endif
-    return has_key(g:checksyntax, a:filetype)
 endf
 
 
