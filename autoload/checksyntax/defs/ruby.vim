@@ -7,10 +7,20 @@
 
 
 if !exists('g:checksyntax.ruby')
-    let g:checksyntax['ruby'] = {
-                \ 'prepare': 'compiler ruby',
-                \ 'cmd': 'ruby -c',
-                \ }
+    let ruby_interpreter = system('ruby --version')
+    if match(ruby_interpreter, 'jruby') == -1
+      let g:checksyntax['ruby'] = {
+            \ 'prepare': 'compiler ruby',
+            \ 'cmd': 'ruby -c',
+            \ }
+    else
+      let g:checksyntax['ruby'] = {
+            \ 'prepare': 'compiler ruby',
+            \ 'efm': 'SyntaxError in %f:%l:%m',
+            \ 'cmd': 'ruby -c',
+            \ }
+
+    endif
 endif
 
 
