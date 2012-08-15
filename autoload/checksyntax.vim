@@ -3,8 +3,8 @@
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2010-01-03.
-" @Last Change: 2012-07-20.
-" @Revision:    442
+" @Last Change: 2012-08-13.
+" @Revision:    443
 
 
 if !exists('g:checksyntax#auto_mode')
