@@ -3,8 +3,8 @@
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2010-01-03.
-" @Last Change: 2012-08-13.
-" @Revision:    443
+" @Last Change: 2012-08-20.
+" @Revision:    468
 
 
 if !exists('g:checksyntax#auto_mode')
@@ -24,23 +24,29 @@ if !exists('g:checksyntax')
     " definition is a dictionary with the following fields:
     " 
     " Mandatory (either one of the following):
-    "   cmd  ... A shell command used as 'makeprg' to check the file.
+    "   cmd ... A shell command used as 'makeprg' to check the file.
     "   exec ... A vim command used to check the file.
     "   compiler ... A vim compiler that is used to check the file.
     " 
     " Optional:
-    "   auto ... Run automatically when saving a file.
+    "   auto* ... Run automatically when saving a file.
     "   efm  ... An 'errorformat' string.
-    "   alt  ... The name of an alternative syntax checker (see 
+    "   alt*  ... The name of an alternative syntax checker (see 
     "            |:CheckSyntax|).
     "   prepare ... An ex command that is run before doing anything.
     "   ignore_nr ... A list of error numbers that should be ignored.
     "   listtype ... Either loc (default) or qfl
-    "   if   ... An expression to test *once* whether a syntax checker 
+    "   include ... Include another definition
+    "   if*   ... An expression to test *once* whether a syntax checker 
     "            should be used.
-    "   alternatives ... A list of syntax checker definitions (the first 
+    "   alternatives* ... A list of syntax checker definitions (the first 
     "            one with a valid executable is used. If used, no other 
     "            elements are allowed. This list is checked only once.
+    "   run_alternatives* ... A string that defines how to run 
+    "            alternatives (overrides |g:checksyntax#run_alternatives|).
+    "
+    " The keys marked with "*" can be used only on the top level of a 
+    " syntax checker definition.
     "
     " Pre-defined syntax checkers (the respective syntax checker has to 
     " be installed):
@@ -63,6 +69,14 @@ if !exists('g:checksyntax')
     "
     " :read: let g:checksyntax = {...}   "{{{2
     let g:checksyntax = {}
+endif
+
+
+if !exists('g:checksyntax#run_alternatives')
+    " How to handle alternatives. Possible values:
+    "     first ... Use the first valid entry
+    "     all   ... Run all valid alternatives one after another
+    let g:checksyntax#run_alternatives = 'first'   "{{{2
 endif
 
 
@@ -263,7 +277,33 @@ function! checksyntax#Require(filetype) "{{{3
 endf
 
 
+function! s:CleanAlternatives(mode, alternatives) "{{{3
+    let valid = []
+    for alternative in a:alternatives
+        if !has_key(alternative, 'if') || eval(alternative.if)
+            if has_key(alternative, 'cmd')
+                let cmd = matchstr(alternative.cmd, '^\(\\\s\|\S\+\|"\([^"]\|\\"\)\+"\)\+')
+                if empty(cmd) && g:checksyntax#debug
+                    echom "CheckSyntax: Cannot determine executable name:" alternative.cmd printf("(%s)", a:ft)
+                elseif executable(cmd) == 0
+                    if g:checksyntax#debug
+                        echom "CheckSyntax: Not an executable, remove checker:" cmd printf("(%s)", a:ft)
+                    endif
+                    continue
+                endif
+            endif
+            call add(valid, alternative)
+            if a:mode ==? 'first'
+                break
+            endif
+        endif
+    endfor
+    return valid
+endf
+
+
 function! s:GetDef(ft) "{{{3
+    " TLogVAR a:ft
     if exists('b:checksyntax') && has_key(b:checksyntax, a:ft)
         let dict = b:checksyntax
         let rv = b:checksyntax[a:ft]
@@ -276,42 +316,20 @@ function! s:GetDef(ft) "{{{3
     endif
     if !empty(dict)
         let alternatives = get(rv, 'alternatives', [])
-        let use_alternatives = !empty(alternatives)
-        while !empty(rv) || use_alternatives
-            if !empty(alternatives)
-                let rv = remove(alternatives, 0)
-            endif
-            if has_key(rv, 'if')
-                if eval(rv.if)
-                    call remove(rv, 'if')
-                    break
-                else
-                    let rv = {}
-                    continue
-                endif
-            endif
-            if has_key(rv, 'cmd')
-                let cmd = matchstr(rv.cmd, '^\(\\\s\|\S\+\|"\([^"]\|\\"\)\+"\)\+')
-                if empty(cmd) && g:checksyntax#debug
-                    echom "CheckSyntax: Cannot determine executable name:" rv.cmd printf("(%s)", a:ft)
-                elseif executable(cmd) == 0
-                    if g:checksyntax#debug
-                        echom "CheckSyntax: Not an executable, remove checker:" cmd printf("(%s)", a:ft)
-                    endif
-                    let rv = {}
-                    continue
-                endif
-            endif
-            break
-        endwh
-        if empty(rv)
-            if empty(alternatives)
-                call remove(dict, a:ft)
-            endif
-        else
-            if use_alternatives
+        if !empty(alternatives)
+            let alternatives = s:CleanAlternatives(get(rv, 'run_alternatives', g:checksyntax#run_alternatives), alternatives)
+            if len(alternatives) == 0
+                let rv = {}
+            elseif len(alternatives) == 1
+                let rv = alternatives[0]
+                let dict[a:ft] = rv
+            else
+                let rv.alternatives = alternatives
                 let dict[a:ft] = rv
             endif
+        endif
+        if empty(rv)
+            call remove(dict, a:ft)
         endif
     endif
     return rv
@@ -327,7 +345,7 @@ function! checksyntax#Check(manually, ...)
     call checksyntax#Require(ft)
     let def = a:manually ? {} : s:GetDef(ft .',auto')
     if empty(def)
-        let def  = s:GetDef(ft)
+        let def = s:GetDef(ft)
     endif
     if &modified
         if has_key(def, 'modified')
@@ -363,24 +381,35 @@ function! checksyntax#Check(manually, ...)
         let b:checksyntax_runs += 1
     endif
     " TLogVAR &makeprg, &l:makeprg, &g:makeprg, &errorformat
-    exec get(def, 'prepare', '')
-    if s:Make(ft, def)
-        let type = get(def, 'listtype', 'loc')
-        let list = g:checksyntax#prototypes[type].Get()
-        " TLogVAR len(list)
-        let list = filter(list, 's:FilterItem(def, v:val)')
-        let list = map(list, 's:CompleteItem(def, v:val)')
-        call g:checksyntax#prototypes[type].Set(list)
-        " echom "DBG 1" string(list)
-        redraw!
-        if len(list) == 0
-            call CheckSyntaxSucceed(type, a:manually)
-        else
-            " TLogVAR type
-            " TLogVAR a:manually
-            " TLogVAR bg
-            call CheckSyntaxFail(type, a:manually, bg)
+    let defs = get(def, 'alternatives', [def])
+    let count_issues= 0
+    for make_def in defs
+        if has_key(make_def, 'include')
+            let include = s:GetDef(make_def.include)
+            if !empty(include)
+                let make_def = extend(copy(make_def), include, 'keep')
+            endif
         endif
+        exec get(make_def, 'prepare', '')
+        if s:Make(ft, make_def)
+            let type = get(make_def, 'listtype', 'loc')
+            let list = g:checksyntax#prototypes[type].Get()
+            " TLogVAR len(list)
+            let list = filter(list, 's:FilterItem(make_def, v:val)')
+            let list = map(list, 's:CompleteItem(make_def, v:val)')
+            call g:checksyntax#prototypes[type].Set(list)
+            let count_issues += len(list)
+        endif
+    endfor
+    " echom "DBG 1" string(list)
+    redraw!
+    if count_issues == 0
+        call CheckSyntaxSucceed(type, a:manually)
+    else
+        " TLogVAR type
+        " TLogVAR a:manually
+        " TLogVAR bg
+        call CheckSyntaxFail(type, a:manually, bg)
     endif
 endf
 
