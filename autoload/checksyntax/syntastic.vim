@@ -2,8 +2,8 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2012-07-08.
-" @Last Change: 2012-07-09.
-" @Revision:    49
+" @Last Change: 2012-08-20.
+" @Revision:    53
 
 
 if !exists('g:checksyntax#syntastic#auto')
@@ -67,7 +67,20 @@ function! checksyntax#syntastic#Require(dict, filetype) "{{{3
                         \ 'syntastic': fn
                         \ }
             " TLogVAR def
-            let a:dict[a:filetype] = def
+            if has_key(a:dict, a:filetype)
+                if !has_key(a:dict[a:filetype], 'alternatives')
+                    let odef = a:dict[a:filetype]
+                    let a:dict[a:filetype] = {'alternatives': [odef]}
+                    for key in ['modified', 'alt', 'auto']
+                        if has_key(odef, key)
+                            let a:dict[a:filetype][key] = odef[key]
+                        endif
+                    endfor
+                endif
+                call add(a:dict[a:filetype].alternatives, def)
+            else
+                let a:dict[a:filetype] = def
+            endif
         else
             call add(g:checksyntax#syntastic#blacklist, a:filetype)
         endif
