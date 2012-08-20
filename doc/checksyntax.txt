@@ -59,17 +59,18 @@ please make sure, you have the current version of vimball (vimscript
 ========================================================================
 Contents~
 
-        :CheckSyntax .................. |:CheckSyntax|
-        <F5> .......................... |<F5>|
-        i_<F5> ........................ |i_<F5>|
-        g:checksyntax#auto_mode ....... |g:checksyntax#auto_mode|
-        g:checksyntax ................. |g:checksyntax|
-        g:checksyntax#syntastic_dir ... |g:checksyntax#syntastic_dir|
-        CheckSyntaxSucceed ............ |CheckSyntaxSucceed()|
-        CheckSyntaxFail ............... |CheckSyntaxFail()|
-        checksyntax#Make .............. |checksyntax#Make()|
-        checksyntax#Require ........... |checksyntax#Require()|
-        checksyntax#Check ............. |checksyntax#Check()|
+        :CheckSyntax ..................... |:CheckSyntax|
+        <F5> ............................. |<F5>|
+        i_<F5> ........................... |i_<F5>|
+        g:checksyntax#auto_mode .......... |g:checksyntax#auto_mode|
+        g:checksyntax .................... |g:checksyntax|
+        g:checksyntax#run_alternatives ... |g:checksyntax#run_alternatives|
+        g:checksyntax#syntastic_dir ...... |g:checksyntax#syntastic_dir|
+        CheckSyntaxSucceed ............... |CheckSyntaxSucceed()|
+        CheckSyntaxFail .................. |CheckSyntaxFail()|
+        checksyntax#Make ................. |checksyntax#Make()|
+        checksyntax#Require .............. |checksyntax#Require()|
+        checksyntax#Check ................ |checksyntax#Check()|
 
 
 ========================================================================
@@ -106,23 +107,29 @@ g:checksyntax                  (default: {...})
     definition is a dictionary with the following fields:
 
     Mandatory (either one of the following):
-      cmd  ... A shell command used as 'makeprg' to check the file.
+      cmd ... A shell command used as 'makeprg' to check the file.
       exec ... A vim command used to check the file.
       compiler ... A vim compiler that is used to check the file.
 
     Optional:
-      auto ... Run automatically when saving a file.
+      auto* ... Run automatically when saving a file.
       efm  ... An 'errorformat' string.
-      alt  ... The name of an alternative syntax checker (see 
+      alt*  ... The name of an alternative syntax checker (see 
                |:CheckSyntax|).
       prepare ... An ex command that is run before doing anything.
       ignore_nr ... A list of error numbers that should be ignored.
       listtype ... Either loc (default) or qfl
-      if   ... An expression to test *once* whether a syntax checker 
+      include ... Include another definition
+      if*   ... An expression to test *once* whether a syntax checker 
                should be used.
-      alternatives ... A list of syntax checker definitions (the first 
+      alternatives* ... A list of syntax checker definitions (the first 
                one with a valid executable is used. If used, no other 
                elements are allowed. This list is checked only once.
+      run_alternatives* ... A string that defines how to run 
+               alternatives (overrides |g:checksyntax#run_alternatives|).
+
+    The keys marked with "*" can be used only on the top level of a 
+    syntax checker definition.
 
     Pre-defined syntax checkers (the respective syntax checker has to 
     be installed):
@@ -143,6 +150,12 @@ g:checksyntax                  (default: {...})
       xml                           ... Requires xmllint
       docbk                         ... Requires xmllint
 
+
+                                                    *g:checksyntax#run_alternatives*
+g:checksyntax#run_alternatives (default: 'first')
+    How to handle alternatives. Possible values:
+        first ... Use the first valid entry
+        all   ... Run all valid alternatives one after another
 
                                                     *g:checksyntax#syntastic_dir*
 g:checksyntax#syntastic_dir    (default: '')
