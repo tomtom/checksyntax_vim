@@ -3,8 +3,8 @@
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2010-01-03.
-" @Last Change: 2012-08-20.
-" @Revision:    468
+" @Last Change: 2012-08-21.
+" @Revision:    487
 
 
 if !exists('g:checksyntax#auto_mode')
@@ -277,7 +277,7 @@ function! checksyntax#Require(filetype) "{{{3
 endf
 
 
-function! s:CleanAlternatives(mode, alternatives) "{{{3
+function! s:CleanAlternatives(run_alternatives, alternatives) "{{{3
     let valid = []
     for alternative in a:alternatives
         if !has_key(alternative, 'if') || eval(alternative.if)
@@ -293,12 +293,17 @@ function! s:CleanAlternatives(mode, alternatives) "{{{3
                 endif
             endif
             call add(valid, alternative)
-            if a:mode ==? 'first'
+            if a:run_alternatives =~? '\<first\>'
                 break
             endif
         endif
     endfor
     return valid
+endf
+
+
+function! s:RunAlternativesMode(def) "{{{3
+    return get(a:def, 'run_alternatives', g:checksyntax#run_alternatives)
 endf
 
 
@@ -317,7 +322,7 @@ function! s:GetDef(ft) "{{{3
     if !empty(dict)
         let alternatives = get(rv, 'alternatives', [])
         if !empty(alternatives)
-            let alternatives = s:CleanAlternatives(get(rv, 'run_alternatives', g:checksyntax#run_alternatives), alternatives)
+            let alternatives = s:CleanAlternatives(s:RunAlternativesMode(rv), alternatives)
             if len(alternatives) == 0
                 let rv = {}
             elseif len(alternatives) == 1
@@ -381,36 +386,56 @@ function! checksyntax#Check(manually, ...)
         let b:checksyntax_runs += 1
     endif
     " TLogVAR &makeprg, &l:makeprg, &g:makeprg, &errorformat
+    let run_alternatives = s:RunAlternativesMode(def)
     let defs = get(def, 'alternatives', [def])
-    let count_issues= 0
+    let use_qfl = 0
+    let all_issues = []
     for make_def in defs
-        if has_key(make_def, 'include')
-            let include = s:GetDef(make_def.include)
-            if !empty(include)
-                let make_def = extend(copy(make_def), include, 'keep')
-            endif
-        endif
-        exec get(make_def, 'prepare', '')
-        if s:Make(ft, make_def)
-            let type = get(make_def, 'listtype', 'loc')
-            let list = g:checksyntax#prototypes[type].Get()
-            " TLogVAR len(list)
-            let list = filter(list, 's:FilterItem(make_def, v:val)')
-            let list = map(list, 's:CompleteItem(make_def, v:val)')
-            call g:checksyntax#prototypes[type].Set(list)
-            let count_issues += len(list)
+        if run_alternatives =~? '\<async\>'   " TODO: support asynchronous execution
+            throw "CheckSyntax: Not supported yet: run_alternatives = ". string(run_alternatives)
+        else
+            let use_qfl += s:Run_sync(all_issues, ft, make_def)
         endif
     endfor
     " echom "DBG 1" string(list)
-    redraw!
-    if count_issues == 0
+    if empty(all_issues)
         call CheckSyntaxSucceed(type, a:manually)
     else
+        let all_type = use_qfl > 0 ? 'qfl' : 'loc'
+        call g:checksyntax#prototypes[all_type].Set(all_issues)
         " TLogVAR type
         " TLogVAR a:manually
         " TLogVAR bg
         call CheckSyntaxFail(type, a:manually, bg)
     endif
+    redraw!
+endf
+
+
+function! s:Run_sync(all_issues, ft, def) "{{{3
+    let use_qfl = 0
+    let def = a:def
+    if has_key(def, 'include')
+        let include = s:GetDef(def.include)
+        if !empty(include)
+            let def = extend(copy(def), include, 'keep')
+        endif
+    endif
+    exec get(def, 'prepare', '')
+    if s:Make(a:ft, def)
+        let type = get(def, 'listtype', 'loc')
+        if type != 'loc'
+            let use_qfl = 1
+        endif
+        let list = g:checksyntax#prototypes[type].Get()
+        " TLogVAR len(list)
+        let list = filter(list, 's:FilterItem(def, v:val)')
+        if !empty(list)
+            let list = map(list, 's:CompleteItem(def, v:val)')
+            call extend(a:all_issues, list)
+        endif
+    endif
+    return use_qfl
 endf
 
 
