@@ -4,7 +4,7 @@
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2010-01-03.
 " @Last Change: 2012-08-21.
-" @Revision:    487
+" @Revision:    511
 
 
 if !exists('g:checksyntax#auto_mode')
@@ -277,12 +277,19 @@ function! checksyntax#Require(filetype) "{{{3
 endf
 
 
+function! s:Cmd(def) "{{{3
+    let cmd = matchstr(a:def.cmd, '^\(\\\s\|\S\+\|"\([^"]\|\\"\)\+"\)\+')
+    let cmd = fnamemodify(cmd, ':t')
+    return cmd
+endf
+
+
 function! s:CleanAlternatives(run_alternatives, alternatives) "{{{3
     let valid = []
     for alternative in a:alternatives
         if !has_key(alternative, 'if') || eval(alternative.if)
             if has_key(alternative, 'cmd')
-                let cmd = matchstr(alternative.cmd, '^\(\\\s\|\S\+\|"\([^"]\|\\"\)\+"\)\+')
+                let cmd = s:Cmd(alternative)
                 if empty(cmd) && g:checksyntax#debug
                     echom "CheckSyntax: Cannot determine executable name:" alternative.cmd printf("(%s)", a:ft)
                 elseif executable(cmd) == 0
@@ -391,18 +398,20 @@ function! checksyntax#Check(manually, ...)
     let use_qfl = 0
     let all_issues = []
     for make_def in defs
+        let name = get(make_def, 'name', s:Cmd(make_def))
         if run_alternatives =~? '\<async\>'   " TODO: support asynchronous execution
             throw "CheckSyntax: Not supported yet: run_alternatives = ". string(run_alternatives)
         else
-            let use_qfl += s:Run_sync(all_issues, ft, make_def)
+            let use_qfl += s:Run_sync(all_issues, name, ft, make_def)
         endif
     endfor
     " echom "DBG 1" string(list)
+    let type = use_qfl > 0 ? 'qfl' : 'loc'
     if empty(all_issues)
         call CheckSyntaxSucceed(type, a:manually)
     else
-        let all_type = use_qfl > 0 ? 'qfl' : 'loc'
-        call g:checksyntax#prototypes[all_type].Set(all_issues)
+        " let all_issues = sort(all_issues, 's:CompareIssues')
+        call g:checksyntax#prototypes[type].Set(all_issues)
         " TLogVAR type
         " TLogVAR a:manually
         " TLogVAR bg
@@ -412,7 +421,16 @@ function! checksyntax#Check(manually, ...)
 endf
 
 
-function! s:Run_sync(all_issues, ft, def) "{{{3
+function! s:CompareIssues(i1, i2) "{{{3
+    let l1 = get(a:i1, 'lnum', 0)
+    let l2 = get(a:i1, 'lnum', 0)
+    " TLogVAR l1, l2
+    return l1 == l2 ? 0 : l1 > l2 ? 1 : -1
+endf
+
+
+function! s:Run_sync(all_issues, name, ft, def) "{{{3
+    " TLogVAR a:name, a:ft, a:def
     let use_qfl = 0
     let def = a:def
     if has_key(def, 'include')
@@ -429,9 +447,12 @@ function! s:Run_sync(all_issues, ft, def) "{{{3
         endif
         let list = g:checksyntax#prototypes[type].Get()
         " TLogVAR len(list)
+        " TLogVAR type, list
         let list = filter(list, 's:FilterItem(def, v:val)')
+        " TLogVAR len(list)
+        " TLogVAR type, list
         if !empty(list)
-            let list = map(list, 's:CompleteItem(def, v:val)')
+            let list = map(list, 's:CompleteItem(a:name, def, v:val)')
             call extend(a:all_issues, list)
         endif
     endif
@@ -439,10 +460,17 @@ function! s:Run_sync(all_issues, ft, def) "{{{3
 endf
 
 
-function! s:CompleteItem(def, val) "{{{3
+function! s:CompleteItem(name, def, val) "{{{3
     if get(a:val, 'bufnr', 0) == 0
         let a:val.bufnr = bufnr('%')
     endif
+    if !empty(a:name)
+        let text = get(a:val, 'text', '')
+        if !empty(text)
+            let a:val.text = a:name .': '. text
+        endif
+    endif
+    " TLogVAR a:val
     return a:val
 endf
 
