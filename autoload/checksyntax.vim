@@ -281,10 +281,25 @@ function! checksyntax#Require(filetype) "{{{3
 endf
 
 
+" :nodoc:
 function! s:Cmd(def) "{{{3
-    let cmd = matchstr(a:def.cmd, '^\(\\\s\|\S\+\|"\([^"]\|\\"\)\+"\)\+')
-    let cmd = fnamemodify(cmd, ':t')
+    if has_key(a:def, 'cmd')
+        let cmd = matchstr(a:def.cmd, '^\(\\\s\|\S\+\|"\([^"]\|\\"\)\+"\)\+')
+        let cmd = fnamemodify(cmd, ':t')
+    else
+        let cmd = ''
+    endif
     return cmd
+endf
+
+
+" :nodoc:
+function! checksyntax#Name(def) "{{{3
+    let name = get(a:def, 'name', '')
+    if empty(name)
+        let name = s:Cmd(a:def)
+    endif
+    return name
 endf
 
 
@@ -313,7 +328,8 @@ function! s:CleanAlternatives(run_alternatives, alternatives) "{{{3
 endf
 
 
-function! s:RunAlternativesMode(def) "{{{3
+" :nodoc:
+function! checksyntax#RunAlternativesMode(def) "{{{3
     return get(a:def, 'run_alternatives', g:checksyntax#run_alternatives)
 endf
 
@@ -333,7 +349,7 @@ function! s:GetDef(ft) "{{{3
     if !empty(dict)
         let alternatives = get(rv, 'alternatives', [])
         if !empty(alternatives)
-            let alternatives = s:CleanAlternatives(s:RunAlternativesMode(rv), alternatives)
+            let alternatives = s:CleanAlternatives(checksyntax#RunAlternativesMode(rv), alternatives)
             if len(alternatives) == 0
                 let rv = {}
             elseif len(alternatives) == 1
@@ -397,12 +413,12 @@ function! checksyntax#Check(manually, ...)
         let b:checksyntax_runs += 1
     endif
     " TLogVAR &makeprg, &l:makeprg, &g:makeprg, &errorformat
-    let run_alternatives = s:RunAlternativesMode(def)
+    let run_alternatives = checksyntax#RunAlternativesMode(def)
     let defs = get(def, 'alternatives', [def])
     let use_qfl = 0
     let all_issues = []
     for make_def in defs
-        let name = get(make_def, 'name', s:Cmd(make_def))
+        let name = checksyntax#Name(make_def)
         if run_alternatives =~? '\<async\>'   " TODO: support asynchronous execution
             throw "CheckSyntax: Not supported yet: run_alternatives = ". string(run_alternatives)
         else
@@ -414,7 +430,9 @@ function! checksyntax#Check(manually, ...)
     if empty(all_issues)
         call CheckSyntaxSucceed(type, a:manually)
     else
-        " let all_issues = sort(all_issues, 's:CompareIssues')
+        " TLogVAR all_issues
+        call sort(all_issues, 's:CompareIssues')
+        " TLogVAR all_issues
         call g:checksyntax#prototypes[type].Set(all_issues)
         " TLogVAR type
         " TLogVAR a:manually
@@ -427,8 +445,8 @@ endf
 
 function! s:CompareIssues(i1, i2) "{{{3
     let l1 = get(a:i1, 'lnum', 0)
-    let l2 = get(a:i1, 'lnum', 0)
-    " TLogVAR l1, l2
+    let l2 = get(a:i2, 'lnum', 0)
+    " TLogVAR l1, l2, type(l1), type(l2)
     return l1 == l2 ? 0 : l1 > l2 ? 1 : -1
 endf
 
