@@ -71,6 +71,7 @@ Contents~
         checksyntax#Make ................. |checksyntax#Make()|
         checksyntax#Require .............. |checksyntax#Require()|
         checksyntax#Check ................ |checksyntax#Check()|
+        checksyntax#CopyFunction ......... |checksyntax#CopyFunction()|
 
 
 ========================================================================
@@ -166,6 +167,10 @@ g:checksyntax#syntastic_dir    (default: '')
     The syntastic directory does not have to be included in 
     'runtimepath'.
 
+    The value must not include a trailing (back)slash.
+    Optinally, the value may also point directly to the 
+    'syntax_checkers' subdirectory.
+
     NOTE: Experimental feature.
 
                                                     *CheckSyntaxSucceed()*
@@ -184,6 +189,9 @@ checksyntax#Require(filetype)
 
                                                     *checksyntax#Check()*
 checksyntax#Check(manually, ?bang='', ?type=&ft, ?background=1)
+
+                                                    *checksyntax#CopyFunction()*
+checksyntax#CopyFunction(old, new, overwrite=0)
 
 
 

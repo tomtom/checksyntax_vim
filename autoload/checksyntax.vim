@@ -88,6 +88,10 @@ if !exists('g:checksyntax#syntastic_dir')
     " The syntastic directory does not have to be included in 
     " 'runtimepath'.
     "
+    " The value must not include a trailing (back)slash.
+    " Optinally, the value may also point directly to the 
+    " 'syntax_checkers' subdirectory.
+    "
     " NOTE: Experimental feature.
     let g:checksyntax#syntastic_dir = ''   "{{{2
 endif
