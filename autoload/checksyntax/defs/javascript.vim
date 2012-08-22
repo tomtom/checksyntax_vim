@@ -2,14 +2,13 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2012-07-02.
-" @Last Change: 2012-08-21.
-" @Revision:    9
+" @Last Change: 2012-08-22.
+" @Revision:    10
 
 
 if !exists('g:checksyntax.javascript')
     " For gjslint see https://developers.google.com/closure/utilities/docs/linter_howto
     let g:checksyntax['javascript'] = {
-                \ 'run_alternatives': 'all',
                 \ 'alternatives': [
                 \     {
                 \         'name': 'gjslint',
