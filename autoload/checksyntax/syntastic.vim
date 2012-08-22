@@ -2,14 +2,22 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2012-07-08.
-" @Last Change: 2012-08-20.
-" @Revision:    53
+" @Last Change: 2012-08-22.
+" @Revision:    117
 
 
 if !exists('g:checksyntax#syntastic#auto')
     " If true, mark syntastic syntax checkers as automatic checkers. See 
     " |g:checksyntax#auto_mode| and |g:checksyntax|.
     let g:checksyntax#syntastic#auto = 0   "{{{2
+endif
+
+
+if !exists('g:checksyntax#syntastic#filetype_rx')
+    " Use syntastic's syntax checkers for filetypes that match this 
+    " |regexp|. 
+    " The value "." matches all filetypes.
+    let g:checksyntax#syntastic#filetype_rx = '.'   "{{{2
 endif
 
 
@@ -27,6 +35,9 @@ if !exists('*SyntasticMake')
                     \ 'args': '',
                     \ 'efm': a:options.errorformat
                     \ }
+        if has_key(a:options, 'name')
+            let def.name = a:options.name
+        endif
         " TLogVAR def
         return checksyntax#Make(def)
     endf
@@ -37,10 +48,19 @@ if !exists('*SyntasticLoadChecker')
     function SyntasticLoadChecker(checkers)
         let fn = 'SyntaxCheckers_'. &filetype .'_GetLocList'
         for prg in a:checkers
-            if executable(prg)
+            let name = &filetype .'_'. prg
+            " TLogVAR name
+            if index(s:require_names, name) == -1 && executable(prg)
                 call s:Load(&filetype .'/'. prg)
                 if exists('*'. fn)
-                    break
+                    " TLogVAR fn
+                    let s:require_blacklist = 0
+                    if checksyntax#RunAlternativesMode(g:checksyntax[&filetype]) =~? '\<first\>'
+                        call s:ProcessChecker(prg, &filetype, &filetype)
+                        break
+                    else
+                        call s:ProcessChecker(prg, name, &filetype)
+                    endif
                 endif
             endif
         endfor
@@ -55,35 +75,68 @@ if !exists('*SyntasticHighlightErrors')
 endif
 
 
-function! checksyntax#syntastic#Require(dict, filetype) "{{{3
+function! checksyntax#syntastic#Require(filetype) "{{{3
     " TLogVAR a:filetype
-    if index(g:checksyntax#syntastic#blacklist, a:filetype) == -1
-        call s:Load(a:filetype)
-        let fn = 'SyntaxCheckers_'. a:filetype .'_GetLocList'
-        if exists('*'. fn)
-            let def = {
-                        \ 'auto': g:checksyntax#syntastic#auto,
-                        \ 'listtype': 'loc',
-                        \ 'syntastic': fn
-                        \ }
-            " TLogVAR def
-            if has_key(a:dict, a:filetype)
-                if !has_key(a:dict[a:filetype], 'alternatives')
-                    let odef = a:dict[a:filetype]
-                    let a:dict[a:filetype] = {'alternatives': [odef]}
-                    for key in ['modified', 'alt', 'auto']
-                        if has_key(odef, key)
-                            let a:dict[a:filetype][key] = odef[key]
-                        endif
-                    endfor
-                endif
-                call add(a:dict[a:filetype].alternatives, def)
+    if checksyntax#RunAlternativesMode(g:checksyntax[a:filetype]) =~? '\<first\>'
+        return
+    endif
+    if a:filetype =~ g:checksyntax#syntastic#filetype_rx && index(g:checksyntax#syntastic#blacklist, a:filetype) == -1
+        let alternatives = has_key(g:checksyntax, a:filetype) ? get(g:checksyntax[a:filetype], 'alternatives', []) : []
+        " TLogVAR g:checksyntax, alternatives
+        if empty(alternatives)
+            if has_key(g:checksyntax, a:filetype)
+                let s:require_names = [checksyntax#Name(g:checksyntax[a:filetype])]
             else
-                let a:dict[a:filetype] = def
+                let s:require_names = []
             endif
         else
-            call add(g:checksyntax#syntastic#blacklist, a:filetype)
+            let s:require_names = map(copy(alternatives), 'checksyntax#Name(v:val)')
         endif
+        let s:require_names = filter(s:require_names, '!empty(v:val)')
+        let s:require_names += map(copy(s:require_names), 'a:filetype ."_". v:val')
+        " echom "DBG checksyntax#syntastic#Require s:require_names=" string(s:require_names)
+        let s:require_blacklist = 1
+        call s:Load(a:filetype)
+        call s:ProcessChecker('', a:filetype, a:filetype)
+    endif
+endf
+
+
+function! s:ProcessChecker(prg, name, filetype) "{{{3
+    " TLogVAR a:name, a:filetype
+    let fn = 'SyntaxCheckers_'. a:filetype .'_GetLocList'
+    if exists('*'. fn) && index(s:require_names, a:name) == -1
+        if a:name != a:filetype
+            let oldfn = fn
+            let fn = 'SyntaxCheckers_'. a:name .'_GetLocList'
+            call checksyntax#CopyFunction(oldfn, fn)
+            exec 'delfunction' oldfn
+        endif
+        let def = {
+                    \ 'auto': g:checksyntax#syntastic#auto,
+                    \ 'listtype': 'loc',
+                    \ 'syntastic': fn
+                    \ }
+        if a:name != a:filetype && !empty(a:prg)
+            let def.name = a:prg
+        endif
+        " TLogVAR def
+        if has_key(g:checksyntax, a:filetype)
+            if !has_key(g:checksyntax[a:filetype], 'alternatives')
+                let odef = g:checksyntax[a:filetype]
+                let g:checksyntax[a:filetype] = {'alternatives': [odef]}
+                for key in ['modified', 'alt', 'auto']
+                    if has_key(odef, key)
+                        let g:checksyntax[a:filetype][key] = odef[key]
+                    endif
+                endfor
+            endif
+            call add(g:checksyntax[a:filetype].alternatives, def)
+        else
+            let g:checksyntax[a:filetype] = def
+        endif
+    elseif s:require_blacklist
+        call add(g:checksyntax#syntastic#blacklist, a:filetype)
     endif
 endf
 
@@ -92,7 +145,12 @@ function! s:Load(path) "{{{3
     if stridx(&rtp, g:checksyntax#syntastic_dir) >= 0
         exec 'runtime! syntax_checkers/'. a:path
     else
-        let syntax_checker = g:checksyntax#syntastic_dir .'/syntax_checkers/'. a:path .'.vim'
+        let syntax_checker = g:checksyntax#syntastic_dir
+        if syntax_checker !~ '[\/]syntax_checkers$'
+            let syntax_checker .= '/syntax_checkers'
+        endif
+        let syntax_checker .= '/'. a:path .'.vim'
+        " TLogVAR syntax_checker, filereadable(syntax_checker)
         if filereadable(syntax_checker)
             exec 'source' fnameescape(syntax_checker)
         endif

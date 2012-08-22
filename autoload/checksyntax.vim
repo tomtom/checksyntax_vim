@@ -3,8 +3,8 @@
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2010-01-03.
-" @Last Change: 2012-08-21.
-" @Revision:    511
+" @Last Change: 2012-08-22.
+" @Revision:    548
 
 
 if !exists('g:checksyntax#auto_mode')
@@ -194,6 +194,7 @@ function! s:Make(filetype, def)
 
         elseif has_key(a:def, 'syntastic')
 
+            " TLogVAR a:def
             try
                 call call(a:def.syntastic, [])
                 return 1
@@ -270,9 +271,9 @@ function! checksyntax#Require(filetype) "{{{3
         if !has_key(s:loaded_checkers, a:filetype)
             exec 'runtime! autoload/checksyntax/defs/'. a:filetype .'.vim'
             let s:loaded_checkers[a:filetype] = 1
-            if !has_key(g:checksyntax, a:filetype)
+            if !has_key(g:checksyntax, a:filetype) || checksyntax#RunAlternativesMode(g:checksyntax[a:filetype]) !~? '\<first\>'
                 if !empty(g:checksyntax#syntastic_dir)
-                    call checksyntax#syntastic#Require(g:checksyntax, a:filetype)
+                    call checksyntax#syntastic#Require(a:filetype)
                 endif
             endif
         endif
@@ -504,5 +505,35 @@ function! s:FilterItem(def, val) "{{{3
         return 0
     endif
     return 1
+endf
+
+
+" :display: checksyntax#CopyFunction(old, new, overwrite=0)
+function! checksyntax#CopyFunction(old, new, ...) "{{{3
+    let overwrite = a:0 >= 1 ? a:1 : 0
+    redir => oldfn
+    exec 'silent function' a:old
+    redir END
+    if exists('*'. a:new)
+        if overwrite > 0
+            exec 'delfunction' a:new
+        elseif overwrite < 0
+            throw 'checksyntax#CopyFunction: Function already exists: '. a:old .' -> '. a:new
+        else
+            return
+        endif
+    endif
+    let fn = split(oldfn, '\n')
+    let fn = map(fn, 'substitute(v:val, ''^\d\+'', "", "")')
+    let fn[0] = substitute(fn[0], '\V\^\s\*fu\%[nction]!\?\s\+\zs'. a:old, a:new, '')
+    let t = @t
+    try
+        let @t = join(fn, "\n")
+        redir => out
+        @t
+        redir END
+    finally
+        let @t = t
+    endtry
 endf
 
