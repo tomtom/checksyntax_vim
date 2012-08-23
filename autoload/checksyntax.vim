@@ -3,8 +3,8 @@
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2010-01-03.
-" @Last Change: 2012-08-22.
-" @Revision:    548
+" @Last Change: 2012-08-23.
+" @Revision:    579
 
 
 if !exists('g:checksyntax#auto_mode')
@@ -31,14 +31,13 @@ if !exists('g:checksyntax')
     " Optional:
     "   auto* ... Run automatically when saving a file.
     "   efm  ... An 'errorformat' string.
-    "   alt*  ... The name of an alternative syntax checker (see 
-    "            |:CheckSyntax|).
     "   prepare ... An ex command that is run before doing anything.
     "   ignore_nr ... A list of error numbers that should be ignored.
     "   listtype ... Either loc (default) or qfl
     "   include ... Include another definition
-    "   if*   ... An expression to test *once* whether a syntax checker 
+    "   if ... An expression to test *once* whether a syntax checker 
     "            should be used.
+    "   if_executable ... Test whether an application is executable.
     "   alternatives* ... A list of syntax checker definitions (the first 
     "            one with a valid executable is used. If used, no other 
     "            elements are allowed. This list is checked only once.
@@ -50,17 +49,14 @@ if !exists('g:checksyntax')
     "
     " Pre-defined syntax checkers (the respective syntax checker has to 
     " be installed):
-    "   php                           ... Syntax check; requires php
-    "   phpp (php alternative)        ... Parse php; requires php
+    "   php                           ... Syntax check, parse php; requires php
     "   javascript                    ... Syntax check; requires either gjslint or jsl
-    "   python                        ... Requires pyflakes
-    "   pylint (python alternative)   ... Requires pylint
+    "   python                        ... Requires pyflakes or pylint
     "   ruby                          ... Requires ruby
     "   viki                          ... Requires deplate
     "   chktex (tex, latex)           ... Requires chktex
     "   c, cpp                        ... Requires splint
-    "   java                          ... Requires jlint
-    "   checkstyle (java alternative) ... Requires checkstyle
+    "   java                          ... Requires jlint or checkstyle
     "   lua                           ... Requires luac
     "   html                          ... Requires tidy
     "   xhtml                         ... Requires tidy
