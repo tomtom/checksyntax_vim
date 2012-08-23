@@ -574,3 +574,21 @@ function! checksyntax#CopyFunction(old, new, ...) "{{{3
     endtry
 endf
 
+
+function! checksyntax#Alternative(filetype, alternative) "{{{3
+    if has_key(g:checksyntax, a:filetype)
+        if !has_key(g:checksyntax[a:filetype], 'alternatives')
+            let odef = g:checksyntax[a:filetype]
+            let g:checksyntax[a:filetype] = {'alternatives': [odef]}
+            for key in ['modified', 'alt', 'auto']
+                if has_key(odef, key)
+                    let g:checksyntax[a:filetype][key] = odef[key]
+                endif
+            endfor
+        endif
+        call add(g:checksyntax[a:filetype].alternatives, a:alternative)
+    else
+        let g:checksyntax[a:filetype] = a:alternative
+    endif
+endf
+
