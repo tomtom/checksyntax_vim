@@ -2,9 +2,9 @@
 " @Author:      Tom Link (micathom AT gmail com)
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     04-Mai-2005.
-" @Last Change: 2012-07-02.
+" @Last Change: 2012-08-23.
 " GetLatestVimScripts: 1431 0 :AutoInstall: checksyntax.vim
-" @Revision:    409
+" @Revision:    410
 
 if exists('g:loaded_checksyntax')
     finish
@@ -44,8 +44,8 @@ augroup END
 " Check the current buffer's syntax (type defaults to &filetype).
 " Or use NAME instead of &filetype.
 "
-" With the bang !, use the alternative syntax checker (see 
-" |g:checksyntax|).
+" With the bang !, run all alternatives (see 
+" |g:checksyntax#run_alternatives|).
 command! -bang -nargs=? CheckSyntax call checksyntax#Check(1, "<bang>", <f-args>)
 
 

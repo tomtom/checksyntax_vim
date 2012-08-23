@@ -72,6 +72,14 @@ if !exists('g:checksyntax')
 endif
 
 
+if !exists('g:checksyntax#preferred')
+    " A dictionary of 'filetype' => |regexp|.
+    " If only one alternative should be run (see 
+    " |g:checksyntax#run_alternatives|), check only those syntax 
+    " checkers whose names matches |regexp|.
+    let g:checksyntax#preferred = {}   "{{{2
+endif
+
 if !exists('g:checksyntax#run_alternatives')
     " How to handle alternatives. Possible values:
     "     first ... Use the first valid entry
@@ -304,17 +312,28 @@ function! checksyntax#Name(def) "{{{3
 endf
 
 
-function! s:CleanAlternatives(run_alternatives, alternatives) "{{{3
+function! s:ValidAlternative(def) "{{{3
+    if has_key(a:def, 'if')
+        return eval(a:def.if)
+    elseif has_key(a:def, 'if_executable')
+        return executable(a:def.if_executable) != 0
+    else
+        return 1
+    endif
+endf
+
+
+function! s:CleanAlternatives(filetype, run_alternatives, alternatives) "{{{3
     let valid = []
     for alternative in a:alternatives
-        if !has_key(alternative, 'if') || eval(alternative.if)
+        if s:ValidAlternative(alternative)
             if has_key(alternative, 'cmd')
                 let cmd = s:Cmd(alternative)
                 if empty(cmd) && g:checksyntax#debug
-                    echom "CheckSyntax: Cannot determine executable name:" alternative.cmd printf("(%s)", a:ft)
+                    echom "CheckSyntax: Cannot determine executable name:" alternative.cmd printf("(%s)", a:filetype)
                 elseif executable(cmd) == 0
                     if g:checksyntax#debug
-                        echom "CheckSyntax: Not an executable, remove checker:" cmd printf("(%s)", a:ft)
+                        echom "CheckSyntax: Not an executable, remove checker:" cmd printf("(%s)", a:filetype)
                     endif
                     continue
                 endif
@@ -329,20 +348,22 @@ function! s:CleanAlternatives(run_alternatives, alternatives) "{{{3
 endf
 
 
+let s:run_alternatives_all = 0
+
 " :nodoc:
 function! checksyntax#RunAlternativesMode(def) "{{{3
-    return get(a:def, 'run_alternatives', g:checksyntax#run_alternatives)
+    return s:run_alternatives_all || get(a:def, 'run_alternatives', g:checksyntax#run_alternatives)
 endf
 
 
-function! s:GetDef(ft) "{{{3
-    " TLogVAR a:ft
-    if exists('b:checksyntax') && has_key(b:checksyntax, a:ft)
+function! s:GetDef(filetype) "{{{3
+    " TLogVAR a:filetype
+    if exists('b:checksyntax') && has_key(b:checksyntax, a:filetype)
         let dict = b:checksyntax
-        let rv = b:checksyntax[a:ft]
-    elseif has_key(g:checksyntax, a:ft)
+        let rv = b:checksyntax[a:filetype]
+    elseif has_key(g:checksyntax, a:filetype)
         let dict = g:checksyntax
-        let rv = g:checksyntax[a:ft]
+        let rv = g:checksyntax[a:filetype]
     else
         let dict = {}
         let rv = {}
@@ -350,19 +371,19 @@ function! s:GetDef(ft) "{{{3
     if !empty(dict)
         let alternatives = get(rv, 'alternatives', [])
         if !empty(alternatives)
-            let alternatives = s:CleanAlternatives(checksyntax#RunAlternativesMode(rv), alternatives)
+            let alternatives = s:CleanAlternatives(a:filetype, checksyntax#RunAlternativesMode(rv), alternatives)
             if len(alternatives) == 0
                 let rv = {}
             elseif len(alternatives) == 1
                 let rv = alternatives[0]
-                let dict[a:ft] = rv
+                let dict[a:filetype] = rv
             else
                 let rv.alternatives = alternatives
-                let dict[a:ft] = rv
+                let dict[a:filetype] = rv
             endif
         endif
         if empty(rv)
-            call remove(dict, a:ft)
+            call remove(dict, a:filetype)
         endif
     endif
     return rv
@@ -372,74 +393,80 @@ endf
 " :def: function! checksyntax#Check(manually, ?bang='', ?type=&ft, ?background=1)
 function! checksyntax#Check(manually, ...)
     let bang = a:0 >= 1 && a:1 != '' ? 1 : 0
-    let ft   = a:0 >= 2 && a:2 != '' ? a:2 : &filetype
+    let filetype   = a:0 >= 2 && a:2 != '' ? a:2 : &filetype
     let bg   = a:0 >= 3 && a:3 != '' ? a:3 : 0
-    " TLogVAR a:manually, bang, ft, bg
-    call checksyntax#Require(ft)
-    let def = a:manually ? {} : s:GetDef(ft .',auto')
-    if empty(def)
-        let def = s:GetDef(ft)
-    endif
-    if &modified
-        if has_key(def, 'modified')
-            let def = s:GetDef(def.modified)
-        else
-            echohl WarningMsg
-            echom "Buffer was modified. Please save it before calling :CheckSyntax."
-            echohl NONE
+    " TLogVAR a:manually, bang, filetype, bg
+    let s:run_alternatives_all = bang
+    try
+        call checksyntax#Require(filetype)
+        let def = a:manually ? {} : s:GetDef(filetype .',auto')
+        if empty(def)
+            let def = s:GetDef(filetype)
+        endif
+        if &modified
+            if has_key(def, 'modified')
+                let def = s:GetDef(def.modified)
+            else
+                echohl WarningMsg
+                echom "Buffer was modified. Please save it before calling :CheckSyntax."
+                echohl NONE
+                return
+            endif
+        endif
+        " TLogVAR def
+        if empty(def)
             return
         endif
-    endif
-    if bang && has_key(def, 'alt')
-        let def = s:GetDef(def.alt)
-    endif
-    " TLogVAR def
-    if empty(def)
-        return
-    endif
-    if g:checksyntax#auto_mode == 0
-        let auto = 0
-    elseif g:checksyntax#auto_mode == 1
-        let auto = get(def, 'auto', 0)
-    elseif g:checksyntax#auto_mode == 2
-        let auto = 1
-    endif
-    " TLogVAR auto
-    if !(a:manually || auto)
-        return
-    endif
-    if !exists('b:checksyntax_runs')
-        let b:checksyntax_runs = 1
-    else
-        let b:checksyntax_runs += 1
-    endif
-    " TLogVAR &makeprg, &l:makeprg, &g:makeprg, &errorformat
-    let run_alternatives = checksyntax#RunAlternativesMode(def)
-    let defs = get(def, 'alternatives', [def])
-    let use_qfl = 0
-    let all_issues = []
-    for make_def in defs
-        let name = checksyntax#Name(make_def)
-        if run_alternatives =~? '\<async\>'   " TODO: support asynchronous execution
-            throw "CheckSyntax: Not supported yet: run_alternatives = ". string(run_alternatives)
-        else
-            let use_qfl += s:Run_sync(all_issues, name, ft, make_def)
+        if g:checksyntax#auto_mode == 0
+            let auto = 0
+        elseif g:checksyntax#auto_mode == 1
+            let auto = get(def, 'auto', 0)
+        elseif g:checksyntax#auto_mode == 2
+            let auto = 1
         endif
-    endfor
-    " echom "DBG 1" string(list)
-    let type = use_qfl > 0 ? 'qfl' : 'loc'
-    if empty(all_issues)
-        call CheckSyntaxSucceed(type, a:manually)
-    else
-        " TLogVAR all_issues
-        call sort(all_issues, 's:CompareIssues')
-        " TLogVAR all_issues
-        call g:checksyntax#prototypes[type].Set(all_issues)
-        " TLogVAR type
-        " TLogVAR a:manually
-        " TLogVAR bg
-        call CheckSyntaxFail(type, a:manually, bg)
-    endif
+        " TLogVAR auto
+        if !(a:manually || auto)
+            return
+        endif
+        if !exists('b:checksyntax_runs')
+            let b:checksyntax_runs = 1
+        else
+            let b:checksyntax_runs += 1
+        endif
+        " TLogVAR &makeprg, &l:makeprg, &g:makeprg, &errorformat
+        let defs = get(def, 'alternatives', [def])
+        let run_alternatives = checksyntax#RunAlternativesMode(def)
+        if run_alternatives =~? '\<first\>' && has_key(g:checksyntax#preferred, filetype)
+            let preferred_rx = g:checksyntax#preferred[filetype]
+            let defs = filter(defs, 'checksyntax#Name(v:val) =~ preferred_rx')
+        endif
+        let use_qfl = 0
+        let all_issues = []
+        for make_def in defs
+            let name = checksyntax#Name(make_def)
+            if run_alternatives =~? '\<async\>'   " TODO: support asynchronous execution
+                throw "CheckSyntax: Not supported yet: run_alternatives = ". string(run_alternatives)
+            else
+                let use_qfl += s:Run_sync(all_issues, name, filetype, make_def)
+            endif
+        endfor
+        " echom "DBG 1" string(list)
+        let type = use_qfl > 0 ? 'qfl' : 'loc'
+        if empty(all_issues)
+            call CheckSyntaxSucceed(type, a:manually)
+        else
+            " TLogVAR all_issues
+            call sort(all_issues, 's:CompareIssues')
+            " TLogVAR all_issues
+            call g:checksyntax#prototypes[type].Set(all_issues)
+            " TLogVAR type
+            " TLogVAR a:manually
+            " TLogVAR bg
+            call CheckSyntaxFail(type, a:manually, bg)
+        endif
+    finally
+        let s:run_alternatives_all = 0
+    endtry
     redraw!
 endf
 
@@ -452,8 +479,8 @@ function! s:CompareIssues(i1, i2) "{{{3
 endf
 
 
-function! s:Run_sync(all_issues, name, ft, def) "{{{3
-    " TLogVAR a:name, a:ft, a:def
+function! s:Run_sync(all_issues, name, filetype, def) "{{{3
+    " TLogVAR a:name, a:filetype, a:def
     let use_qfl = 0
     let def = a:def
     if has_key(def, 'include')
@@ -463,7 +490,7 @@ function! s:Run_sync(all_issues, name, ft, def) "{{{3
         endif
     endif
     exec get(def, 'prepare', '')
-    if s:Make(a:ft, def)
+    if s:Make(a:filetype, def)
         let type = get(def, 'listtype', 'loc')
         if type != 'loc'
             let use_qfl = 1
