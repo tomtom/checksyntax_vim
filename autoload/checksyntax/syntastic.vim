@@ -77,7 +77,7 @@ endif
 
 function! checksyntax#syntastic#Require(filetype) "{{{3
     " TLogVAR a:filetype
-    if checksyntax#RunAlternativesMode(g:checksyntax[a:filetype]) =~? '\<first\>'
+    if checksyntax#RunAlternativesMode(get(g:checksyntax, a:filetype, {})) =~? '\<first\>'
         return
     endif
     if a:filetype =~ g:checksyntax#syntastic#filetype_rx && index(g:checksyntax#syntastic#blacklist, a:filetype) == -1
