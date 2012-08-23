@@ -514,8 +514,15 @@ endf
 
 
 function! s:CompleteItem(name, def, val) "{{{3
+    " TLogVAR a:name, a:def, a:val
     if get(a:val, 'bufnr', 0) == 0
         let a:val.bufnr = bufnr('%')
+    endif
+    let text = get(a:val, 'text', '')
+    let a:val.text = substitute(text, '^\s\+\|\s\+$', '', 'g')
+    let type = get(a:val, 'type', '')
+    if !empty(type)
+        let a:val.text = printf('[%s] %s', type, a:val.text)
     endif
     if !empty(a:name)
         let text = get(a:val, 'text', '')
