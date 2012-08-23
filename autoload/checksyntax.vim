@@ -306,6 +306,9 @@ endf
 function! checksyntax#Name(def) "{{{3
     let name = get(a:def, 'name', '')
     if empty(name)
+        let name = get(a:def, 'compiler', '')
+    endif
+    if empty(name)
         let name = s:Cmd(a:def)
     endif
     return name
