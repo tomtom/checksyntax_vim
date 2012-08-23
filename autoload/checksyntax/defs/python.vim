@@ -2,21 +2,22 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2012-07-02.
-" @Last Change: 2012-07-02.
-" @Revision:    1
+" @Last Change: 2012-08-23.
+" @Revision:    8
 
 
 if !exists('g:checksyntax.python')
     let g:checksyntax['python'] = {
-                \ 'cmd': 'pyflakes',
-                \ 'alt': 'pylint'
+                \ 'alternatives': [
+                \   {
+                \     'cmd': 'pyflakes',
+                \     'efm': '%f:%l: %m',
+                \   },
+                \   {
+                \     'cmd': 'pylint -r n -f parseable',
+                \     'efm': '%f:%l: [%t] %m',
+                \   }
+                \ ]
                 \ }
 endif
-
-if !exists('g:checksyntax.pylint')
-    let g:checksyntax['pylint'] = {
-                \ 'compiler': 'pylint'
-                \ }
-endif
-
 
