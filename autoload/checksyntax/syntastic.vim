@@ -2,8 +2,8 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2012-07-08.
-" @Last Change: 2012-08-22.
-" @Revision:    117
+" @Last Change: 2012-08-23.
+" @Revision:    137
 
 
 if !exists('g:checksyntax#syntastic#auto')
@@ -97,13 +97,23 @@ function! checksyntax#syntastic#Require(filetype) "{{{3
         " echom "DBG checksyntax#syntastic#Require s:require_names=" string(s:require_names)
         let s:require_blacklist = 1
         call s:Load(a:filetype)
-        call s:ProcessChecker('', a:filetype, a:filetype)
+        " TLogVAR a:filetype, exists('g:syntastic_'. a:filetype .'_checker')
+        if exists('g:syntastic_'. a:filetype .'_checker')
+            let prg = g:syntastic_{a:filetype}_checker
+            let name = a:filetype .'_'. prg
+        else
+            let prg  = ''
+            let name = a:filetype
+        endif
+        " TLogVAR name
+        call s:ProcessChecker(prg, name, a:filetype)
     endif
 endf
 
 
 function! s:ProcessChecker(prg, name, filetype) "{{{3
-    " TLogVAR a:name, a:filetype
+    " TLogVAR a:prg, a:name, a:filetype
+    " echom "DBG ProcessChecker require_names" string(s:require_names)
     let fn = 'SyntaxCheckers_'. a:filetype .'_GetLocList'
     if exists('*'. fn) && index(s:require_names, a:name) == -1
         if a:name != a:filetype
@@ -117,7 +127,7 @@ function! s:ProcessChecker(prg, name, filetype) "{{{3
                     \ 'listtype': 'loc',
                     \ 'syntastic': fn
                     \ }
-        if a:name != a:filetype && !empty(a:prg)
+        if !empty(a:prg)
             let def.name = a:prg
         endif
         " TLogVAR def
