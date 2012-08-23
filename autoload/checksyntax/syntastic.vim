@@ -121,20 +121,7 @@ function! s:ProcessChecker(prg, name, filetype) "{{{3
             let def.name = a:prg
         endif
         " TLogVAR def
-        if has_key(g:checksyntax, a:filetype)
-            if !has_key(g:checksyntax[a:filetype], 'alternatives')
-                let odef = g:checksyntax[a:filetype]
-                let g:checksyntax[a:filetype] = {'alternatives': [odef]}
-                for key in ['modified', 'alt', 'auto']
-                    if has_key(odef, key)
-                        let g:checksyntax[a:filetype][key] = odef[key]
-                    endif
-                endfor
-            endif
-            call add(g:checksyntax[a:filetype].alternatives, def)
-        else
-            let g:checksyntax[a:filetype] = def
-        endif
+        call checksyntax#Alternative(a:filetype, def)
     elseif s:require_blacklist
         call add(g:checksyntax#syntastic#blacklist, a:filetype)
     endif
