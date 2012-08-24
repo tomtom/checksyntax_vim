@@ -122,55 +122,62 @@ if !exists('*CheckSyntaxFail')
 endif
 
 
-let g:checksyntax#prototypes = {'loc': {}, 'qfl': {}}
+if !exists('g:checksyntax#prototypes')
+    " Contains prototype definitions for syntax checkers that use the 
+    " |location-list| ("loc") or the |quixfix|-list.
+    let g:checksyntax#prototypes = {'loc': {}, 'qfl': {}} "{{{2
+endif
 
-function! g:checksyntax#prototypes.loc.Close() dict "{{{3
-    lclose
-endf
+if empty(g:checksyntax#prototypes.loc)
+    function! g:checksyntax#prototypes.loc.Close() dict "{{{3
+        lclose
+    endf
 
-function! g:checksyntax#prototypes.loc.Open(bg) dict "{{{3
-    " TLogVAR a:bg
-    lopen
-    if a:bg
-        wincmd p
-    endif
-endf
+    function! g:checksyntax#prototypes.loc.Open(bg) dict "{{{3
+        " TLogVAR a:bg
+        lopen
+        if a:bg
+            wincmd p
+        endif
+    endf
 
-function! g:checksyntax#prototypes.loc.Make(args) dict "{{{3
-    exec 'silent lmake!' a:args
-endf
+    function! g:checksyntax#prototypes.loc.Make(args) dict "{{{3
+        exec 'silent lmake!' a:args
+    endf
 
-function! g:checksyntax#prototypes.loc.Get() dict "{{{3
-    return copy(getloclist(0))
-endf
+    function! g:checksyntax#prototypes.loc.Get() dict "{{{3
+        return copy(getloclist(0))
+    endf
 
-function! g:checksyntax#prototypes.loc.Set(list) dict "{{{3
-    call setloclist(0, a:list)
-endf
+    function! g:checksyntax#prototypes.loc.Set(list) dict "{{{3
+        call setloclist(0, a:list)
+    endf
+endif
 
+if empty(g:checksyntax#prototypes.qfl)
+    function! g:checksyntax#prototypes.qfl.Close() dict "{{{3
+        cclose
+    endf
 
-function! g:checksyntax#prototypes.qfl.Close() dict "{{{3
-    cclose
-endf
+    function! g:checksyntax#prototypes.qfl.Open(bg) dict "{{{3
+        copen
+        if a:bg
+            wincmd p
+        endif
+    endf
 
-function! g:checksyntax#prototypes.qfl.Open(bg) dict "{{{3
-    copen
-    if a:bg
-        wincmd p
-    endif
-endf
+    function! g:checksyntax#prototypes.qfl.Make(args) dict "{{{3
+        exec 'silent make!' a:args
+    endf
 
-function! g:checksyntax#prototypes.qfl.Make(args) dict "{{{3
-    exec 'silent make!' a:args
-endf
+    function! g:checksyntax#prototypes.qfl.Get() dict "{{{3
+        return copy(getqflist())
+    endf
 
-function! g:checksyntax#prototypes.qfl.Get() dict "{{{3
-    return copy(getqflist())
-endf
-
-function! g:checksyntax#prototypes.qfl.Set(list) dict "{{{3
-    call setqflist(a:list)
-endf
+    function! g:checksyntax#prototypes.qfl.Set(list) dict "{{{3
+        call setqflist(a:list)
+    endf
+endif
 
 
 function! s:Make(filetype, def)
