@@ -64,6 +64,7 @@ please make sure, you have the current version of vimball (vimscript
 ========================================================================
 Contents~
 
+        g:checksyntax_auto ............... |g:checksyntax_auto|
         :CheckSyntax ..................... |:CheckSyntax|
         <F5> ............................. |<F5>|
         i_<F5> ........................... |i_<F5>|
@@ -85,6 +86,14 @@ Contents~
 
 ========================================================================
 plugin/checksyntax.vim~
+
+                                                    *g:checksyntax_auto*
+g:checksyntax_auto             (default: 1)
+    If 1, enable automatic syntax checks after saving a file.
+    If 2, enable automatic syntax checks when saving and loading a 
+    file.
+    NOTE: This variable must be customized in vimrc before loading 
+    this plugin.
 
                                                     *:CheckSyntax*
 CheckSyntax[!] [NAME]

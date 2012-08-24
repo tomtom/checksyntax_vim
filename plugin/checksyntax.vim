@@ -4,7 +4,7 @@
 " @Created:     04-Mai-2005.
 " @Last Change: 2012-08-24.
 " GetLatestVimScripts: 1431 0 :AutoInstall: checksyntax.vim
-" @Revision:    414
+" @Revision:    415
 
 if exists('g:loaded_checksyntax')
     finish
@@ -23,7 +23,7 @@ if !exists('g:checksyntax_auto')
     " file.
     " NOTE: This variable must be customized in vimrc before loading 
     " this plugin.
-    let g:checksyntax_auto = 1
+    let g:checksyntax_auto = 1   "{{{2
 endif
 
 
