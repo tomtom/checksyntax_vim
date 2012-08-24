@@ -50,8 +50,18 @@ command! -bang -nargs=? CheckSyntax call checksyntax#Check(1, "<bang>", <f-args>
 
 
 " @TPluginInclude
-if !hasmapto(':CheckSyntax') && empty(maparg('<F5>', 'n'))
-    noremap <F5> :CheckSyntax<cr>
-    inoremap <F5> <c-o>:CheckSyntax<cr>
+if !hasmapto(':CheckSyntax')
+    if empty(maparg('<F5>', 'n'))
+        noremap <F5> :CheckSyntax<cr>
+    endif
+    if empty(maparg('<F5>', 'i'))
+        inoremap <F5> <c-o>:CheckSyntax<cr>
+    endif
+    if empty(maparg('<C-F5>', 'n'))
+        noremap <F5> :CheckSyntax!<cr>
+    endif
+    if empty(maparg('<C-F5>', 'i'))
+        inoremap <F5> <c-o>:CheckSyntax!<cr>
+    endif
 endif
 
