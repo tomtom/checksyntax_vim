@@ -11,19 +11,20 @@ the list of syntax errors.
 If vimscript #2584 is installed, lines containing syntax errors will be marked 
 with signs.
 
-As the plugin doesn't provide syntax checks by its own, the external 
-syntax checker has to be installed on your computer.
-
 By default, |:CheckSyntax| is mapped to <F5> (if not mapped already), 
 and automatically executed when saving the buffer. The |:CheckSyntax| 
 command takes one optional argument: the mode (default: &filetype).
+<C-F5> will run all syntax checkers for a given filetype if multiple 
+alternatives are defined and installed on your computer.
 
-The following modes are pre-defined (syntax checking requires the 
-respective syntax checker software to be installed):
+As the plugin doesn't provide syntax checks by its own. This is done by 
+an external syntax checker that has to be installed on your computer.
+
+For the following filetypes, syntax checkers are pre-defined:
 
     c, cpp :: Check syntax via splint
     html :: Check syntax via tidy
-    javascript :: Check syntax via jsl or gjslint
+    javascript :: Check syntax via jslint, jshint, jsl, or gjslint
     java :: Check syntax via jlint or javaCheckstyle
     lua :: Parse file (luac -p)
     php  :: Check syntax (php -l)
@@ -34,8 +35,12 @@ respective syntax checker software to be installed):
     tex, latex :: Parse file (chktex -q -v0; no auto-checks)
     xml, docbk :: Check syntax via xmllint
 
-See |g:checksyntax| for a complete list. See |g:checksyntax| also for 
-how to define your own syntax checkers.
+See the autoload/checksyntax/defs/ directory for a complete list of 
+supported syntax checkers. See |g:checksyntax| also for how to define 
+your own syntax checkers.
+
+If a copy of syntastic's syntax checker defintions is stored on your 
+computer, those can be used too -- see |g:checksyntax#syntastic_dir|.
 
 This plugin was originally based on Klaus Horsten's php_console 
 (vimscript #779) and it is the successor of php_check_syntax.vim 
@@ -62,17 +67,19 @@ Contents~
         :CheckSyntax ..................... |:CheckSyntax|
         <F5> ............................. |<F5>|
         i_<F5> ........................... |i_<F5>|
+        <F5> ............................. |<F5>|
+        i_<F5> ........................... |i_<F5>|
         g:checksyntax#auto_mode .......... |g:checksyntax#auto_mode|
         g:checksyntax .................... |g:checksyntax|
+        g:checksyntax#syntastic_dir ...... |g:checksyntax#syntastic_dir|
         g:checksyntax#preferred .......... |g:checksyntax#preferred|
         g:checksyntax#run_alternatives ... |g:checksyntax#run_alternatives|
-        g:checksyntax#syntastic_dir ...... |g:checksyntax#syntastic_dir|
         CheckSyntaxSucceed ............... |CheckSyntaxSucceed()|
         CheckSyntaxFail .................. |CheckSyntaxFail()|
+        g:checksyntax#prototypes ......... |g:checksyntax#prototypes|
         checksyntax#Make ................. |checksyntax#Make()|
         checksyntax#Require .............. |checksyntax#Require()|
         checksyntax#Check ................ |checksyntax#Check()|
-        checksyntax#CopyFunction ......... |checksyntax#CopyFunction()|
         checksyntax#Alternative .......... |checksyntax#Alternative()|
 
 
@@ -93,6 +100,12 @@ CheckSyntax[!] [NAME]
                                                     *i_<F5>*
 i_<F5> ... <c-o>:CheckSyntax<cr>
 
+                                                    *<F5>*
+<F5> ... :CheckSyntax!<cr>
+
+                                                    *i_<F5>*
+i_<F5> ... <c-o>:CheckSyntax!<cr>
+
 
 ========================================================================
 autoload/checksyntax.vim~
@@ -100,8 +113,9 @@ autoload/checksyntax.vim~
                                                     *g:checksyntax#auto_mode*
 g:checksyntax#auto_mode        (default: 1)
     If 1, enable automatically running syntax checkers when saving a 
-    file.
-    If 2, turn on automatic syntax checks for all known filetypes.
+    file if the syntax checker definitions has 'auto' == 1 (see 
+    |g:checksyntax|).
+    If 2, enforces automatic syntax checks for all known filetypes.
     If 0, disable automatic syntax checks.
 
                                                     *g:checksyntax*
@@ -135,20 +149,43 @@ g:checksyntax                  (default: {...})
 
     Pre-defined syntax checkers (the respective syntax checker has to 
     be installed):
-      php                           ... Syntax check, parse php; requires php
-      javascript                    ... Syntax check; requires either gjslint or jsl
-      python                        ... Requires pyflakes or pylint
-      ruby                          ... Requires ruby
-      viki                          ... Requires deplate
-      chktex (tex, latex)           ... Requires chktex
-      c, cpp                        ... Requires splint
-      java                          ... Requires jlint or checkstyle
-      lua                           ... Requires luac
-      html                          ... Requires tidy
-      xhtml                         ... Requires tidy
-      xml                           ... Requires xmllint
-      docbk                         ... Requires xmllint
 
+      c, cpp       ... Requires splint
+      html         ... Requires tidy
+      java         ... Requires jlint or checkstyle
+      javascript   ... Syntax check; requires jslint, jshint, gjslint, or jsl
+      lua          ... Requires luac
+      php          ... Syntax check; requires php
+      python       ... Requires pyflakes or pylint
+      ruby         ... Requires ruby
+      tex, latex   ... Requires chktex
+      viki         ... Requires deplate
+      xhtml        ... Requires tidy
+      xml, docbk   ... Requires xmllint
+
+    Syntax checker definitions are kept in:
+    autoload/checksyntax/defs/{&filetype}.vim
+
+    If |g:checksyntax#syntastic_dir| is set, syntastic's syntax 
+    checkers can be used too.
+
+                                                    *g:checksyntax#syntastic_dir*
+g:checksyntax#syntastic_dir    (default: '')
+    The directory where the syntastic plugin (see 
+    https://github.com/scrooloose/syntastic/) is installed.
+    If non-empty, use syntastic syntax checkers if available and if 
+    checksyntax does not have one defined for the current filetype.
+
+    The syntastic directory does not have to be included in 
+    'runtimepath'. Actually, using both, the syntastic and checksyntax 
+    plugin, simultaneously could cause conflicts.
+
+    The value must not include a trailing (back)slash.
+    Optinally, the value may also point directly to the 
+    'syntax_checkers' subdirectory.
+
+    NOTE: Not all syntastic syntax checkers definitions are guaranteed 
+    to work with checksyntax.
 
                                                     *g:checksyntax#preferred*
 g:checksyntax#preferred        (default: {})
@@ -163,21 +200,6 @@ g:checksyntax#run_alternatives (default: 'first')
         first ... Use the first valid entry
         all   ... Run all valid alternatives one after another
 
-                                                    *g:checksyntax#syntastic_dir*
-g:checksyntax#syntastic_dir    (default: '')
-    The directory where the syntastic plugin (see 
-    https://github.com/scrooloose/syntastic/) is installed.
-    If non-empty, use syntastic syntax checkers if available and if 
-    checksyntax does not have one defined for the current filetype.
-    The syntastic directory does not have to be included in 
-    'runtimepath'.
-
-    The value must not include a trailing (back)slash.
-    Optinally, the value may also point directly to the 
-    'syntax_checkers' subdirectory.
-
-    NOTE: Experimental feature.
-
                                                     *CheckSyntaxSucceed()*
 CheckSyntaxSucceed(type, manually)
     This function is called when no syntax errors were found.
@@ -186,20 +208,30 @@ CheckSyntaxSucceed(type, manually)
 CheckSyntaxFail(type, manually, bg)
     This function is called when a syntax error was found.
 
+                                                    *g:checksyntax#prototypes*
+g:checksyntax#prototypes       (default: {'loc': {}, 'qfl': {}})
+    Contains prototype definitions for syntax checkers that use the 
+    |location-list| ("loc") or the |quixfix|-list.
+
                                                     *checksyntax#Make()*
 checksyntax#Make(def)
+    Run |:make| based on a syntax checker definition.
 
                                                     *checksyntax#Require()*
 checksyntax#Require(filetype)
 
                                                     *checksyntax#Check()*
-checksyntax#Check(manually, ?bang='', ?type=&ft, ?background=1)
-
-                                                    *checksyntax#CopyFunction()*
-checksyntax#CopyFunction(old, new, overwrite=0)
+checksyntax#Check(manually, ?bang='', ?filetype=&ft, ?background=1)
+    Perform a syntax check.
+    If bang is not empty, run all alternatives (see 
+    |g:checksyntax#run_alternatives|).
+    If filetype is empty, the current buffer's 'filetype' will be used.
+    If background is true, display the list of issues in the background, 
+    i.e. the active window will keep the focus.
 
                                                     *checksyntax#Alternative()*
-checksyntax#Alternative(filetype, alternative)
+checksyntax#CopyFunction(old, new, overwrite=0)
+    Define a syntax checker definition for a given filetype.
 
 
 

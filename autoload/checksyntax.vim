@@ -3,14 +3,15 @@
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2010-01-03.
-" @Last Change: 2012-08-23.
-" @Revision:    579
+" @Last Change: 2012-08-24.
+" @Revision:    604
 
 
 if !exists('g:checksyntax#auto_mode')
     " If 1, enable automatically running syntax checkers when saving a 
-    " file.
-    " If 2, turn on automatic syntax checks for all known filetypes.
+    " file if the syntax checker definitions has 'auto' == 1 (see 
+    " |g:checksyntax|).
+    " If 2, enforces automatic syntax checks for all known filetypes.
     " If 0, disable automatic syntax checks.
     let g:checksyntax#auto_mode = 1   "{{{2
 endif
@@ -49,22 +50,47 @@ if !exists('g:checksyntax')
     "
     " Pre-defined syntax checkers (the respective syntax checker has to 
     " be installed):
-    "   php                           ... Syntax check, parse php; requires php
-    "   javascript                    ... Syntax check; requires either gjslint or jsl
-    "   python                        ... Requires pyflakes or pylint
-    "   ruby                          ... Requires ruby
-    "   viki                          ... Requires deplate
-    "   chktex (tex, latex)           ... Requires chktex
-    "   c, cpp                        ... Requires splint
-    "   java                          ... Requires jlint or checkstyle
-    "   lua                           ... Requires luac
-    "   html                          ... Requires tidy
-    "   xhtml                         ... Requires tidy
-    "   xml                           ... Requires xmllint
-    "   docbk                         ... Requires xmllint
     "
+    "   c, cpp       ... Requires splint
+    "   html         ... Requires tidy
+    "   java         ... Requires jlint or checkstyle
+    "   javascript   ... Syntax check; requires jslint, jshint, gjslint, or jsl
+    "   lua          ... Requires luac
+    "   php          ... Syntax check; requires php
+    "   python       ... Requires pyflakes or pylint
+    "   ruby         ... Requires ruby
+    "   tex, latex   ... Requires chktex
+    "   viki         ... Requires deplate
+    "   xhtml        ... Requires tidy
+    "   xml, docbk   ... Requires xmllint
+    "
+    " Syntax checker definitions are kept in:
+    " autoload/checksyntax/defs/{&filetype}.vim
+    "
+    " If |g:checksyntax#syntastic_dir| is set, syntastic's syntax 
+    " checkers can be used too.
     " :read: let g:checksyntax = {...}   "{{{2
     let g:checksyntax = {}
+endif
+
+
+if !exists('g:checksyntax#syntastic_dir')
+    " The directory where the syntastic plugin (see 
+    " https://github.com/scrooloose/syntastic/) is installed.
+    " If non-empty, use syntastic syntax checkers if available and if 
+    " checksyntax does not have one defined for the current filetype.
+    "
+    " The syntastic directory does not have to be included in 
+    " 'runtimepath'. Actually, using both, the syntastic and checksyntax 
+    " plugin, simultaneously could cause conflicts.
+    "
+    " The value must not include a trailing (back)slash.
+    " Optinally, the value may also point directly to the 
+    " 'syntax_checkers' subdirectory.
+    "
+    " NOTE: Not all syntastic syntax checkers definitions are guaranteed 
+    " to work with checksyntax.
+    let g:checksyntax#syntastic_dir = ''   "{{{2
 endif
 
 
@@ -81,23 +107,6 @@ if !exists('g:checksyntax#run_alternatives')
     "     first ... Use the first valid entry
     "     all   ... Run all valid alternatives one after another
     let g:checksyntax#run_alternatives = 'first'   "{{{2
-endif
-
-
-if !exists('g:checksyntax#syntastic_dir')
-    " The directory where the syntastic plugin (see 
-    " https://github.com/scrooloose/syntastic/) is installed.
-    " If non-empty, use syntastic syntax checkers if available and if 
-    " checksyntax does not have one defined for the current filetype.
-    " The syntastic directory does not have to be included in 
-    " 'runtimepath'.
-    "
-    " The value must not include a trailing (back)slash.
-    " Optinally, the value may also point directly to the 
-    " 'syntax_checkers' subdirectory.
-    "
-    " NOTE: Experimental feature.
-    let g:checksyntax#syntastic_dir = ''   "{{{2
 endif
 
 
@@ -235,6 +244,7 @@ function! s:Make(filetype, def)
 endf
 
 
+" Run |:make| based on a syntax checker definition.
 function! checksyntax#Make(def) "{{{3
     " TLogVAR a:def
     let type = get(a:def, 'listtype', 'loc')
@@ -396,9 +406,15 @@ function! s:GetDef(filetype) "{{{3
 endf
 
 
-" :def: function! checksyntax#Check(manually, ?bang='', ?type=&ft, ?background=1)
+" :def: function! checksyntax#Check(manually, ?bang='', ?filetype=&ft, ?background=1)
+" Perform a syntax check.
+" If bang is not empty, run all alternatives (see 
+" |g:checksyntax#run_alternatives|).
+" If filetype is empty, the current buffer's 'filetype' will be used.
+" If background is true, display the list of issues in the background, 
+" i.e. the active window will keep the focus.
 function! checksyntax#Check(manually, ...)
-    let bang = a:0 >= 1 && a:1 != '' ? 1 : 0
+    let bang = a:0 >= 1 ? !empty(a:1) : 0
     let filetype   = a:0 >= 2 && a:2 != '' ? a:2 : &filetype
     let bg   = a:0 >= 3 && a:3 != '' ? a:3 : 0
     " TLogVAR a:manually, bang, filetype, bg
@@ -548,6 +564,7 @@ function! s:FilterItem(def, val) "{{{3
 endf
 
 
+" :nodoc:
 " :display: checksyntax#CopyFunction(old, new, overwrite=0)
 function! checksyntax#CopyFunction(old, new, ...) "{{{3
     let overwrite = a:0 >= 1 ? a:1 : 0
@@ -578,6 +595,7 @@ function! checksyntax#CopyFunction(old, new, ...) "{{{3
 endf
 
 
+" Define a syntax checker definition for a given filetype.
 function! checksyntax#Alternative(filetype, alternative) "{{{3
     if has_key(g:checksyntax, a:filetype)
         if !has_key(g:checksyntax[a:filetype], 'alternatives')
