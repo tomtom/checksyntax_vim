@@ -101,3 +101,46 @@ version: "1.03"
   MD5 checksum: dfe8b09008f5106fdf7886d4c4cd5fb6
 version: "2.00"
 
+  - Enable syntax checks when loading a file (disabled by default)
+  - g:checksyntax#auto_mode: Default auto mode (fixes #10)
+  - g:checksyntax#debug
+  - s:GetDef(ft): Remove syntax checker definition if the command is not executable
+  - Fix duplicate errors (closes bug #7)
+  - checksyntax#auto_mode: 0 disable, 1 enable, 2 force (fixes #12)
+  - checksyntax: "if" and "alternatives" fields; removed g:checksyntax_javascript
+  - define g:checksyntax in plugin/checksyntax.vim in order to facilitate customisation
+  - s:GetDef(ft): If empty(rv), check if the rest of alternatives is empty
+  - Move syntax checker definitions to autoload/checksyntax/&filetype.vim
+  - php: run with php -l -d error_log= -d error_reporting=E_PARSE
+  - Remove outdated references to failrx and okrx
+  - Move syntax checker definitions to autoload/checksyntax/defs/
+  - Experimental support for syntastic syntax checkers.
+  - debug message
+  - Support for SyntasticLoadChecker()
+  - checksyntax#Require(): Return 0 if filetype is empty
+  - efm for jruby (see https://github.com/tomtom/checksyntax_vim/pull/13)
+  - Run php with "-d display_errors=0" (fixes #7)
+  - php: Use -d display_errors=0
+  - checksyntax#syntastic#Require(): Make sure not to replace existing defintions
+  - Experimental: Prepare for running all valid alternatives
+  - Prepare for run_alternatives == "all"
+  - Javascript: Support for jslint (fixes #14)
+  - Run multiple syntax checkers (fixes #15)
+  - javascript: Remove run_alternatives = all
+  - Improved running all alternatives
+  - Improved support for syntastic syntax checkers (in conjunction with run_alternatives == all)
+  - :CheckSyntax! runs all alternatives (not the alternative syntax checker); use g:checksyntax#preferred for selecting the preferred checker
+  - checksyntax#Name(): Also consider the value of compiler
+  - s:CompleteItem(): Improved display of error message
+  - checksyntax#Alternative(): Define an alternative
+  - Updated syntax checker definitions for java, php, python
+  - checksyntax#syntastic#Require(): Use checksyntax#Alternative()
+  - checksyntax#syntastic#Require(): handle yet undefined filetypes
+  - Syntastic: Improved display of the checker name
+  - Support for bash -n
+  - Call bash -n only if shell =~ bash
+  - Facilitate configuration of g:checksyntax#prototypes.
+  - Map <c-f5> to CheckSyntax!
+  MD5 checksum: dfe8b09008f5106fdf7886d4c4cd5fb6
+version: "2.00"
+
