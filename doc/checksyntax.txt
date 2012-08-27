@@ -39,14 +39,9 @@ See the autoload/checksyntax/defs/ directory for a complete list of
 supported syntax checkers. See |g:checksyntax| also for how to define 
 your own syntax checkers.
 
-If a copy of syntastic's syntax checker defintions is stored on your 
-computer, those can be used too -- see |g:checksyntax#syntastic_dir|.
-
 This plugin was originally based on Klaus Horsten's php_console 
 (vimscript #779) and it is the successor of php_check_syntax.vim 
-(vimscript #1272). In opposition to php_console, it is not a php 
-ftplugin but a general solution for checking the syntax when saving a 
-file (using the appropriate interpreter, lint or whatsoever).
+(vimscript #1272).
 
 
 -----------------------------------------------------------------------

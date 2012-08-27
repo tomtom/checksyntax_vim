@@ -8,19 +8,20 @@ the list of syntax errors.
 If vimscript #2584 is installed, lines containing syntax errors will be marked 
 with signs.
 
-As the plugin doesn't provide syntax checks by its own, the external 
-syntax checker has to be installed on your computer.
-
 By default, |:CheckSyntax| is mapped to <F5> (if not mapped already), 
 and automatically executed when saving the buffer. The |:CheckSyntax| 
 command takes one optional argument: the mode (default: &filetype).
+<C-F5> will run all syntax checkers for a given filetype if multiple 
+alternatives are defined and installed on your computer.
 
-The following modes are pre-defined (syntax checking requires the 
-respective syntax checker software to be installed):
+As the plugin doesn't provide syntax checks by its own. This is done by 
+an external syntax checker that has to be installed on your computer.
+
+For the following filetypes, syntax checkers are pre-defined:
 
     c, cpp :: Check syntax via splint
     html :: Check syntax via tidy
-    javascript :: Check syntax via jsl or gjslint
+    javascript :: Check syntax via jslint, jshint, jsl, or gjslint
     java :: Check syntax via jlint or javaCheckstyle
     lua :: Parse file (luac -p)
     php  :: Check syntax (php -l)
@@ -31,14 +32,13 @@ respective syntax checker software to be installed):
     tex, latex :: Parse file (chktex -q -v0; no auto-checks)
     xml, docbk :: Check syntax via xmllint
 
-See |g:checksyntax| for a complete list. See |g:checksyntax| also for 
-how to define your own syntax checkers.
+See the autoload/checksyntax/defs/ directory for a complete list of 
+supported syntax checkers. See |g:checksyntax| also for how to define 
+your own syntax checkers.
 
 This plugin was originally based on Klaus Horsten's php_console 
 (vimscript #779) and it is the successor of php_check_syntax.vim 
-(vimscript #1272). In opposition to php_console, it is not a php 
-ftplugin but a general solution for checking the syntax when saving a 
-file (using the appropriate interpreter, lint or whatsoever).
+(vimscript #1272).
 
 
 -----------------------------------------------------------------------
