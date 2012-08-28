@@ -3,8 +3,8 @@
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2010-01-03.
-" @Last Change: 2012-08-24.
-" @Revision:    604
+" @Last Change: 2012-08-28.
+" @Revision:    633
 
 
 if !exists('g:checksyntax#auto_mode')
@@ -36,6 +36,7 @@ if !exists('g:checksyntax')
     "   ignore_nr ... A list of error numbers that should be ignored.
     "   listtype ... Either loc (default) or qfl
     "   include ... Include another definition
+    "   process_list ... Process a list of issues
     "   if ... An expression to test *once* whether a syntax checker 
     "            should be used.
     "   if_executable ... Test whether an application is executable.
@@ -526,14 +527,22 @@ function! s:Run_sync(all_issues, name, filetype, def) "{{{3
             let use_qfl = 1
         endif
         let list = g:checksyntax#prototypes[type].Get()
-        " TLogVAR len(list)
-        " TLogVAR type, list
-        let list = filter(list, 's:FilterItem(def, v:val)')
-        " TLogVAR len(list)
         " TLogVAR type, list
         if !empty(list)
-            let list = map(list, 's:CompleteItem(a:name, def, v:val)')
-            call extend(a:all_issues, list)
+            if has_key(def, 'process_list')
+                let list = call(def.process_list, [list])
+            endif
+            " TLogVAR len(list)
+            " TLogVAR type, list
+            if !empty(list)
+                let list = filter(list, 's:FilterItem(def, v:val)')
+                " TLogVAR len(list)
+                " TLogVAR type, list
+                if !empty(list)
+                    let list = map(list, 's:CompleteItem(a:name, def, v:val)')
+                    call extend(a:all_issues, list)
+                endif
+            endif
         endif
     endif
     return use_qfl
