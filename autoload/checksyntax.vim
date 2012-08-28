@@ -341,7 +341,9 @@ endf
 
 function! s:CleanAlternatives(filetype, run_alternatives, alternatives) "{{{3
     let valid = []
+    let i = -1
     for alternative in a:alternatives
+        let i += 1
         if s:ValidAlternative(alternative)
             if has_key(alternative, 'cmd')
                 let cmd = s:Cmd(alternative)
@@ -351,6 +353,7 @@ function! s:CleanAlternatives(filetype, run_alternatives, alternatives) "{{{3
                     if g:checksyntax#debug
                         echom "CheckSyntax: Not an executable, remove checker:" cmd printf("(%s)", a:filetype)
                     endif
+                    call remove(a:alternatives, i)
                     continue
                 endif
             endif
@@ -368,7 +371,9 @@ let s:run_alternatives_all = 0
 
 " :nodoc:
 function! checksyntax#RunAlternativesMode(def) "{{{3
-    return s:run_alternatives_all || get(a:def, 'run_alternatives', g:checksyntax#run_alternatives)
+    let rv = s:run_alternatives_all ? 'all' : get(a:def, 'run_alternatives', g:checksyntax#run_alternatives)
+    " TLogVAR a:def, rv
+    return rv
 endf
 
 
@@ -386,16 +391,18 @@ function! s:GetDef(filetype) "{{{3
     endif
     if !empty(dict)
         let alternatives = get(rv, 'alternatives', [])
+        " TLogVAR alternatives
         if !empty(alternatives)
             let alternatives = s:CleanAlternatives(a:filetype, checksyntax#RunAlternativesMode(rv), alternatives)
+            " TLogVAR alternatives
             if len(alternatives) == 0
                 let rv = {}
-            elseif len(alternatives) == 1
-                let rv = alternatives[0]
-                let dict[a:filetype] = rv
             else
-                let rv.alternatives = alternatives
-                let dict[a:filetype] = rv
+                if len(alternatives) == 1
+                    let rv = alternatives[0]
+                else
+                    let rv.alternatives = alternatives
+                endif
             endif
         endif
         if empty(rv)
@@ -465,6 +472,7 @@ function! checksyntax#Check(manually, ...)
         let use_qfl = 0
         let all_issues = []
         for make_def in defs
+            " TLogVAR make_def
             let name = checksyntax#Name(make_def)
             if run_alternatives =~? '\<async\>'   " TODO: support asynchronous execution
                 throw "CheckSyntax: Not supported yet: run_alternatives = ". string(run_alternatives)
