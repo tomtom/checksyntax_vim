@@ -2,8 +2,8 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2012-07-08.
-" @Last Change: 2012-08-23.
-" @Revision:    137
+" @Last Change: 2012-08-28.
+" @Revision:    140
 
 
 if !exists('g:checksyntax#syntastic#auto')
@@ -28,6 +28,7 @@ endif
 
 
 if !exists('*SyntasticMake')
+    " :nodoc:
     function SyntasticMake(options)
         " TLogVAR a:options
         let def = {
@@ -45,6 +46,7 @@ endif
 
 
 if !exists('*SyntasticLoadChecker')
+    " :nodoc:
     function SyntasticLoadChecker(checkers)
         let fn = 'SyntaxCheckers_'. &filetype .'_GetLocList'
         for prg in a:checkers
@@ -69,12 +71,14 @@ endif
 
 
 if !exists('*SyntasticHighlightErrors')
+    " :nodoc:
     function! SyntasticHighlightErrors(errors, termfunc, ...)
         " dummy
     endf
 endif
 
 
+" :nodoc:
 function! checksyntax#syntastic#Require(filetype) "{{{3
     " TLogVAR a:filetype
     if checksyntax#RunAlternativesMode(get(g:checksyntax, a:filetype, {})) =~? '\<first\>'

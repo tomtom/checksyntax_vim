@@ -4,17 +4,26 @@
 " @Created:     04-Mai-2005.
 " @Last Change: 2012-08-28.
 " GetLatestVimScripts: 1431 0 :AutoInstall: checksyntax.vim
-" @Revision:    419
+" @Revision:    421
 
 if exists('g:loaded_checksyntax')
     finish
 endif
-let g:loaded_checksyntax = 200
+let g:loaded_checksyntax = 201
 
 
 if !exists('g:checksyntax')
     let g:checksyntax = {}
 endif
+
+
+" :display: CheckSyntax[!] [NAME]
+" Check the current buffer's syntax (type defaults to &filetype).
+" Or use NAME instead of &filetype.
+"
+" With the bang !, run all alternatives (see 
+" |g:checksyntax#run_alternatives|).
+command! -bang -nargs=? CheckSyntax call checksyntax#Check(1, "<bang>", <f-args>)
 
 
 " @TPluginInclude
@@ -54,15 +63,6 @@ augroup CheckSyntax
                     \ | endif
     endif
 augroup END
-
-
-" :display: CheckSyntax[!] [NAME]
-" Check the current buffer's syntax (type defaults to &filetype).
-" Or use NAME instead of &filetype.
-"
-" With the bang !, run all alternatives (see 
-" |g:checksyntax#run_alternatives|).
-command! -bang -nargs=? CheckSyntax call checksyntax#Check(1, "<bang>", <f-args>)
 
 
 " @TPluginInclude

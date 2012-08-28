@@ -28,11 +28,10 @@ For the following filetypes, syntax checkers are pre-defined:
     java :: Check syntax via jlint or javaCheckstyle
     lua :: Parse file (luac -p)
     php  :: Check syntax (php -l)
-    phpp :: Parse a file (php -f) (alternative php checker)
-    python :: Check file with pyflakes
-    pylint :: Use the pylint compiler plugin (alternative python checker)
-    ruby :: Check syntax (ruby -c; no auto-checks)
-    tex, latex :: Parse file (chktex -q -v0; no auto-checks)
+    python :: Check file with pyflakes or pylint
+    r :: Check syntax & style with lint::lint or svTools::lint
+    ruby :: Check syntax (ruby -c)
+    tex, latex :: Parse file (chktex -q -v0)
     xml, docbk :: Check syntax via xmllint
 
 See the autoload/checksyntax/defs/ directory for a complete list of 
@@ -59,36 +58,30 @@ please make sure, you have the current version of vimball (vimscript
 ========================================================================
 Contents~
 
-        g:checksyntax_auto ............... |g:checksyntax_auto|
-        :CheckSyntax ..................... |:CheckSyntax|
-        <F5> ............................. |<F5>|
-        i_<F5> ........................... |i_<F5>|
-        <F5> ............................. |<F5>|
-        i_<F5> ........................... |i_<F5>|
-        g:checksyntax#auto_mode .......... |g:checksyntax#auto_mode|
-        g:checksyntax .................... |g:checksyntax|
-        g:checksyntax#syntastic_dir ...... |g:checksyntax#syntastic_dir|
-        g:checksyntax#preferred .......... |g:checksyntax#preferred|
-        g:checksyntax#run_alternatives ... |g:checksyntax#run_alternatives|
-        CheckSyntaxSucceed ............... |CheckSyntaxSucceed()|
-        CheckSyntaxFail .................. |CheckSyntaxFail()|
-        g:checksyntax#prototypes ......... |g:checksyntax#prototypes|
-        checksyntax#Make ................. |checksyntax#Make()|
-        checksyntax#Require .............. |checksyntax#Require()|
-        checksyntax#Check ................ |checksyntax#Check()|
-        checksyntax#Alternative .......... |checksyntax#Alternative()|
+        :CheckSyntax ............................... |:CheckSyntax|
+        g:checksyntax_key_single ................... |g:checksyntax_key_single|
+        g:checksyntax_key_all ...................... |g:checksyntax_key_all|
+        g:checksyntax_auto ......................... |g:checksyntax_auto|
+        g:checksyntax#auto_mode .................... |g:checksyntax#auto_mode|
+        g:checksyntax .............................. |g:checksyntax|
+        g:checksyntax#syntastic_dir ................ |g:checksyntax#syntastic_dir|
+        g:checksyntax#preferred .................... |g:checksyntax#preferred|
+        g:checksyntax#run_alternatives ............. |g:checksyntax#run_alternatives|
+        CheckSyntaxSucceed ......................... |CheckSyntaxSucceed()|
+        CheckSyntaxFail ............................ |CheckSyntaxFail()|
+        g:checksyntax#prototypes ................... |g:checksyntax#prototypes|
+        checksyntax#Check .......................... |checksyntax#Check()|
+        g:checksyntax#syntastic#auto ............... |g:checksyntax#syntastic#auto|
+        g:checksyntax#syntastic#filetype_rx ........ |g:checksyntax#syntastic#filetype_rx|
+        g:checksyntax#syntastic#blacklist .......... |g:checksyntax#syntastic#blacklist|
+        g:checksyntax#defs#r#progname .............. |g:checksyntax#defs#r#progname|
+        g:checksyntax#defs#r#options ............... |g:checksyntax#defs#r#options|
+        g:checksyntax['r'] ......................... |g:checksyntax['r']|
+        g:checksyntax#defs#ruby#interpreter ........ |g:checksyntax#defs#ruby#interpreter|
 
 
 ========================================================================
 plugin/checksyntax.vim~
-
-                                                    *g:checksyntax_auto*
-g:checksyntax_auto             (default: 1)
-    If 1, enable automatic syntax checks after saving a file.
-    If 2, enable automatic syntax checks when saving and loading a 
-    file.
-    NOTE: This variable must be customized in vimrc before loading 
-    this plugin.
 
                                                     *:CheckSyntax*
 CheckSyntax[!] [NAME]
@@ -98,17 +91,23 @@ CheckSyntax[!] [NAME]
     With the bang !, run all alternatives (see 
     |g:checksyntax#run_alternatives|).
 
-                                                    *<F5>*
-<F5> ... :CheckSyntax<cr>
+                                                    *g:checksyntax_key_single*
+g:checksyntax_key_single       (default: '<F5>')
+    Map for running the preferred syntax checkers on the current 
+    buffer.
 
-                                                    *i_<F5>*
-i_<F5> ... <c-o>:CheckSyntax<cr>
+                                                    *g:checksyntax_key_all*
+g:checksyntax_key_all          (default: '<C-F5>')
+    Map for running all suitable syntax checkers on the current 
+    buffer.
 
-                                                    *<F5>*
-<F5> ... :CheckSyntax!<cr>
-
-                                                    *i_<F5>*
-i_<F5> ... <c-o>:CheckSyntax!<cr>
+                                                    *g:checksyntax_auto*
+g:checksyntax_auto             (default: 1)
+    If 1, enable automatic syntax checks after saving a file.
+    If 2, enable automatic syntax checks when saving and loading a 
+    file.
+    NOTE: This variable must be customized in vimrc before loading 
+    this plugin.
 
 
 ========================================================================
@@ -139,6 +138,7 @@ g:checksyntax                  (default: {...})
       ignore_nr ... A list of error numbers that should be ignored.
       listtype ... Either loc (default) or qfl
       include ... Include another definition
+      process_list ... Process a list of issues
       if ... An expression to test *once* whether a syntax checker 
                should be used.
       if_executable ... Test whether an application is executable.
@@ -161,6 +161,7 @@ g:checksyntax                  (default: {...})
       lua          ... Requires luac
       php          ... Syntax check; requires php
       python       ... Requires pyflakes or pylint
+      r            ... Requires lint::lint or svTools::lint
       ruby         ... Requires ruby
       tex, latex   ... Requires chktex
       viki         ... Requires deplate
@@ -217,13 +218,6 @@ g:checksyntax#prototypes       (default: {'loc': {}, 'qfl': {}})
     Contains prototype definitions for syntax checkers that use the 
     |location-list| ("loc") or the |quixfix|-list.
 
-                                                    *checksyntax#Make()*
-checksyntax#Make(def)
-    Run |:make| based on a syntax checker definition.
-
-                                                    *checksyntax#Require()*
-checksyntax#Require(filetype)
-
                                                     *checksyntax#Check()*
 checksyntax#Check(manually, ?bang='', ?filetype=&ft, ?background=1)
     Perform a syntax check.
@@ -233,9 +227,48 @@ checksyntax#Check(manually, ?bang='', ?filetype=&ft, ?background=1)
     If background is true, display the list of issues in the background, 
     i.e. the active window will keep the focus.
 
-                                                    *checksyntax#Alternative()*
-checksyntax#CopyFunction(old, new, overwrite=0)
-    Define a syntax checker definition for a given filetype.
+
+========================================================================
+autoload/checksyntax/syntastic.vim~
+
+                                                    *g:checksyntax#syntastic#auto*
+g:checksyntax#syntastic#auto   (default: 0)
+    If true, mark syntastic syntax checkers as automatic checkers. See 
+    |g:checksyntax#auto_mode| and |g:checksyntax|.
+
+                                                    *g:checksyntax#syntastic#filetype_rx*
+g:checksyntax#syntastic#filetype_rx (default: '.')
+    Use syntastic's syntax checkers for filetypes that match this 
+    |regexp|. 
+    The value "." matches all filetypes.
+
+                                                    *g:checksyntax#syntastic#blacklist*
+g:checksyntax#syntastic#blacklist (default: [])
+    Don't load syntastic syntax checkers for these filetypes.
+
+
+========================================================================
+autoload/checksyntax/defs/r.vim~
+
+                                                    *g:checksyntax#defs#r#progname*
+g:checksyntax#defs#r#progname  (default: executable('Rterm') ? 'Rterm' : 'R')
+
+                                                    *g:checksyntax#defs#r#options*
+g:checksyntax#defs#r#options   (default: '--slave --no-save --vanilla -e "%s" --args')
+
+                                                    *g:checksyntax['r']*
+g:checksyntax['r']             (default: {...})
+    Syntax checkers for R:
+
+      lint::lint ... See http://cran.r-project.org/web/packages/lint/
+      svTools::lint ... See http://cran.r-project.org/web/packages/svTools/
+
+
+========================================================================
+autoload/checksyntax/defs/ruby.vim~
+
+                                                    *g:checksyntax#defs#ruby#interpreter*
+g:checksyntax#defs#ruby#interpreter (default: system('ruby --version'))
 
 
 

@@ -4,7 +4,7 @@
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2010-01-03.
 " @Last Change: 2012-08-28.
-" @Revision:    633
+" @Revision:    659
 
 
 if !exists('g:checksyntax#auto_mode')
@@ -59,6 +59,7 @@ if !exists('g:checksyntax')
     "   lua          ... Requires luac
     "   php          ... Syntax check; requires php
     "   python       ... Requires pyflakes or pylint
+    "   r            ... Requires lint::lint or svTools::lint
     "   ruby         ... Requires ruby
     "   tex, latex   ... Requires chktex
     "   viki         ... Requires deplate
@@ -245,6 +246,7 @@ function! s:Make(filetype, def)
 endf
 
 
+" :nodoc:
 " Run |:make| based on a syntax checker definition.
 function! checksyntax#Make(def) "{{{3
     " TLogVAR a:def
@@ -286,6 +288,7 @@ endf
 
 let s:loaded_checkers = {}
 
+" :nodoc:
 function! checksyntax#Require(filetype) "{{{3
     if empty(a:filetype)
         return 0
@@ -488,6 +491,7 @@ function! checksyntax#Check(manually, ...)
         " echom "DBG 1" string(list)
         let type = use_qfl > 0 ? 'qfl' : 'loc'
         if empty(all_issues)
+            call g:checksyntax#prototypes[type].Set(all_issues)
             call CheckSyntaxSucceed(type, a:manually)
         else
             " TLogVAR all_issues
@@ -532,18 +536,20 @@ function! s:Run_sync(all_issues, name, filetype, def) "{{{3
         endif
         let list = g:checksyntax#prototypes[type].Get()
         " TLogVAR type, list
+        " TLogVAR 1, len(list)
         if !empty(list)
             if has_key(def, 'process_list')
                 let list = call(def.process_list, [list])
             endif
-            " TLogVAR len(list)
+            " TLogVAR 2, len(list)
             " TLogVAR type, list
             if !empty(list)
                 let list = filter(list, 's:FilterItem(def, v:val)')
-                " TLogVAR len(list)
+                " TLogVAR 3, len(list)
                 " TLogVAR type, list
                 if !empty(list)
                     let list = map(list, 's:CompleteItem(a:name, def, v:val)')
+                    " TLogVAR type, list
                     call extend(a:all_issues, list)
                 endif
             endif
@@ -616,6 +622,7 @@ function! checksyntax#CopyFunction(old, new, ...) "{{{3
 endf
 
 
+" :nodoc:
 " Define a syntax checker definition for a given filetype.
 function! checksyntax#Alternative(filetype, alternative) "{{{3
     if has_key(g:checksyntax, a:filetype)

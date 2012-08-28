@@ -2,7 +2,7 @@
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2012-08-28.
 " @Last Change: 2012-08-28.
-" @Revision:    0.0.60
+" @Revision:    0.0.61
 
 if !exists('g:checksyntax#defs#r#progname')
     let g:checksyntax#defs#r#progname = executable('Rterm') ? 'Rterm' : 'R'   "{{{2
@@ -40,6 +40,7 @@ if !exists('g:checksyntax.r')
 endif
 
 
+" :nodoc:
 function! checksyntax#defs#r#LintLint(list) "{{{3
     " TLogVAR a:list
     let list = []
