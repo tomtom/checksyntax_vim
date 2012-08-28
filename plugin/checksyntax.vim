@@ -2,9 +2,9 @@
 " @Author:      Tom Link (micathom AT gmail com)
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     04-Mai-2005.
-" @Last Change: 2012-08-24.
+" @Last Change: 2012-08-28.
 " GetLatestVimScripts: 1431 0 :AutoInstall: checksyntax.vim
-" @Revision:    415
+" @Revision:    419
 
 if exists('g:loaded_checksyntax')
     finish
@@ -14,6 +14,22 @@ let g:loaded_checksyntax = 200
 
 if !exists('g:checksyntax')
     let g:checksyntax = {}
+endif
+
+
+" @TPluginInclude
+if !exists('g:checksyntax_key_single')
+    " Map for running the preferred syntax checkers on the current 
+    " buffer.
+    let g:checksyntax_key_single = '<F5>'   "{{{2
+endif
+
+
+" @TPluginInclude
+if !exists('g:checksyntax_key_all')
+    " Map for running all suitable syntax checkers on the current 
+    " buffer.
+    let g:checksyntax_key_all = '<C-F5>'   "{{{2
 endif
 
 
@@ -51,17 +67,17 @@ command! -bang -nargs=? CheckSyntax call checksyntax#Check(1, "<bang>", <f-args>
 
 " @TPluginInclude
 if !hasmapto(':CheckSyntax')
-    if empty(maparg('<F5>', 'n'))
-        noremap <F5> :CheckSyntax<cr>
+    if empty(maparg(g:checksyntax_key_single, 'n'))
+        exec 'noremap' g:checksyntax_key_single ':CheckSyntax<cr>'
     endif
-    if empty(maparg('<F5>', 'i'))
-        inoremap <F5> <c-o>:CheckSyntax<cr>
+    if empty(maparg(g:checksyntax_key_single, 'i'))
+        exec 'inoremap' g:checksyntax_key_single '<c-o>:CheckSyntax<cr>'
     endif
-    if empty(maparg('<C-F5>', 'n'))
-        noremap <F5> :CheckSyntax!<cr>
+    if empty(maparg(g:checksyntax_key_all, 'n'))
+        exec 'noremap' g:checksyntax_key_all ':CheckSyntax!<cr>'
     endif
-    if empty(maparg('<C-F5>', 'i'))
-        inoremap <F5> <c-o>:CheckSyntax!<cr>
+    if empty(maparg(g:checksyntax_key_all, 'i'))
+        exec 'inoremap' g:checksyntax_key_all '<c-o>:CheckSyntax!<cr>'
     endif
 endif
 
