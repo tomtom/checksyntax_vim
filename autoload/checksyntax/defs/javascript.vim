@@ -2,8 +2,8 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2012-07-02.
-" @Last Change: 2012-08-22.
-" @Revision:    10
+" @Last Change: 2012-08-28.
+" @Revision:    17
 
 
 if !exists('g:checksyntax.javascript')
@@ -20,6 +20,11 @@ if !exists('g:checksyntax.javascript')
                 \         'name': 'jslint',
                 \         'cmd': 'jslint --terse',
                 \         'efm': '%f(%l):%m',
+                \     },
+                \     {
+                \         'name': 'jshint',
+                \         'cmd': 'jshint',
+                \         'efm': '%f: line %l\, col %c\, %m',
                 \     },
                 \     {
                 \         'name': 'jsl',
