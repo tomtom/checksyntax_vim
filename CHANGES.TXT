@@ -144,3 +144,13 @@ version: "2.00"
   MD5 checksum: dfe8b09008f5106fdf7886d4c4cd5fb6
 version: "2.00"
 
+version: "2.01"
+  - Extra syntax checker definitions was prematurely removed after running a single syntax checker
+  - Facilitate customization of maps (g:checksyntax_key_single, g:checksyntax_key_all)
+  - process_list attribute for syntax checker definitions
+  - Support for R (lint::lint, svTools::lint)
+  - s:Executable(): Run executable() only once
+  - SyntasticLoadChecker(): Accept filetype as optional argument
+  - Support for jshint
+  MD5 checksum: 617a9cc8fd1fac7533e75b721106f2ad
+
