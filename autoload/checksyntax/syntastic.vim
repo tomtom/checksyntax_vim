@@ -47,21 +47,22 @@ endif
 
 if !exists('*SyntasticLoadChecker')
     " :nodoc:
-    function SyntasticLoadChecker(checkers)
-        let fn = 'SyntaxCheckers_'. &filetype .'_GetLocList'
+    function SyntasticLoadChecker(checkers, ...)
+        let filetype = a:0 >= 1 ? a:1 : &filetype
+        let fn = 'SyntaxCheckers_'. filetype .'_GetLocList'
         for prg in a:checkers
-            let name = &filetype .'_'. prg
+            let name = filetype .'_'. prg
             " TLogVAR name
             if index(s:require_names, name) == -1 && executable(prg)
-                call s:Load(&filetype .'/'. prg)
+                call s:Load(filetype .'/'. prg)
                 if exists('*'. fn)
                     " TLogVAR fn
                     let s:require_blacklist = 0
-                    if checksyntax#RunAlternativesMode(g:checksyntax[&filetype]) =~? '\<first\>'
-                        call s:ProcessChecker(prg, &filetype, &filetype)
+                    if checksyntax#RunAlternativesMode(g:checksyntax[filetype]) =~? '\<first\>'
+                        call s:ProcessChecker(prg, filetype, filetype)
                         break
                     else
-                        call s:ProcessChecker(prg, name, &filetype)
+                        call s:ProcessChecker(prg, name, filetype)
                     endif
                 endif
             endif
