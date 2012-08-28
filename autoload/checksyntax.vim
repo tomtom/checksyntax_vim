@@ -329,11 +329,21 @@ function! checksyntax#Name(def) "{{{3
 endf
 
 
+let s:executables = {}
+
+function! s:Executable(cmd) "{{{3
+    if !has_key(s:executables, a:cmd)
+        let s:executables[a:cmd] = executable(a:cmd) != 0
+    endif
+    return s:executables[a:cmd]
+endf
+
+
 function! s:ValidAlternative(def) "{{{3
     if has_key(a:def, 'if')
         return eval(a:def.if)
     elseif has_key(a:def, 'if_executable')
-        return executable(a:def.if_executable) != 0
+        return s:Executable(a:def.if_executable)
     else
         return 1
     endif
@@ -342,19 +352,13 @@ endf
 
 function! s:CleanAlternatives(filetype, run_alternatives, alternatives) "{{{3
     let valid = []
-    let i = -1
     for alternative in a:alternatives
-        let i += 1
+        " TLogVAR alternative
         if s:ValidAlternative(alternative)
             if has_key(alternative, 'cmd')
                 let cmd = s:Cmd(alternative)
-                if empty(cmd) && g:checksyntax#debug
-                    echom "CheckSyntax: Cannot determine executable name:" alternative.cmd printf("(%s)", a:filetype)
-                elseif executable(cmd) == 0
-                    if g:checksyntax#debug
-                        echom "CheckSyntax: Not an executable, remove checker:" cmd printf("(%s)", a:filetype)
-                    endif
-                    call remove(a:alternatives, i)
+                " TLogVAR cmd
+                if !empty(cmd) && !s:Executable(cmd)
                     continue
                 endif
             endif
