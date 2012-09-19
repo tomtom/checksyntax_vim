@@ -25,11 +25,10 @@ For the following filetypes, syntax checkers are pre-defined:
     java :: Check syntax via jlint or javaCheckstyle
     lua :: Parse file (luac -p)
     php  :: Check syntax (php -l)
-    phpp :: Parse a file (php -f) (alternative php checker)
-    python :: Check file with pyflakes
-    pylint :: Use the pylint compiler plugin (alternative python checker)
-    ruby :: Check syntax (ruby -c; no auto-checks)
-    tex, latex :: Parse file (chktex -q -v0; no auto-checks)
+    python :: Check file with pyflakes or pylint
+    r :: Check syntax & style with lint::lint or svTools::lint
+    ruby :: Check syntax (ruby -c)
+    tex, latex :: Parse file (chktex -q -v0)
     xml, docbk :: Check syntax via xmllint
 
 See the autoload/checksyntax/defs/ directory for a complete list of 
