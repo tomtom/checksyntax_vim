@@ -3,8 +3,8 @@
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2010-01-03.
-" @Last Change: 2012-08-28.
-" @Revision:    659
+" @Last Change: 2012-09-19.
+" @Revision:    660
 
 
 if !exists('g:checksyntax#auto_mode')
@@ -233,6 +233,7 @@ function! s:Make(filetype, def)
         endif
     catch
         echohl Error
+        echom "Exception" v:exception "from" v:throwpoint
         echom v:errmsg
         echohl NONE
     finally
