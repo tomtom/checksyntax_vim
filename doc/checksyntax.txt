@@ -142,6 +142,8 @@ g:checksyntax                  (default: {...})
       if ... An expression to test *once* whether a syntax checker 
                should be used.
       if_executable ... Test whether an application is executable.
+      modified* ... If the buffer was modified, use an alternative 
+               checker
       alternatives* ... A list of syntax checker definitions (the first 
                one with a valid executable is used. If used, no other 
                elements are allowed. This list is checked only once.
