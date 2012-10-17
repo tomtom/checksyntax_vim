@@ -3,8 +3,8 @@
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2010-01-03.
-" @Last Change: 2012-09-19.
-" @Revision:    660
+" @Last Change: 2012-10-17.
+" @Revision:    671
 
 
 if !exists('g:checksyntax#auto_mode')
@@ -359,7 +359,7 @@ function! s:ValidAlternative(def) "{{{3
 endf
 
 
-function! s:CleanAlternatives(filetype, run_alternatives, alternatives) "{{{3
+function! s:GetValidAlternatives(filetype, run_alternatives, alternatives) "{{{3
     let valid = []
     for alternative in a:alternatives
         " TLogVAR alternative
@@ -407,20 +407,14 @@ function! s:GetDef(filetype) "{{{3
         let alternatives = get(rv, 'alternatives', [])
         " TLogVAR alternatives
         if !empty(alternatives)
-            let alternatives = s:CleanAlternatives(a:filetype, checksyntax#RunAlternativesMode(rv), alternatives)
+            let alternatives = s:GetValidAlternatives(a:filetype, checksyntax#RunAlternativesMode(rv), alternatives)
             " TLogVAR alternatives
             if len(alternatives) == 0
                 let rv = {}
             else
-                if len(alternatives) == 1
-                    let rv = alternatives[0]
-                else
-                    let rv.alternatives = alternatives
-                endif
+                let rv = copy(rv)
+                let rv.alternatives = alternatives
             endif
-        endif
-        if empty(rv)
-            call remove(dict, a:filetype)
         endif
     endif
     return rv
