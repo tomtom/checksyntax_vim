@@ -20,6 +20,9 @@ if !exists('g:checksyntax#debug')
     let g:checksyntax#debug = 0
 endif
 
+
+let s:top_level_fields = ['modified', 'auto', 'run_alternatives', 'alternatives']
+
 if !exists('g:checksyntax')
     " A dictionary {name/filetype => definition} of syntax checkers, where 
     " definition is a dictionary with the following fields:
@@ -40,6 +43,8 @@ if !exists('g:checksyntax')
     "   if ... An expression to test *once* whether a syntax checker 
     "            should be used.
     "   if_executable ... Test whether an application is executable.
+    "   modified* ... If the buffer was modified, use an alternative 
+    "            checker
     "   alternatives* ... A list of syntax checker definitions (the first 
     "            one with a valid executable is used. If used, no other 
     "            elements are allowed. This list is checked only once.
@@ -630,7 +635,7 @@ function! checksyntax#Alternative(filetype, alternative) "{{{3
         if !has_key(g:checksyntax[a:filetype], 'alternatives')
             let odef = g:checksyntax[a:filetype]
             let g:checksyntax[a:filetype] = {'alternatives': [odef]}
-            for key in ['modified', 'alt', 'auto']
+            for key in s:top_level_fields
                 if has_key(odef, key)
                     let g:checksyntax[a:filetype][key] = odef[key]
                 endif
