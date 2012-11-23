@@ -4,12 +4,12 @@
 " @Created:     04-Mai-2005.
 " @Last Change: 2012-08-28.
 " GetLatestVimScripts: 1431 0 :AutoInstall: checksyntax.vim
-" @Revision:    421
+" @Revision:    422
 
 if exists('g:loaded_checksyntax')
     finish
 endif
-let g:loaded_checksyntax = 201
+let g:loaded_checksyntax = 202
 
 
 if !exists('g:checksyntax')
