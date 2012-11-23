@@ -154,3 +154,10 @@ version: "2.01"
   - Support for jshint
   MD5 checksum: 617a9cc8fd1fac7533e75b721106f2ad
 
+  - Support for perl (by TheAthlete)
+  - s:Make(): Echo v:exception & v:throwpoint
+  - checksyntax#Alternative(): Copy top-level properties
+  - Don't change the checker definition when dealing with alternatives (reported by techlivezheng)
+  MD5 checksum: d2d95bcff1d039497bc9c95cdb7a0ea1
+version: "2.02"
+
