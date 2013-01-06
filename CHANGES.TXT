@@ -161,3 +161,7 @@ version: "2.01"
   MD5 checksum: d2d95bcff1d039497bc9c95cdb7a0ea1
 version: "2.02"
 
+version: "2.03"
+  - Included missing files in vba (fixes #16)
+  MD5 checksum: 40c9ea31d916db1ff5f22ec1c4af14c3
+
