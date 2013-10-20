@@ -195,7 +195,7 @@ g:checksyntax#syntastic_dir    (default: '')
     to work with checksyntax.
 
                                                     *g:checksyntax#preferred*
-g:checksyntax#preferred        (default: {})
+g:checksyntax#preferred        (default: {'xml': '.'})
     A dictionary of 'filetype' => |regexp|.
     If only one alternative should be run (see 
     |g:checksyntax#run_alternatives|), check only those syntax 
