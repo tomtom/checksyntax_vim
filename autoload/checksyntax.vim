@@ -4,7 +4,7 @@
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2010-01-03.
 " @Last Change: 2012-10-17.
-" @Revision:    671
+" @Revision:    681
 
 
 if !exists('g:checksyntax#auto_mode')
@@ -106,7 +106,7 @@ if !exists('g:checksyntax#preferred')
     " If only one alternative should be run (see 
     " |g:checksyntax#run_alternatives|), check only those syntax 
     " checkers whose names matches |regexp|.
-    let g:checksyntax#preferred = {}   "{{{2
+    let g:checksyntax#preferred = {'xml': '.'}   "{{{2
 endif
 
 if !exists('g:checksyntax#run_alternatives')
