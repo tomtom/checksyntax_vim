@@ -11,6 +11,12 @@ if !exists('g:checksyntax.javascript')
     let g:checksyntax['javascript'] = {
                 \ 'alternatives': [
                 \     {
+                \     {
+                \         'name': 'esprima',
+                \         'cmd': 'esvalidate',
+                \         'efm': '%f:%l: %m',
+                \     },
+                \     {
                 \         'name': 'gjslint',
                 \         'cmd': 'gjslint',
                 \         'ignore_nr': [1, 110],
