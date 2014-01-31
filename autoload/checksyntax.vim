@@ -4,7 +4,7 @@
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2010-01-03.
 " @Last Change: 2012-10-17.
-" @Revision:    896
+" @Revision:    923
 
 
 if !exists('g:checksyntax#auto_mode')
@@ -73,31 +73,8 @@ if !exists('g:checksyntax')
     "
     " Syntax checker definitions are kept in:
     " autoload/checksyntax/defs/{&filetype}.vim
-    "
-    " If |g:checksyntax#syntastic_dir| is set, syntastic's syntax 
-    " checkers can be used too.
     " :read: let g:checksyntax = {...}   "{{{2
     let g:checksyntax = {}
-endif
-
-
-if !exists('g:checksyntax#syntastic_dir')
-    " The directory where the syntastic plugin (see 
-    " https://github.com/scrooloose/syntastic/) is installed.
-    " If non-empty, use syntastic syntax checkers if available and if 
-    " checksyntax does not have one defined for the current filetype.
-    "
-    " The syntastic directory does not have to be included in 
-    " 'runtimepath'. Actually, using both, the syntastic and checksyntax 
-    " plugin, simultaneously could cause conflicts.
-    "
-    " The value must not include a trailing (back)slash.
-    " Optinally, the value may also point directly to the 
-    " 'syntax_checkers' subdirectory.
-    "
-    " NOTE: Not all syntastic syntax checkers definitions are guaranteed 
-    " to work with checksyntax.
-    let g:checksyntax#syntastic_dir = ''   "{{{2
 endif
 
 
@@ -247,18 +224,6 @@ function! s:Make(filetype, def)
                         \ 'call g:checksyntax#prototypes[type].Make("")',
                         \ 1)
 
-        elseif has_key(a:def, 'syntastic')
-
-            " TLogVAR a:def
-            try
-                call call(a:def.syntastic, [])
-                return 1
-            catch /^Vim\%((\a\+)\)\=:E117/
-                call remove(a:def, 'syntastic')
-                echom "CheckSytnax: Syntastic not supported for this filetype. Please add" a:filetype "to g:checksyntax#syntastic#blacklist (and report to the author of checksyntax.vim)"
-                call add(g:checksyntax#syntastic#blacklist, a:filetype)
-            endtry
-
         else
 
             return checksyntax#Make(a:def)
@@ -330,11 +295,6 @@ function! checksyntax#Require(filetype) "{{{3
         if !has_key(s:loaded_checkers, a:filetype)
             exec 'runtime! autoload/checksyntax/defs/'. a:filetype .'.vim'
             let s:loaded_checkers[a:filetype] = 1
-            if !has_key(g:checksyntax, a:filetype) || checksyntax#RunAlternativesMode(g:checksyntax[a:filetype]) !~? '\<first\>'
-                if !empty(g:checksyntax#syntastic_dir)
-                    call checksyntax#syntastic#Require(a:filetype)
-                endif
-            endif
         endif
         return has_key(g:checksyntax, a:filetype)
     endif
@@ -464,6 +424,7 @@ function! checksyntax#Check(manually, ...)
     let s:run_alternatives_all = bang
     try
         let defs = s:GetDefsByFiletype(a:manually, filetype)
+        " TLogVAR defs
         if !empty(defs.make_defs)
             if !exists('b:checksyntax_runs')
                 let b:checksyntax_runs = 1
@@ -493,7 +454,7 @@ function! checksyntax#Check(manually, ...)
                     call extend(make_def1, props)
                     let make_def1.name = name
                     if g:checksyntax#async_runner == 'asynccommand'
-                        let done = s:Run_asynccommand(make_def1)
+                        let done = checksyntax#Run_asynccommand(make_def1)
                     else
                         throw 'Checksyntax: Unsupported value for g:checksyntax#async_runner: '. string(g:checksyntax#async_runner)
                     endif
@@ -524,13 +485,16 @@ function! s:GetDefsByFiletype(manually, filetype) "{{{3
     call checksyntax#Require(a:filetype)
     let defs.mode = 'auto'
     let def = a:manually ? {} : s:GetDef(a:filetype .',auto')
+    " TLogVAR 1, def
     if empty(def)
         let def = s:GetDef(a:filetype)
+        " TLogVAR 2, def
     endif
     if &modified
         if has_key(def, 'modified')
             let defs.mode = 'auto'
             let def = s:GetDef(def.modified)
+            " TLogVAR 3, def
         else
             echohl WarningMsg
             echom "Buffer was modified. Please save it before calling :CheckSyntax."
@@ -555,8 +519,10 @@ function! s:GetDefsByFiletype(manually, filetype) "{{{3
     endif
     let defs.run_alternatives = checksyntax#RunAlternativesMode(def)
     " TLogVAR &makeprg, &l:makeprg, &g:makeprg, &errorformat
+    " TLogVAR def
     for make_def in get(def, 'alternatives', [def])
         let name = checksyntax#Name(make_def)
+        " TLogVAR name, make_def
         let defs.make_defs[name] = make_def
     endfor
     return defs
@@ -590,23 +556,24 @@ endf
 let s:pending = 0
 let s:all_issues = []
 
-function! s:Run_asynccommand(make_def) "{{{3
+function! checksyntax#Run_asynccommand(make_def) "{{{3
+    let make_def = a:make_def
     let cmd = ''
-    if has_key(a:make_def, 'cmd')
-        let cmd = get(a:make_def, 'cmd', '')
-        let cmd .= ' '. shellescape(a:make_def.filename)
-    elseif has_key(a:make_def, 'compiler')
-        let compiler_def = s:WithCompiler(a:make_def.compiler,
+    if has_key(make_def, 'cmd')
+        let cmd = get(make_def, 'cmd', '')
+        let cmd .= ' '. shellescape(make_def.filename)
+    elseif has_key(make_def, 'compiler')
+        let compiler_def = s:WithCompiler(make_def.compiler,
                     \ 'return s:ExtractCompilerParams()',
                     \ {})
         " TLogVAR compiler_def
         if !empty(compiler_def)
             let cmd = compiler_def.cmd
-            let a:make_def.efm = compiler_def.efm
+            let make_def.efm = compiler_def.efm
         endif
     endif
     if !empty(cmd)
-        let async_handler = s:AsyncCommandHandler(a:make_def)
+        let async_handler = s:AsyncCommandHandler(make_def)
         " TLogVAR cmd
         " TLogVAR async_handler
         let s:pending += 1
@@ -614,7 +581,7 @@ function! s:Run_asynccommand(make_def) "{{{3
         return 1
     else
         echohl WarningMsg
-        echom "CheckSyntax: Cannot run asynchronously: ". a:make_def.name
+        echom "CheckSyntax: Cannot run asynchronously: ". make_def.name
         echohl NONE
         return 0
     endif
@@ -667,7 +634,7 @@ function s:async_handler.get(temp_file_name) dict
             " TLogVAR list
             if g:checksyntax#debug
                 echo
-                echo printf('CheckSyntax: Processing %s (%s items)', self.name, len(list))
+                echom printf('CheckSyntax: Processing %s (%s items)', self.name, len(list))
             endif
             " TLogVAR self.name, len(list)
             if !empty(list)
@@ -818,6 +785,7 @@ endf
 " :nodoc:
 " Define a syntax checker definition for a given filetype.
 function! checksyntax#Alternative(filetype, alternative) "{{{3
+    " TLogVAR a:filetype, a:alternative
     if has_key(g:checksyntax, a:filetype)
         if !has_key(g:checksyntax[a:filetype], 'alternatives')
             let odef = g:checksyntax[a:filetype]
