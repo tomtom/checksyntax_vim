@@ -4,7 +4,7 @@
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2010-01-03.
 " @Last Change: 2012-10-17.
-" @Revision:    894
+" @Revision:    895
 
 
 if !exists('g:checksyntax#auto_mode')
@@ -503,7 +503,11 @@ function! checksyntax#Check(manually, ...)
                 endif
             endfor
             " echom "DBG 1" string(list)
-            call s:HandleIssues(a:manually, use_qfl, bg, all_issues)
+            if s:pending == 0
+                call s:HandleIssues(a:manually, use_qfl, bg, all_issues)
+            else
+                let s:all_issues += all_issues
+            endif
         endif
     finally
         let s:run_alternatives_all = 0
