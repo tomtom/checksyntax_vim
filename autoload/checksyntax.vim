@@ -4,7 +4,7 @@
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2010-01-03.
 " @Last Change: 2012-10-17.
-" @Revision:    923
+" @Revision:    924
 
 
 if !exists('g:checksyntax#auto_mode')
@@ -640,15 +640,15 @@ function s:async_handler.get(temp_file_name) dict
             if !empty(list)
                 let s:all_issues += list
                 " echom "DBG async_handler.get all_issues:" len(all_issues)
-                if s:pending == 0
-                    " let bg = self.bg
-                    let bg = 1
-                    " let manually = self.manually
-                    let manually = g:checksyntax#debug
-                    let use_qfl = self.async_type == 'qfl'
-                    " TLogVAR manually, bg, use_qfl
-                    call s:HandleIssues(manually, use_qfl, bg, s:all_issues)
-                endif
+            endif
+            if s:pending == 0
+                " let bg = self.bg
+                let bg = 1
+                " let manually = self.manually
+                let manually = g:checksyntax#debug
+                let use_qfl = self.async_type == 'qfl'
+                " TLogVAR manually, bg, use_qfl
+                call s:HandleIssues(manually, use_qfl, bg, s:all_issues)
             endif
         endif
     finally
