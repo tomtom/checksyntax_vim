@@ -8,8 +8,13 @@ the |location-list| is opened (users can redefine |CheckSyntaxFail()| to change
 this behaviour). You can use any |location-list| related command to navigate 
 the list of syntax errors.
 
-If vimscript #2584 is installed, lines containing syntax errors will be marked 
-with signs.
+If quickfixsigns (vimscript #2584) is installed, lines containing syntax errors 
+will be marked with signs.
+
+If AsyncCommand (vimscript #3431; https://github.com/pydave/AsyncCommand/) is 
+installed, syntax checks can be peformed asynchronously -- see also 
+|g:checksyntax#run_alternatives|, |g:checksyntax#run_all_alternatives| and 
+|g:checksyntax#async_runner|.
 
 By default, |:CheckSyntax| is mapped to <F5> (if not mapped already), 
 and automatically executed when saving the buffer. The |:CheckSyntax| 
@@ -54,6 +59,10 @@ See :help vimball for details. If you have difficulties or use vim 7.0,
 please make sure, you have the current version of vimball (vimscript 
 #1502) installed or update your runtime.
 
+Optional enhancements:
+    quickfixsigns (vimscript #2584) ... Use signs
+    AsyncCommand (vimscript #3431) ... Run commands asynchronously
+
 
 ========================================================================
 Contents~
@@ -67,6 +76,8 @@ Contents~
         g:checksyntax#syntastic_dir ................ |g:checksyntax#syntastic_dir|
         g:checksyntax#preferred .................... |g:checksyntax#preferred|
         g:checksyntax#run_alternatives ............. |g:checksyntax#run_alternatives|
+        g:checksyntax#run_all_alternatives ......... |g:checksyntax#run_all_alternatives|
+        g:checksyntax#async_runner ................. |g:checksyntax#async_runner|
         CheckSyntaxSucceed ......................... |CheckSyntaxSucceed()|
         CheckSyntaxFail ............................ |CheckSyntaxFail()|
         g:checksyntax#prototypes ................... |g:checksyntax#prototypes|
@@ -204,8 +215,25 @@ g:checksyntax#preferred        (default: {'xml': '.'})
                                                     *g:checksyntax#run_alternatives*
 g:checksyntax#run_alternatives (default: 'first')
     How to handle alternatives. Possible values:
+
         first ... Use the first valid entry
         all   ... Run all valid alternatives one after another
+
+    Alternatively, the following flag can be added in order to change 
+    how the alternatives are run:
+
+        async ... Run alternatives asynchronously (see also 
+                  |g:checksyntax#async_runner|)
+
+                                                    *g:checksyntax#run_all_alternatives*
+g:checksyntax#run_all_alternatives (default: 'all' . (g:checksyntax#run_alternatives =~ '\<async\>' ? ' async' : ''))
+    How to run "all" alternatives -- e.g., when calling the 
+    |:CheckSyntax| command with a bang.
+
+                                                    *g:checksyntax#async_runner*
+g:checksyntax#async_runner     (default: exists('g:loaded_asynccommand') ? 'asynccommand' : '')
+    Supported values:
+      asynccommand ... Use the Asynccommand plugin
 
                                                     *CheckSyntaxSucceed()*
 CheckSyntaxSucceed(type, manually)

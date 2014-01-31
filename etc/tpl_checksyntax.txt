@@ -8,8 +8,13 @@ the |location-list| is opened (users can redefine |CheckSyntaxFail()| to change
 this behaviour). You can use any |location-list| related command to navigate 
 the list of syntax errors.
 
-If vimscript #2584 is installed, lines containing syntax errors will be marked 
-with signs.
+If quickfixsigns (vimscript #2584) is installed, lines containing syntax errors 
+will be marked with signs.
+
+If AsyncCommand (vimscript #3431; https://github.com/pydave/AsyncCommand/) is 
+installed, syntax checks can be peformed asynchronously -- see also 
+|g:checksyntax#run_alternatives|, |g:checksyntax#run_all_alternatives| and 
+|g:checksyntax#async_runner|.
 
 By default, |:CheckSyntax| is mapped to <F5> (if not mapped already), 
 and automatically executed when saving the buffer. The |:CheckSyntax| 
@@ -53,6 +58,10 @@ Edit the vba file and type: >
 See :help vimball for details. If you have difficulties or use vim 7.0, 
 please make sure, you have the current version of vimball (vimscript 
 #1502) installed or update your runtime.
+
+Optional enhancements:
+    quickfixsigns (vimscript #2584) ... Use signs
+    AsyncCommand (vimscript #3431) ... Run commands asynchronously
 
 
 %s
