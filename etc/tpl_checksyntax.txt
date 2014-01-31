@@ -11,16 +11,17 @@ the list of syntax errors.
 If quickfixsigns (vimscript #2584) is installed, lines containing syntax errors 
 will be marked with signs.
 
-If AsyncCommand (vimscript #3431; https://github.com/pydave/AsyncCommand/) is 
-installed, syntax checks can be peformed asynchronously -- see also 
-|g:checksyntax#run_alternatives|, |g:checksyntax#run_all_alternatives| and 
-|g:checksyntax#async_runner|.
+Experimental: If AsyncCommand (vimscript #3431) is installed, syntax checks can 
+be peformed asynchronously -- see also |g:checksyntax#run_alternatives|, 
+|g:checksyntax#run_all_alternatives| and |g:checksyntax#async_runner|.
 
 By default, |:CheckSyntax| is mapped to <F5> (if not mapped already), 
-and automatically executed when saving the buffer. The |:CheckSyntax| 
-command takes one optional argument: the mode (default: &filetype).
-<C-F5> will run all syntax checkers for a given filetype if multiple 
-alternatives are defined and installed on your computer.
+and automatically executed when saving the buffer. :CheckSyntax! or <C-F5> will 
+run all syntax checkers for a given filetype if multiple alternatives are 
+defined and installed on your computer.
+
+The |:CheckSyntax| command takes one optional argument: the mode (default: 
+&filetype).
 
 As the plugin doesn't provide syntax checks by its own. This is done by 
 an external syntax checker that has to be installed on your computer.
