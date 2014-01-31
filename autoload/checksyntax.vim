@@ -4,7 +4,7 @@
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2010-01-03.
 " @Last Change: 2012-10-17.
-" @Revision:    681
+" @Revision:    892
 
 
 if !exists('g:checksyntax#auto_mode')
@@ -111,9 +111,30 @@ endif
 
 if !exists('g:checksyntax#run_alternatives')
     " How to handle alternatives. Possible values:
+    "
     "     first ... Use the first valid entry
     "     all   ... Run all valid alternatives one after another
+    "
+    " Alternatively, the following flag can be added in order to change 
+    " how the alternatives are run:
+    "
+    "     async ... Run alternatives asynchronously (see also 
+    "               |g:checksyntax#async_runner|)
     let g:checksyntax#run_alternatives = 'first'   "{{{2
+endif
+
+
+if !exists('g:checksyntax#run_all_alternatives')
+    " How to run "all" alternatives -- e.g., when calling the 
+    " |:CheckSyntax| command with a bang.
+    let g:checksyntax#run_all_alternatives = 'all' . (g:checksyntax#run_alternatives =~ '\<async\>' ? ' async' : '')   "{{{2
+endif
+
+
+if !exists('g:checksyntax#async_runner')
+    " Supported values:
+    "   asynccommand ... Use the Asynccommand plugin
+    let g:checksyntax#async_runner = exists('g:loaded_asynccommand') ? 'asynccommand' : ''  "{{{2
 endif
 
 
@@ -196,6 +217,25 @@ if empty(g:checksyntax#prototypes.qfl)
 endif
 
 
+function! s:WithCompiler(compiler, exec, default) "{{{3
+    if exists('g:current_compiler')
+        let cc = g:current_compiler
+    else
+        let cc = ''
+    endif
+    try
+        exec 'compiler '. a:compiler
+        exec a:exec
+    finally
+        if cc != ''
+            let g:current_compiler = cc
+            exec 'compiler '. cc
+        endif
+    endtry
+    return a:default
+endf
+
+
 function! s:Make(filetype, def)
     let bufnr = bufnr('%')
     let pos = getpos('.')
@@ -203,21 +243,9 @@ function! s:Make(filetype, def)
     try
         if has_key(a:def, 'compiler')
 
-            if exists('g:current_compiler')
-                let cc = g:current_compiler
-            else
-                let cc = ''
-            endif
-            try
-                exec 'compiler '. a:def.compiler
-                call g:checksyntax#prototypes[type].Make('')
-                return 1
-            finally
-                if cc != ''
-                    let g:current_compiler = cc
-                    exec 'compiler '. cc
-                endif
-            endtry
+            return s:WithCompiler(a:def.compiler,
+                        \ 'call g:checksyntax#prototypes[type].Make("")',
+                        \ 1)
 
         elseif has_key(a:def, 'syntastic')
 
@@ -385,7 +413,7 @@ let s:run_alternatives_all = 0
 
 " :nodoc:
 function! checksyntax#RunAlternativesMode(def) "{{{3
-    let rv = s:run_alternatives_all ? 'all' : get(a:def, 'run_alternatives', g:checksyntax#run_alternatives)
+    let rv = s:run_alternatives_all ? g:checksyntax#run_all_alternatives : get(a:def, 'run_alternatives', g:checksyntax#run_alternatives)
     " TLogVAR a:def, rv
     return rv
 endf
@@ -435,73 +463,47 @@ function! checksyntax#Check(manually, ...)
     " TLogVAR a:manually, bang, filetype, bg
     let s:run_alternatives_all = bang
     try
-        call checksyntax#Require(filetype)
-        let def = a:manually ? {} : s:GetDef(filetype .',auto')
-        if empty(def)
-            let def = s:GetDef(filetype)
-        endif
-        if &modified
-            if has_key(def, 'modified')
-                let def = s:GetDef(def.modified)
+        let defs = s:GetDefsByFiletype(a:manually, filetype)
+        if !empty(defs.make_defs)
+            if !exists('b:checksyntax_runs')
+                let b:checksyntax_runs = 1
             else
-                echohl WarningMsg
-                echom "Buffer was modified. Please save it before calling :CheckSyntax."
-                echohl NONE
-                return
+                let b:checksyntax_runs += 1
             endif
-        endif
-        " TLogVAR def
-        if empty(def)
-            return
-        endif
-        if g:checksyntax#auto_mode == 0
-            let auto = 0
-        elseif g:checksyntax#auto_mode == 1
-            let auto = get(def, 'auto', 0)
-        elseif g:checksyntax#auto_mode == 2
-            let auto = 1
-        endif
-        " TLogVAR auto
-        if !(a:manually || auto)
-            return
-        endif
-        if !exists('b:checksyntax_runs')
-            let b:checksyntax_runs = 1
-        else
-            let b:checksyntax_runs += 1
-        endif
-        " TLogVAR &makeprg, &l:makeprg, &g:makeprg, &errorformat
-        let defs = get(def, 'alternatives', [def])
-        let run_alternatives = checksyntax#RunAlternativesMode(def)
-        if run_alternatives =~? '\<first\>' && has_key(g:checksyntax#preferred, filetype)
-            let preferred_rx = g:checksyntax#preferred[filetype]
-            let defs = filter(defs, 'checksyntax#Name(v:val) =~ preferred_rx')
-        endif
-        let use_qfl = 0
-        let all_issues = []
-        for make_def in defs
-            " TLogVAR make_def
-            let name = checksyntax#Name(make_def)
-            if run_alternatives =~? '\<async\>'   " TODO: support asynchronous execution
-                throw "CheckSyntax: Not supported yet: run_alternatives = ". string(run_alternatives)
-            else
-                let use_qfl += s:Run_sync(all_issues, name, filetype, make_def)
+            " TLogVAR &makeprg, &l:makeprg, &g:makeprg, &errorformat
+            if defs.run_alternatives =~? '\<first\>' && has_key(g:checksyntax#preferred, filetype)
+                let preferred_rx = g:checksyntax#preferred[filetype]
+                let defs.make_defs = filter(defs.make_defs, 'checksyntax#Name(v:val) =~ preferred_rx')
             endif
-        endfor
-        " echom "DBG 1" string(list)
-        let type = use_qfl > 0 ? 'qfl' : 'loc'
-        if empty(all_issues)
-            call g:checksyntax#prototypes[type].Set(all_issues)
-            call CheckSyntaxSucceed(type, a:manually)
-        else
-            " TLogVAR all_issues
-            call sort(all_issues, 's:CompareIssues')
-            " TLogVAR all_issues
-            call g:checksyntax#prototypes[type].Set(all_issues)
-            " TLogVAR type
-            " TLogVAR a:manually
-            " TLogVAR bg
-            call CheckSyntaxFail(type, a:manually, bg)
+            let async = !empty(g:checksyntax#async_runner) && defs.run_alternatives =~? '\<async\>'
+            let props = {
+                        \ 'bg': bg,
+                        \ 'bufnr': bufnr('%'),
+                        \ 'filename': expand('%:p'),
+                        \ 'manually': a:manually,
+                        \ }
+            let use_qfl = 0
+            let all_issues = []
+            let s:all_issues = []
+            for [name, make_def] in items(defs.make_defs)
+                " TLogVAR make_def
+                let done = 0
+                if async
+                    let make_def1 = copy(make_def)
+                    call extend(make_def1, props)
+                    let make_def1.name = name
+                    if g:checksyntax#async_runner == 'asynccommand'
+                        let done = s:Run_asynccommand(make_def1)
+                    else
+                        throw 'Checksyntax: Unsupported value for g:checksyntax#async_runner: '. string(g:checksyntax#async_runner)
+                    endif
+                endif
+                if !done
+                    let use_qfl += s:Run_sync(all_issues, name, filetype, make_def)
+                endif
+            endfor
+            " echom "DBG 1" string(list)
+            call s:HandleIssues(a:manually, use_qfl, bg, all_issues)
         endif
     finally
         let s:run_alternatives_all = 0
@@ -510,11 +512,187 @@ function! checksyntax#Check(manually, ...)
 endf
 
 
+function! s:GetDefsByFiletype(manually, filetype) "{{{3
+    let defs = {'mode': '', 'make_defs': {}}
+    call checksyntax#Require(a:filetype)
+    let defs.mode = 'auto'
+    let def = a:manually ? {} : s:GetDef(a:filetype .',auto')
+    if empty(def)
+        let def = s:GetDef(a:filetype)
+    endif
+    if &modified
+        if has_key(def, 'modified')
+            let defs.mode = 'auto'
+            let def = s:GetDef(def.modified)
+        else
+            echohl WarningMsg
+            echom "Buffer was modified. Please save it before calling :CheckSyntax."
+            echohl NONE
+            return
+        endif
+    endif
+    " TLogVAR def
+    if empty(def)
+        return defs
+    endif
+    if g:checksyntax#auto_mode == 0
+        let auto = 0
+    elseif g:checksyntax#auto_mode == 1
+        let auto = get(def, 'auto', 0)
+    elseif g:checksyntax#auto_mode == 2
+        let auto = 1
+    endif
+    " TLogVAR auto
+    if !(a:manually || auto)
+        return defs
+    endif
+    let defs.run_alternatives = checksyntax#RunAlternativesMode(def)
+    " TLogVAR &makeprg, &l:makeprg, &g:makeprg, &errorformat
+    for make_def in get(def, 'alternatives', [def])
+        let name = checksyntax#Name(make_def)
+        let defs.make_defs[name] = make_def
+    endfor
+    return defs
+endf
+
+
+function! s:HandleIssues(manually, use_qfl, bg, all_issues) "{{{3
+    let type = a:use_qfl > 0 ? 'qfl' : 'loc'
+    if empty(a:all_issues)
+        call g:checksyntax#prototypes[type].Set(a:all_issues)
+        call CheckSyntaxSucceed(type, a:manually)
+    else
+        " TLogVAR all_issues
+        call sort(a:all_issues, 's:CompareIssues')
+        " TLogVAR all_issues
+        call g:checksyntax#prototypes[type].Set(a:all_issues)
+        " TLogVAR type, a:manually, a:bg
+        call CheckSyntaxFail(type, a:manually, a:bg)
+    endif
+endf
+
+
 function! s:CompareIssues(i1, i2) "{{{3
     let l1 = get(a:i1, 'lnum', 0)
     let l2 = get(a:i2, 'lnum', 0)
     " TLogVAR l1, l2, type(l1), type(l2)
     return l1 == l2 ? 0 : l1 > l2 ? 1 : -1
+endf
+
+
+let s:pending = 0
+let s:all_issues = []
+
+function! s:Run_asynccommand(make_def) "{{{3
+    let cmd = ''
+    if has_key(a:make_def, 'cmd')
+        let cmd = get(a:make_def, 'cmd', '')
+        let cmd .= ' '. shellescape(a:make_def.filename)
+    elseif has_key(a:make_def, 'compiler')
+        let compiler_def = s:WithCompiler(a:make_def.compiler,
+                    \ 'return s:ExtractCompilerParams()',
+                    \ {})
+        " TLogVAR compiler_def
+        if !empty(compiler_def)
+            let cmd = compiler_def.cmd
+            let a:make_def.efm = compiler_def.efm
+        endif
+    endif
+    if !empty(cmd)
+        let async_handler = s:AsyncCommandHandler(a:make_def)
+        " TLogVAR cmd
+        " TLogVAR async_handler
+        let s:pending += 1
+        call asynccommand#run(cmd, async_handler)
+        return 1
+    else
+        echohl WarningMsg
+        echom "CheckSyntax: Cannot run asynchronously: ". a:make_def.name
+        echohl NONE
+        return 0
+    endif
+endf
+
+
+function! s:ExtractCompilerParams() "{{{3
+    let cmd = &makeprg
+    let replaced = []
+    if stridx(cmd, '%') != -1
+        let cmd = substitute(cmd, '\V%', escape(expand('%:p'), '\'), 'g')
+        call add(replaced, '%')
+    endif
+    if stridx(cmd, '$*') != -1
+        if index(replaced, '%') == -1
+            let cmd = substitute(cmd, '\V$*', escape(expand('%:p'), '\'), 'g')
+        else
+            let cmd = substitute(cmd, '\V$*', '', 'g')
+        endif
+        call add(replaced, '$*')
+    endif
+    if stridx(cmd, '#') != -1
+        let cmd = substitute(cmd, '\V%', escape(expand('#:p'), '\'), 'g')
+        call add(replaced, '#')
+    endif
+    let compiler_def = {
+                \ 'cmd': cmd,
+                \ 'efm': &errorformat
+                \ }
+    return compiler_def
+endf
+
+
+let s:async_handler = {}
+
+function s:async_handler.get(temp_file_name) dict
+    let s:pending -= 1
+    " echom "DBG async_handler.get" s:pending self.name
+    let errorformat = &errorformat
+    try
+        " TLogVAR self.async_type, self.bufnr, bufnr('%')
+        if self.async_type != 'loc' || self.bufnr == bufnr('%')
+            " let all_issues = g:checksyntax#prototypes[self.async_type].Get()
+            " TLogVAR len(all_issues)
+            let &errorformat = self.async_efm
+            " TLogVAR self.async_efm
+            " TLogVAR self.async_cmd, a.temp_file_name
+            exe self.async_cmd a:temp_file_name
+            let list = s:GetList(self.name, self, self.async_type)
+            " TLogVAR list
+            if g:checksyntax#debug
+                echo
+                echo printf('CheckSyntax: Processing %s (%s items)', self.name, len(list))
+            endif
+            " TLogVAR self.name, len(list)
+            if !empty(list)
+                let s:all_issues += list
+                " echom "DBG async_handler.get all_issues:" len(all_issues)
+                if s:pending == 0
+                    " let bg = self.bg
+                    let bg = 1
+                    " let manually = self.manually
+                    let manually = g:checksyntax#debug
+                    let use_qfl = self.async_type == 'qfl'
+                    " TLogVAR manually, bg, use_qfl
+                    call s:HandleIssues(manually, use_qfl, bg, s:all_issues)
+                endif
+            endif
+        endif
+    finally
+        let &errorformat = errorformat
+    endtry
+endf
+
+
+function! s:AsyncCommandHandler(make_def)
+    let type = get(a:make_def, 'listtype', 'loc')
+    let async_handler = {
+                \ 'async_cmd': type == 'loc' ? 'lgetfile' : 'cgetfile',
+                \ 'async_type': type,
+                \ 'async_efm': get(a:make_def, 'efm', &errorformat),
+                \ }
+    call extend(async_handler, a:make_def)
+    call extend(async_handler, s:async_handler, 'keep')
+    return asynccommand#tab_restore(async_handler)
 endf
 
 
@@ -534,28 +712,36 @@ function! s:Run_sync(all_issues, name, filetype, def) "{{{3
         if type != 'loc'
             let use_qfl = 1
         endif
-        let list = g:checksyntax#prototypes[type].Get()
-        " TLogVAR type, list
-        " TLogVAR 1, len(list)
+        let list = s:GetList(a:name, def, type)
         if !empty(list)
-            if has_key(def, 'process_list')
-                let list = call(def.process_list, [list])
-            endif
-            " TLogVAR 2, len(list)
-            " TLogVAR type, list
-            if !empty(list)
-                let list = filter(list, 's:FilterItem(def, v:val)')
-                " TLogVAR 3, len(list)
-                " TLogVAR type, list
-                if !empty(list)
-                    let list = map(list, 's:CompleteItem(a:name, def, v:val)')
-                    " TLogVAR type, list
-                    call extend(a:all_issues, list)
-                endif
-            endif
+            call extend(a:all_issues, list)
         endif
     endif
     return use_qfl
+endf
+
+
+function! s:GetList(name, def, type) "{{{3
+    let list = g:checksyntax#prototypes[a:type].Get()
+    " TLogVAR a:type, list
+    " TLogVAR 1, len(list)
+    if !empty(list)
+        let list = filter(list, 's:FilterItem(a:def, v:val)')
+        " TLogVAR 2, len(list)
+        " TLogVAR a:type, list
+        if !empty(list)
+            let list = map(list, 's:CompleteItem(a:name, a:def, v:val)')
+            if !empty(list)
+                if has_key(a:def, 'process_list')
+                    let list = call(a:def.process_list, [list])
+                endif
+                " TLogVAR 3, len(list)
+                " TLogVAR a:type, list
+                " TLogVAR a:type, list
+            endif
+        endif
+    endif
+    return list
 endf
 
 
