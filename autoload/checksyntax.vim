@@ -4,7 +4,7 @@
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2010-01-03.
 " @Last Change: 2012-10-17.
-" @Revision:    892
+" @Revision:    894
 
 
 if !exists('g:checksyntax#auto_mode')
@@ -127,7 +127,7 @@ endif
 if !exists('g:checksyntax#run_all_alternatives')
     " How to run "all" alternatives -- e.g., when calling the 
     " |:CheckSyntax| command with a bang.
-    let g:checksyntax#run_all_alternatives = 'all' . (g:checksyntax#run_alternatives =~ '\<async\>' ? ' async' : '')   "{{{2
+    let g:checksyntax#run_all_alternatives = 'all' . (exists('g:loaded_asynccommand') ? ' async' : '')   "{{{2
 endif
 
 
