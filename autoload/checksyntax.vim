@@ -4,7 +4,7 @@
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2010-01-03.
 " @Last Change: 2012-10-17.
-" @Revision:    924
+" @Revision:    942
 
 
 if !exists('g:checksyntax#auto_mode')
@@ -437,6 +437,12 @@ function! checksyntax#Check(manually, ...)
                 let defs.make_defs = filter(defs.make_defs, 'checksyntax#Name(v:val) =~ preferred_rx')
             endif
             let async = !empty(g:checksyntax#async_runner) && defs.run_alternatives =~? '\<async\>'
+            if !a:manually && async && !empty(s:pending)
+                echohl WarningMsg
+                echo "CheckSyntax: Still waiting for async results ..."
+                echohl NONE
+                return
+            endif
             let props = {
                         \ 'bg': bg,
                         \ 'bufnr': bufnr('%'),
@@ -453,6 +459,7 @@ function! checksyntax#Check(manually, ...)
                     let make_def1 = copy(make_def)
                     call extend(make_def1, props)
                     let make_def1.name = name
+                    let make_def1.job_id = name .'_'. make_def1.bufnr
                     if g:checksyntax#async_runner == 'asynccommand'
                         let done = checksyntax#Run_asynccommand(make_def1)
                     else
@@ -464,7 +471,7 @@ function! checksyntax#Check(manually, ...)
                 endif
             endfor
             " echom "DBG 1" string(list)
-            if s:pending == 0
+            if empty(s:pending)
                 if !empty(s:all_issues)
                     let all_issues += s:all_issues
                 endif
@@ -553,7 +560,7 @@ function! s:CompareIssues(i1, i2) "{{{3
 endf
 
 
-let s:pending = 0
+let s:pending = {}
 let s:all_issues = []
 
 function! checksyntax#Run_asynccommand(make_def) "{{{3
@@ -576,7 +583,7 @@ function! checksyntax#Run_asynccommand(make_def) "{{{3
         let async_handler = s:AsyncCommandHandler(make_def)
         " TLogVAR cmd
         " TLogVAR async_handler
-        let s:pending += 1
+        let s:pending[a:make_def.job_id] = 1
         call asynccommand#run(cmd, async_handler)
         return 1
     else
@@ -618,8 +625,8 @@ endf
 let s:async_handler = {}
 
 function s:async_handler.get(temp_file_name) dict
-    let s:pending -= 1
-    " echom "DBG async_handler.get" s:pending self.name
+    silent! call remove(s:pending, self.job_id)
+    " echom "DBG async_handler.get" self.name self.job_id
     let errorformat = &errorformat
     try
         " TLogVAR self.async_type, self.bufnr, bufnr('%')
@@ -641,7 +648,7 @@ function s:async_handler.get(temp_file_name) dict
                 let s:all_issues += list
                 " echom "DBG async_handler.get all_issues:" len(all_issues)
             endif
-            if s:pending == 0
+            if empty(s:pending)
                 " let bg = self.bg
                 let bg = 1
                 " let manually = self.manually
