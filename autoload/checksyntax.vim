@@ -86,6 +86,20 @@ if !exists('g:checksyntax#preferred')
     let g:checksyntax#preferred = {'xml': '.'}   "{{{2
 endif
 
+
+if !exists('g:checksyntax#async_runner')
+    " Supported values:
+    "   asynccommand ... Use the Asynccommand plugin
+    let g:checksyntax#async_runner = exists(':AsyncMake') ? 'asynccommand' : ''  "{{{2
+endif
+
+
+if !empty(g:checksyntax#async_runner)
+    " Show status information (pending async tasks).
+    command! CheckSyntaxStatus call s:Status()
+endif
+
+
 if !exists('g:checksyntax#run_alternatives')
     " How to handle alternatives. Possible values:
     "
@@ -97,21 +111,14 @@ if !exists('g:checksyntax#run_alternatives')
     "
     "     async ... Run alternatives asynchronously (see also 
     "               |g:checksyntax#async_runner|)
-    let g:checksyntax#run_alternatives = 'first'   "{{{2
+    let g:checksyntax#run_alternatives = 'first' . (!empty(g:checksyntax#async_runner) ? ' async' : '')   "{{{2
 endif
 
 
 if !exists('g:checksyntax#run_all_alternatives')
     " How to run "all" alternatives -- e.g., when calling the 
     " |:CheckSyntax| command with a bang.
-    let g:checksyntax#run_all_alternatives = 'all' . (exists('g:loaded_asynccommand') ? ' async' : '')   "{{{2
-endif
-
-
-if !exists('g:checksyntax#async_runner')
-    " Supported values:
-    "   asynccommand ... Use the Asynccommand plugin
-    let g:checksyntax#async_runner = exists('g:loaded_asynccommand') ? 'asynccommand' : ''  "{{{2
+    let g:checksyntax#run_all_alternatives = 'all' . (!empty(g:checksyntax#async_runner) ? ' async' : '')   "{{{2
 endif
 
 
