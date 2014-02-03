@@ -75,14 +75,16 @@ Contents~
         g:checksyntax#auto_mode .................... |g:checksyntax#auto_mode|
         g:checksyntax .............................. |g:checksyntax|
         g:checksyntax#preferred .................... |g:checksyntax#preferred|
+        g:checksyntax#async_runner ................. |g:checksyntax#async_runner|
+        :CheckSyntaxStatus ......................... |:CheckSyntaxStatus|
         g:checksyntax#run_alternatives ............. |g:checksyntax#run_alternatives|
         g:checksyntax#run_all_alternatives ......... |g:checksyntax#run_all_alternatives|
-        g:checksyntax#async_runner ................. |g:checksyntax#async_runner|
         CheckSyntaxSucceed ......................... |CheckSyntaxSucceed()|
         CheckSyntaxFail ............................ |CheckSyntaxFail()|
         g:checksyntax#prototypes ................... |g:checksyntax#prototypes|
         checksyntax#Check .......................... |checksyntax#Check()|
         checksyntax#Run_asynccommand ............... |checksyntax#Run_asynccommand()|
+        checksyntax#TOptions ....................... |checksyntax#TOptions()|
         g:checksyntax#defs#r#progname .............. |g:checksyntax#defs#r#progname|
         g:checksyntax#defs#r#options ............... |g:checksyntax#defs#r#options|
         g:checksyntax['r'] ......................... |g:checksyntax['r']|
@@ -189,8 +191,17 @@ g:checksyntax#preferred        (default: {'xml': '.'})
     |g:checksyntax#run_alternatives|), check only those syntax 
     checkers whose names matches |regexp|.
 
+                                                    *g:checksyntax#async_runner*
+g:checksyntax#async_runner     (default: exists(':AsyncMake') ? 'asynccommand' : '')
+    Supported values:
+      asynccommand ... Use the Asynccommand plugin
+
+                                                    *:CheckSyntaxStatus*
+:CheckSyntaxStatus
+    Show status information (pending async tasks).
+
                                                     *g:checksyntax#run_alternatives*
-g:checksyntax#run_alternatives (default: 'first')
+g:checksyntax#run_alternatives (default: 'first' . (!empty(g:checksyntax#async_runner) ? ' async' : ''))
     How to handle alternatives. Possible values:
 
         first ... Use the first valid entry
@@ -203,14 +214,9 @@ g:checksyntax#run_alternatives (default: 'first')
                   |g:checksyntax#async_runner|)
 
                                                     *g:checksyntax#run_all_alternatives*
-g:checksyntax#run_all_alternatives (default: 'all' . (exists('g:loaded_asynccommand') ? ' async' : ''))
+g:checksyntax#run_all_alternatives (default: 'all' . (!empty(g:checksyntax#async_runner) ? ' async' : ''))
     How to run "all" alternatives -- e.g., when calling the 
     |:CheckSyntax| command with a bang.
-
-                                                    *g:checksyntax#async_runner*
-g:checksyntax#async_runner     (default: exists('g:loaded_asynccommand') ? 'asynccommand' : '')
-    Supported values:
-      asynccommand ... Use the Asynccommand plugin
 
                                                     *CheckSyntaxSucceed()*
 CheckSyntaxSucceed(type, manually)
@@ -237,6 +243,9 @@ checksyntax#Check(manually, ?bang='', ?filetype=&ft, ?background=1)
                                                     *checksyntax#Run_asynccommand()*
 checksyntax#Run_asynccommand(make_def)
 
+                                                    *checksyntax#TOptions()*
+checksyntax#TOptions()
+
 
 ========================================================================
 autoload/checksyntax/defs/r.vim~
@@ -245,7 +254,7 @@ autoload/checksyntax/defs/r.vim~
 g:checksyntax#defs#r#progname  (default: executable('Rterm') ? 'Rterm' : 'R')
 
                                                     *g:checksyntax#defs#r#options*
-g:checksyntax#defs#r#options   (default: '--slave --no-save --vanilla -e "%s" --args')
+g:checksyntax#defs#r#options   (default: '--slave --ess --restore --no-save -e "%s" --args')
 
                                                     *g:checksyntax['r']*
 g:checksyntax['r']             (default: {...})
