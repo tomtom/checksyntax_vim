@@ -3,8 +3,8 @@
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2010-01-03.
-" @Last Change: 2012-10-17.
-" @Revision:    942
+" @Last Change: 2014-02-03.
+" @Revision:    991
 
 
 if !exists('g:checksyntax#auto_mode')
@@ -312,7 +312,9 @@ endf
 function! s:Cmd(def) "{{{3
     if has_key(a:def, 'cmd')
         let cmd = matchstr(a:def.cmd, '^\(\\\s\|\S\+\|"\([^"]\|\\"\)\+"\)\+')
-        let cmd = fnamemodify(cmd, ':t')
+        " TLogVAR cmd
+        " let cmd = fnamemodify(cmd, ':t')
+        " TLogVAR cmd
     else
         let cmd = ''
     endif
@@ -460,7 +462,7 @@ function! checksyntax#Check(manually, ...)
             let all_issues = []
             let s:all_issues = []
             for [name, make_def] in items(defs.make_defs)
-                " TLogVAR make_def
+                " TLogVAR make_def, async
                 let done = 0
                 if async
                     let make_def1 = copy(make_def)
@@ -587,6 +589,7 @@ let s:pending = {}
 let s:all_issues = []
 
 function! checksyntax#Run_asynccommand(make_def) "{{{3
+    " TLogVAR a:make_def
     let make_def = a:make_def
     let cmd = ''
     if has_key(make_def, 'cmd')
