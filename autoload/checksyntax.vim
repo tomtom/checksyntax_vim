@@ -760,20 +760,18 @@ function! s:GetList(name, def, type) "{{{3
     let list = g:checksyntax#prototypes[a:type].Get()
     " TLogVAR a:type, list
     " TLogVAR 1, len(list)
+    if !empty(list) && has_key(a:def, 'process_list')
+        let list = call(a:def.process_list, [list])
+        " TLogVAR 2, len(list)
+    endif
     if !empty(list)
         let list = filter(list, 's:FilterItem(a:def, v:val)')
-        " TLogVAR 2, len(list)
+        " TLogVAR 3, len(list)
         " TLogVAR a:type, list
         if !empty(list)
             let list = map(list, 's:CompleteItem(a:name, a:def, v:val)')
-            if !empty(list)
-                if has_key(a:def, 'process_list')
-                    let list = call(a:def.process_list, [list])
-                endif
-                " TLogVAR 3, len(list)
-                " TLogVAR a:type, list
-                " TLogVAR a:type, list
-            endif
+            " TLogVAR 4, len(list)
+            " TLogVAR a:type, list
         endif
     endif
     return list
