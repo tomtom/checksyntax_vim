@@ -494,6 +494,22 @@ function! checksyntax#Check(manually, ...)
 endf
 
 
+function! s:Status() "{{{3
+    if empty(s:pending)
+        echo "CheckSyntax: No pending jobs"
+    else
+        echo "CheckSyntax: Pending jobs:"
+        for [job_id, make_def] in items(s:pending)
+            echo printf("  %s: bufnr=%s, cmd=%s",
+                        \ job_id,
+                        \ make_def.bufnr, 
+                        \ make_def.name
+                        \ )
+        endfor
+    endif
+endf
+
+
 function! s:GetDefsByFiletype(manually, filetype) "{{{3
     let defs = {'mode': '', 'make_defs': {}}
     call checksyntax#Require(a:filetype)
@@ -590,7 +606,7 @@ function! checksyntax#Run_asynccommand(make_def) "{{{3
         let async_handler = s:AsyncCommandHandler(make_def)
         " TLogVAR cmd
         " TLogVAR async_handler
-        let s:pending[a:make_def.job_id] = 1
+        call s:AddJob(a:make_def)
         call asynccommand#run(cmd, async_handler)
         return 1
     else
@@ -630,9 +646,37 @@ endf
 
 
 let s:async_handler = {}
+let s:toptions_item = 'let opt .= checksyntax#TOptions()'
+
+
+function! s:AddJob(make_def) "{{{3
+    let s:pending[a:make_def.job_id] = a:make_def
+    if exists('g:toptions_etc')
+        if index(g:toptions_etc, s:toptions_item) == -1
+            call add(g:toptions_etc, s:toptions_item)
+        endif
+    endif
+endf
+
+
+function! s:RemoveJob(job_id) "{{{3
+    silent! call remove(s:pending, a:job_id)
+    if empty(s:pending) && exists('g:toptions_etc')
+        let idx = index(g:toptions_etc, s:toptions_item)
+        if idx != -1
+            call remove(g:toptions_etc, idx)
+        endif
+    endif
+endf
+
+
+function! checksyntax#TOptions() "{{{3
+    return printf(' PendingChecks=%s', len(s:pending))
+endf
+
 
 function s:async_handler.get(temp_file_name) dict
-    silent! call remove(s:pending, self.job_id)
+    call s:RemoveJob(self.job_id)
     " echom "DBG async_handler.get" self.name self.job_id
     let errorformat = &errorformat
     try
@@ -642,7 +686,7 @@ function s:async_handler.get(temp_file_name) dict
             " TLogVAR len(all_issues)
             let &errorformat = self.async_efm
             " TLogVAR self.async_efm
-            " TLogVAR self.async_cmd, a.temp_file_name
+            " TLogVAR self.async_cmd, a:temp_file_name
             exe self.async_cmd a:temp_file_name
             let list = s:GetList(self.name, self, self.async_type)
             " TLogVAR list
