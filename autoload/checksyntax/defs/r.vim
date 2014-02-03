@@ -1,8 +1,8 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2012-08-28.
-" @Last Change: 2012-08-28.
-" @Revision:    0.0.61
+" @Last Change: 2014-02-03.
+" @Revision:    0.0.65
 
 if !exists('g:checksyntax#defs#r#progname')
     let g:checksyntax#defs#r#progname = executable('Rterm') ? 'Rterm' : 'R'   "{{{2
@@ -10,7 +10,7 @@ endif
 
 
 if !exists('g:checksyntax#defs#r#options')
-    let g:checksyntax#defs#r#options = '--slave --no-save --vanilla -e "%s" --args'   "{{{2
+    let g:checksyntax#defs#r#options = '--slave --ess --restore --no-save -e "%s" --args'   "{{{2
 endif
 
 
@@ -49,6 +49,7 @@ function! checksyntax#defs#r#LintLint(list) "{{{3
         if text =~ ': found on lines \d\+'
             let message = matchstr(text, '^.\{-}\ze: found on lines \d\+')
             let lines = split(matchstr(text, 'found on lines \zs\d\+.*$'), ', ')
+            " TLogVAR message, lines
             for line in lines
                 if line[0] =~ '^\d\+'
                     let issue1 = copy(issue)
