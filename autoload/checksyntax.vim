@@ -3,8 +3,8 @@
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2010-01-03.
-" @Last Change: 2014-02-03.
-" @Revision:    991
+" @Last Change: 2014-02-04.
+" @Revision:    995
 
 
 if !exists('g:checksyntax#auto_mode')
@@ -446,11 +446,15 @@ function! checksyntax#Check(manually, ...)
                 let defs.make_defs = filter(defs.make_defs, 'checksyntax#Name(v:val) =~ preferred_rx')
             endif
             let async = !empty(g:checksyntax#async_runner) && defs.run_alternatives =~? '\<async\>'
-            if !a:manually && async && !empty(s:pending)
-                echohl WarningMsg
-                echo "CheckSyntax: Still waiting for async results ..."
-                echohl NONE
-                return
+            if !empty(s:pending)
+                if !a:manually && async
+                    echohl WarningMsg
+                    echo "CheckSyntax: Still waiting for async results ..."
+                    echohl NONE
+                    return
+                else
+                    let s:pending = {}
+                endif
             endif
             let props = {
                         \ 'bg': bg,
@@ -679,42 +683,43 @@ endf
 
 
 function s:async_handler.get(temp_file_name) dict
-    call s:RemoveJob(self.job_id)
-    " echom "DBG async_handler.get" self.name self.job_id
-    let errorformat = &errorformat
-    try
-        " TLogVAR self.async_type, self.bufnr, bufnr('%')
-        if self.async_type != 'loc' || self.bufnr == bufnr('%')
-            " let all_issues = g:checksyntax#prototypes[self.async_type].Get()
-            " TLogVAR len(all_issues)
-            let &errorformat = self.async_efm
-            " TLogVAR self.async_efm
-            " TLogVAR self.async_cmd, a:temp_file_name
-            exe self.async_cmd a:temp_file_name
-            let list = s:GetList(self.name, self, self.async_type)
-            " TLogVAR list
-            if g:checksyntax#debug
-                echo
-                echom printf('CheckSyntax: Processing %s (%s items)', self.name, len(list))
+    if s:RemoveJob(self.job_id)
+        " echom "DBG async_handler.get" self.name self.job_id
+        let errorformat = &errorformat
+        try
+            " TLogVAR self.async_type, self.bufnr, bufnr('%')
+            if self.async_type != 'loc' || self.bufnr == bufnr('%')
+                " let all_issues = g:checksyntax#prototypes[self.async_type].Get()
+                " TLogVAR len(all_issues)
+                let &errorformat = self.async_efm
+                " TLogVAR self.async_efm
+                " TLogVAR self.async_cmd, a:temp_file_name
+                exe self.async_cmd a:temp_file_name
+                let list = s:GetList(self.name, self, self.async_type)
+                " TLogVAR list
+                if g:checksyntax#debug
+                    echo
+                    echom printf('CheckSyntax: Processing %s (%s items)', self.name, len(list))
+                endif
+                " TLogVAR self.name, len(list)
+                if !empty(list)
+                    let s:all_issues += list
+                    " echom "DBG async_handler.get all_issues:" len(all_issues)
+                endif
+                if empty(s:pending)
+                    " let bg = self.bg
+                    let bg = 1
+                    " let manually = self.manually
+                    let manually = g:checksyntax#debug
+                    let use_qfl = self.async_type == 'qfl'
+                    " TLogVAR manually, bg, use_qfl
+                    call s:HandleIssues(manually, use_qfl, bg, s:all_issues)
+                endif
             endif
-            " TLogVAR self.name, len(list)
-            if !empty(list)
-                let s:all_issues += list
-                " echom "DBG async_handler.get all_issues:" len(all_issues)
-            endif
-            if empty(s:pending)
-                " let bg = self.bg
-                let bg = 1
-                " let manually = self.manually
-                let manually = g:checksyntax#debug
-                let use_qfl = self.async_type == 'qfl'
-                " TLogVAR manually, bg, use_qfl
-                call s:HandleIssues(manually, use_qfl, bg, s:all_issues)
-            endif
-        endif
-    finally
-        let &errorformat = errorformat
-    endtry
+        finally
+            let &errorformat = errorformat
+        endtry
+    endif
 endf
 
 
