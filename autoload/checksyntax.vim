@@ -667,18 +667,27 @@ endf
 
 
 function! s:RemoveJob(job_id) "{{{3
-    silent! call remove(s:pending, a:job_id)
-    if empty(s:pending) && exists('g:toptions_etc')
-        let idx = index(g:toptions_etc, s:toptions_item)
-        if idx != -1
-            call remove(g:toptions_etc, idx)
+    let rv = has_key(s:pending, a:job_id)
+    if rv
+        call remove(s:pending, a:job_id)
+        if empty(s:pending) && exists('g:toptions_etc')
+            let idx = index(g:toptions_etc, s:toptions_item)
+            if idx != -1
+                call remove(g:toptions_etc, idx)
+            endif
         endif
     endif
+    return rv
 endf
 
 
 function! checksyntax#TOptions() "{{{3
-    return printf(' PendingChecks=%s', len(s:pending))
+    let n = len(s:pending)
+    if n == 0
+        return ''
+    else
+        return printf(' PendingChecks=%s', n)
+    endif
 endf
 
 
