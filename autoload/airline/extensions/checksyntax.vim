@@ -4,7 +4,7 @@ endif
 
 
 function! airline#extensions#checksyntax#get_msg()
-    let errors = checksyntax#TOptions()
+    let errors = checksyntax#Status()
     if !empty(errors)
         return errors.(g:airline_symbols.space)
     endif

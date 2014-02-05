@@ -3,8 +3,8 @@
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2010-01-03.
-" @Last Change: 2014-02-04.
-" @Revision:    995
+" @Last Change: 2014-02-05.
+" @Revision:    1006
 
 
 if !exists('g:checksyntax#auto_mode')
@@ -653,14 +653,14 @@ endf
 
 
 let s:async_handler = {}
-let s:toptions_item = 'let opt .= checksyntax#TOptions()'
+let s:status_expr = 'checksyntax#Status()'
 
 
 function! s:AddJob(make_def) "{{{3
     let s:pending[a:make_def.job_id] = a:make_def
-    if exists('g:toptions_etc')
-        if index(g:toptions_etc, s:toptions_item) == -1
-            call add(g:toptions_etc, s:toptions_item)
+    if exists('g:tstatus_exprs')
+        if index(g:tstatus_exprs, s:status_expr) == -1
+            call add(g:tstatus_exprs, s:status_expr)
         endif
     endif
 endf
@@ -670,10 +670,10 @@ function! s:RemoveJob(job_id) "{{{3
     let rv = has_key(s:pending, a:job_id)
     if rv
         call remove(s:pending, a:job_id)
-        if empty(s:pending) && exists('g:toptions_etc')
-            let idx = index(g:toptions_etc, s:toptions_item)
+        if empty(s:pending) && exists('g:tstatus_exprs')
+            let idx = index(g:tstatus_exprs, s:status_expr)
             if idx != -1
-                call remove(g:toptions_etc, idx)
+                call remove(g:tstatus_exprs, idx)
             endif
         endif
     endif
@@ -681,12 +681,12 @@ function! s:RemoveJob(job_id) "{{{3
 endf
 
 
-function! checksyntax#TOptions() "{{{3
+function! checksyntax#Status() "{{{3
     let n = len(s:pending)
     if n == 0
         return ''
     else
-        return printf(' PendingChecks=%s', n)
+        return 'PendingChecks='. n
     endif
 endf
 
