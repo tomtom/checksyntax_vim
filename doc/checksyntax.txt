@@ -68,27 +68,31 @@ Optional enhancements:
 ========================================================================
 Contents~
 
-        :CheckSyntax ............................... |:CheckSyntax|
-        g:checksyntax_key_single ................... |g:checksyntax_key_single|
-        g:checksyntax_key_all ...................... |g:checksyntax_key_all|
-        g:checksyntax_auto ......................... |g:checksyntax_auto|
-        g:checksyntax#auto_mode .................... |g:checksyntax#auto_mode|
-        g:checksyntax .............................. |g:checksyntax|
-        g:checksyntax#preferred .................... |g:checksyntax#preferred|
-        g:checksyntax#async_runner ................. |g:checksyntax#async_runner|
-        :CheckSyntaxStatus ......................... |:CheckSyntaxStatus|
-        g:checksyntax#run_alternatives ............. |g:checksyntax#run_alternatives|
-        g:checksyntax#run_all_alternatives ......... |g:checksyntax#run_all_alternatives|
-        CheckSyntaxSucceed ......................... |CheckSyntaxSucceed()|
-        CheckSyntaxFail ............................ |CheckSyntaxFail()|
-        g:checksyntax#prototypes ................... |g:checksyntax#prototypes|
-        checksyntax#Check .......................... |checksyntax#Check()|
-        checksyntax#Run_asynccommand ............... |checksyntax#Run_asynccommand()|
-        checksyntax#TOptions ....................... |checksyntax#TOptions()|
-        g:checksyntax#defs#r#progname .............. |g:checksyntax#defs#r#progname|
-        g:checksyntax#defs#r#options ............... |g:checksyntax#defs#r#options|
-        g:checksyntax['r'] ......................... |g:checksyntax['r']|
-        g:checksyntax#defs#ruby#interpreter ........ |g:checksyntax#defs#ruby#interpreter|
+        :CheckSyntax ........................................... |:CheckSyntax|
+        g:checksyntax_key_single ............................... |g:checksyntax_key_single|
+        g:checksyntax_key_all .................................. |g:checksyntax_key_all|
+        g:checksyntax_auto ..................................... |g:checksyntax_auto|
+        g:checksyntax#auto_mode ................................ |g:checksyntax#auto_mode|
+        g:checksyntax .......................................... |g:checksyntax|
+        g:checksyntax#preferred ................................ |g:checksyntax#preferred|
+        g:checksyntax#async_runner ............................. |g:checksyntax#async_runner|
+        :CheckSyntaxStatus ..................................... |:CheckSyntaxStatus|
+        g:checksyntax#run_alternatives ......................... |g:checksyntax#run_alternatives|
+        g:checksyntax#run_all_alternatives ..................... |g:checksyntax#run_all_alternatives|
+        CheckSyntaxSucceed ..................................... |CheckSyntaxSucceed()|
+        CheckSyntaxFail ........................................ |CheckSyntaxFail()|
+        g:checksyntax#prototypes ............................... |g:checksyntax#prototypes|
+        checksyntax#Check ...................................... |checksyntax#Check()|
+        checksyntax#Run_asynccommand ........................... |checksyntax#Run_asynccommand()|
+        checksyntax#Status ..................................... |checksyntax#Status()|
+        g:checksyntax#defs#r#progname .......................... |g:checksyntax#defs#r#progname|
+        g:checksyntax#defs#r#options ........................... |g:checksyntax#defs#r#options|
+        g:checksyntax#defs#r#checkUsage_options ................ |g:checksyntax#defs#r#checkUsage_options|
+        g:checksyntax#defs#r#checkUsage_ignore_undefined_rx .... |g:checksyntax#defs#r#checkUsage_ignore_undefined_rx|
+        g:checksyntax#defs#r#checkUsage_ignore_functions ....... |g:checksyntax#defs#r#checkUsage_ignore_functions|
+        g:checksyntax#defs#r#checkUsage_search_other_buffers ... |g:checksyntax#defs#r#checkUsage_search_other_buffers|
+        g:checksyntax['r'] ..................................... |g:checksyntax['r']|
+        g:checksyntax#defs#ruby#interpreter .................... |g:checksyntax#defs#ruby#interpreter|
 
 
 ========================================================================
@@ -243,8 +247,8 @@ checksyntax#Check(manually, ?bang='', ?filetype=&ft, ?background=1)
                                                     *checksyntax#Run_asynccommand()*
 checksyntax#Run_asynccommand(make_def)
 
-                                                    *checksyntax#TOptions()*
-checksyntax#TOptions()
+                                                    *checksyntax#Status()*
+checksyntax#Status()
 
 
 ========================================================================
@@ -256,11 +260,37 @@ g:checksyntax#defs#r#progname  (default: executable('Rterm') ? 'Rterm' : 'R')
                                                     *g:checksyntax#defs#r#options*
 g:checksyntax#defs#r#options   (default: '--slave --ess --restore --no-save -e "%s" --args')
 
+                                                    *g:checksyntax#defs#r#checkUsage_options*
+g:checksyntax#defs#r#checkUsage_options (default: 'all = TRUE')
+    Optons passed to codetools::checkUsageEnv.
+    Must not be empty.
+
+                                                    *g:checksyntax#defs#r#checkUsage_ignore_undefined_rx*
+g:checksyntax#defs#r#checkUsage_ignore_undefined_rx (default: '')
+    A |/\V| regexp pattern of names that should be ignored, when 
+    codetools::checkUsageEnv reports "no visible global function 
+    definition".
+
+                                                    *g:checksyntax#defs#r#checkUsage_ignore_functions*
+g:checksyntax#defs#r#checkUsage_ignore_functions (default: [])
+    A list of function names that will be ignored when parsing the 
+    result list from codetools::checkUsageEnv.
+
+                                                    *g:checksyntax#defs#r#checkUsage_search_other_buffers*
+g:checksyntax#defs#r#checkUsage_search_other_buffers (default: 0)
+    If 2, also search other buffers for patterns returned by 
+    codetools::checkUsageEnv. This may cause unreponsive behaviour.
+
+    If 1, show unidentifiable patterns as is.
+
+    If 0, remove unidentifiable patterns.
+
                                                     *g:checksyntax['r']*
 g:checksyntax['r']             (default: {...})
     Syntax checkers for R:
 
       lint::lint ... See http://cran.r-project.org/web/packages/lint/
+      codetools::checkUsageEnv ... See http://cran.r-project.org/web/packages/codetools/
       svTools::lint ... See http://cran.r-project.org/web/packages/svTools/
 
 
