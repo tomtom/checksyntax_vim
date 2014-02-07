@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    1026
+" @Revision:    1031
 
 
 if !exists('g:checksyntax#auto_mode')
@@ -94,11 +94,6 @@ if !exists('g:checksyntax#async_runner')
     " Supported values:
     "   asynccommand ... Use the Asynccommand plugin
     let g:checksyntax#async_runner = exists(':AsyncMake') ? 'asynccommand' : ''  "{{{2
-endif
-
-
-if g:checksyntax#async_runner !~ '^\(asynccommand\)\?$'
-    throw 'Checksyntax: Unsupported value for g:checksyntax#async_runner: '. string(g:checksyntax#async_runner)
 endif
 
 
@@ -615,8 +610,17 @@ function! s:Run_async(make_def) "{{{3
         endif
     endif
     if !empty(cmd)
-        call checksyntax#AddJob(a:make_def)
-        return checksyntax#async#{g:checksyntax#async_runner}#Run(cmd, make_def)
+        try
+            let rv = checksyntax#async#{g:checksyntax#async_runner}#Run(cmd, make_def)
+            call checksyntax#AddJob(make_def)
+            return rv
+        catch /^Vim\%((\a\+)\)\=:E117/
+            echohl Error
+            echom 'Checksyntax: Unsupported value for g:checksyntax#async_runner: '. string(g:checksyntax#async_runner)
+            echohl NONE
+            let g:checksyntax#async_runner = ''
+            return 0
+        endtry
     else
         echohl WarningMsg
         echom "CheckSyntax: Cannot run asynchronously: ". make_def.name
