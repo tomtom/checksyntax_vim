@@ -94,6 +94,11 @@ if !exists('g:checksyntax#async_runner')
 endif
 
 
+if g:checksyntax#async_runner !~ '^\(asynccommand\)\?$'
+    throw 'Checksyntax: Unsupported value for g:checksyntax#async_runner: '. string(g:checksyntax#async_runner)
+endif
+
+
 if !empty(g:checksyntax#async_runner)
     " Show status information (pending async tasks).
     command! CheckSyntaxStatus call s:Status()
@@ -446,14 +451,14 @@ function! checksyntax#Check(manually, ...)
                 let defs.make_defs = filter(defs.make_defs, 'checksyntax#Name(v:val) =~ preferred_rx')
             endif
             let async = !empty(g:checksyntax#async_runner) && defs.run_alternatives =~? '\<async\>'
-            if !empty(s:pending)
+            if !empty(g:checksyntax#async_pending)
                 if !a:manually && async
                     echohl WarningMsg
                     echo "CheckSyntax: Still waiting for async results ..."
                     echohl NONE
                     return
                 else
-                    let s:pending = {}
+                    let g:checksyntax#async_pending = {}
                 endif
             endif
             let props = {
@@ -464,7 +469,7 @@ function! checksyntax#Check(manually, ...)
                         \ }
             let use_qfl = 0
             let all_issues = []
-            let s:all_issues = []
+            let g:checksyntax#async_issues = []
             for [name, make_def] in items(defs.make_defs)
                 " TLogVAR make_def, async
                 let done = 0
@@ -473,24 +478,20 @@ function! checksyntax#Check(manually, ...)
                     call extend(make_def1, props)
                     let make_def1.name = name
                     let make_def1.job_id = name .'_'. make_def1.bufnr
-                    if g:checksyntax#async_runner == 'asynccommand'
-                        let done = checksyntax#Run_asynccommand(make_def1)
-                    else
-                        throw 'Checksyntax: Unsupported value for g:checksyntax#async_runner: '. string(g:checksyntax#async_runner)
-                    endif
+                    let done = s:Run_async(make_def1)
                 endif
                 if !done
                     let use_qfl += s:Run_sync(all_issues, name, filetype, make_def)
                 endif
             endfor
             " echom "DBG 1" string(list)
-            if empty(s:pending)
-                if !empty(s:all_issues)
-                    let all_issues += s:all_issues
+            if empty(g:checksyntax#async_pending)
+                if !empty(g:checksyntax#async_issues)
+                    let all_issues += g:checksyntax#async_issues
                 endif
-                call s:HandleIssues(a:manually, use_qfl, bg, all_issues)
+                call checksyntax#HandleIssues(a:manually, use_qfl, bg, all_issues)
             else
-                let s:all_issues += all_issues
+                let g:checksyntax#async_issues += all_issues
             endif
         endif
     finally
@@ -501,11 +502,11 @@ endf
 
 
 function! s:Status() "{{{3
-    if empty(s:pending)
+    if empty(g:checksyntax#async_pending)
         echo "CheckSyntax: No pending jobs"
     else
         echo "CheckSyntax: Pending jobs:"
-        for [job_id, make_def] in items(s:pending)
+        for [job_id, make_def] in items(g:checksyntax#async_pending)
             echo printf("  %s: bufnr=%s, cmd=%s",
                         \ job_id,
                         \ make_def.bufnr, 
@@ -565,7 +566,7 @@ function! s:GetDefsByFiletype(manually, filetype) "{{{3
 endf
 
 
-function! s:HandleIssues(manually, use_qfl, bg, all_issues) "{{{3
+function! checksyntax#HandleIssues(manually, use_qfl, bg, all_issues) "{{{3
     let type = a:use_qfl > 0 ? 'qfl' : 'loc'
     if empty(a:all_issues)
         call g:checksyntax#prototypes[type].Set(a:all_issues)
@@ -589,10 +590,11 @@ function! s:CompareIssues(i1, i2) "{{{3
 endf
 
 
-let s:pending = {}
-let s:all_issues = []
+let g:checksyntax#async_pending = {}
+let g:checksyntax#async_issues = []
 
-function! checksyntax#Run_asynccommand(make_def) "{{{3
+
+function! s:Run_async(make_def) "{{{3
     " TLogVAR a:make_def
     let make_def = a:make_def
     let cmd = ''
@@ -610,12 +612,8 @@ function! checksyntax#Run_asynccommand(make_def) "{{{3
         endif
     endif
     if !empty(cmd)
-        let async_handler = s:AsyncCommandHandler(make_def)
-        " TLogVAR cmd
-        " TLogVAR async_handler
-        call s:AddJob(a:make_def)
-        call asynccommand#run(cmd, async_handler)
-        return 1
+        call checksyntax#AddJob(a:make_def)
+        return checksyntax#async#{g:checksyntax#async_runner}#Run(cmd, make_def)
     else
         echohl WarningMsg
         echom "CheckSyntax: Cannot run asynchronously: ". make_def.name
@@ -652,12 +650,11 @@ function! s:ExtractCompilerParams() "{{{3
 endf
 
 
-let s:async_handler = {}
 let s:status_expr = 'checksyntax#Status()'
 
 
-function! s:AddJob(make_def) "{{{3
-    let s:pending[a:make_def.job_id] = a:make_def
+function! checksyntax#AddJob(make_def) "{{{3
+    let g:checksyntax#async_pending[a:make_def.job_id] = a:make_def
     if exists('g:tstatus_exprs')
         if index(g:tstatus_exprs, s:status_expr) == -1
             call add(g:tstatus_exprs, s:status_expr)
@@ -666,11 +663,11 @@ function! s:AddJob(make_def) "{{{3
 endf
 
 
-function! s:RemoveJob(job_id) "{{{3
-    let rv = has_key(s:pending, a:job_id)
+function! checksyntax#RemoveJob(job_id) "{{{3
+    let rv = has_key(g:checksyntax#async_pending, a:job_id)
     if rv
-        call remove(s:pending, a:job_id)
-        if empty(s:pending) && exists('g:tstatus_exprs')
+        call remove(g:checksyntax#async_pending, a:job_id)
+        if empty(g:checksyntax#async_pending) && exists('g:tstatus_exprs')
             let idx = index(g:tstatus_exprs, s:status_expr)
             if idx != -1
                 call remove(g:tstatus_exprs, idx)
@@ -682,66 +679,12 @@ endf
 
 
 function! checksyntax#Status() "{{{3
-    let n = len(s:pending)
+    let n = len(g:checksyntax#async_pending)
     if n == 0
         return ''
     else
         return 'PendingChecks='. n
     endif
-endf
-
-
-function s:async_handler.get(temp_file_name) dict
-    if s:RemoveJob(self.job_id)
-        " echom "DBG async_handler.get" self.name self.job_id
-        let errorformat = &errorformat
-        try
-            " TLogVAR self.async_type, self.bufnr, bufnr('%')
-            if self.async_type != 'loc' || self.bufnr == bufnr('%')
-                " let all_issues = g:checksyntax#prototypes[self.async_type].Get()
-                " TLogVAR len(all_issues)
-                let &errorformat = self.async_efm
-                " TLogVAR self.async_efm
-                " TLogVAR self.async_cmd, a:temp_file_name
-                exe self.async_cmd a:temp_file_name
-                let list = s:GetList(self.name, self, self.async_type)
-                " TLogVAR list
-                if g:checksyntax#debug
-                    echo
-                    echom printf('CheckSyntax: Processing %s (%s items)', self.name, len(list))
-                endif
-                " TLogVAR self.name, len(list)
-                if !empty(list)
-                    let s:all_issues += list
-                    " echom "DBG async_handler.get all_issues:" len(all_issues)
-                endif
-                if empty(s:pending)
-                    " let bg = self.bg
-                    let bg = 1
-                    " let manually = self.manually
-                    let manually = g:checksyntax#debug
-                    let use_qfl = self.async_type == 'qfl'
-                    " TLogVAR manually, bg, use_qfl
-                    call s:HandleIssues(manually, use_qfl, bg, s:all_issues)
-                endif
-            endif
-        finally
-            let &errorformat = errorformat
-        endtry
-    endif
-endf
-
-
-function! s:AsyncCommandHandler(make_def)
-    let type = get(a:make_def, 'listtype', 'loc')
-    let async_handler = {
-                \ 'async_cmd': type == 'loc' ? 'lgetfile' : 'cgetfile',
-                \ 'async_type': type,
-                \ 'async_efm': get(a:make_def, 'efm', &errorformat),
-                \ }
-    call extend(async_handler, a:make_def)
-    call extend(async_handler, s:async_handler, 'keep')
-    return asynccommand#tab_restore(async_handler)
 endf
 
 
@@ -761,7 +704,7 @@ function! s:Run_sync(all_issues, name, filetype, def) "{{{3
         if type != 'loc'
             let use_qfl = 1
         endif
-        let list = s:GetList(a:name, def, type)
+        let list = checksyntax#GetList(a:name, def, type)
         if !empty(list)
             call extend(a:all_issues, list)
         endif
@@ -770,7 +713,7 @@ function! s:Run_sync(all_issues, name, filetype, def) "{{{3
 endf
 
 
-function! s:GetList(name, def, type) "{{{3
+function! checksyntax#GetList(name, def, type) "{{{3
     let list = g:checksyntax#prototypes[a:type].Get()
     " TLogVAR a:type, list
     " TLogVAR 1, len(list)
