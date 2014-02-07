@@ -1,16 +1,26 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    1047
+" @Revision:    1061
 
 
-if !exists('g:checksyntax#auto_mode')
-    " If 1, enable automatically running syntax checkers when saving a 
-    " file if the syntax checker definitions has 'auto' == 1 (see 
-    " |g:checksyntax|).
-    " If 2, enforces automatic syntax checks for all known filetypes.
-    " If 0, disable automatic syntax checks.
-    let g:checksyntax#auto_mode = 1   "{{{2
+if !exists('g:checksyntax#auto_enable_rx')
+    " Enable automatic checking for filetypes matching this rx.
+    " Set to "." to enable for all filetypes.
+    " This requires |g:checksyntax_auto| to be > 0.
+    " This variable overrules any filetype-specific settings in 
+    " |g:checksyntax|.
+    let g:checksyntax#auto_enable_rx = ''   "{{{2
+endif
+
+
+if !exists('g:checksyntax#auto_disable_rx')
+    " Disable automatic checking for filetypes matching this rx.
+    " Set to "." to disable for all filetypes.
+    " This requires |g:checksyntax_auto| to be > 0.
+    " This variable overrules any filetype-specific settings in 
+    " |g:checksyntax|.
+    let g:checksyntax#auto_disable_rx = ''   "{{{2
 endif
 
 
@@ -32,7 +42,8 @@ if !exists('g:checksyntax')
     " 
     " Optional:
     "   auto* ...... Run automatically when saving a file (see also 
-    "                |g:checksyntax#auto_mode|)
+    "                |g:checksyntax#auto_enable_rx| and 
+    "                |g:checksyntax#auto_disable_rx|)
     "   efm  ....... An 'errorformat' string.
     "   prepare .... An ex command that is run before doing anything.
     "   ignore_nr .. A list of error numbers that should be ignored.
@@ -92,7 +103,7 @@ endif
 
 if !exists('g:checksyntax#async_runner')
     " Supported values:
-    "   asynccommand ... Use the Asynccommand plugin
+    "   asynccommand ... Use the AsyncCommand plugin
     let g:checksyntax#async_runner = exists(':AsyncMake') ? 'asynccommand' : ''  "{{{2
 endif
 
@@ -526,9 +537,10 @@ endf
 
 
 function! s:GetDefsByFiletype(manually, filetype) "{{{3
+    " TLogVAR a:manually, a:filetype
     let defs = {'mode': '', 'make_defs': {}}
     call checksyntax#Require(a:filetype)
-    let defs.mode = 'auto'
+    " let defs.mode = 'auto'
     let def = a:manually ? {} : s:GetDef(a:filetype .',auto')
     " TLogVAR 1, def
     if empty(def)
@@ -537,7 +549,7 @@ function! s:GetDefsByFiletype(manually, filetype) "{{{3
     endif
     if &modified
         if has_key(def, 'modified')
-            let defs.mode = 'auto'
+            " let defs.mode = 'auto'
             let def = s:GetDef(def.modified)
             " TLogVAR 3, def
         else
@@ -551,12 +563,12 @@ function! s:GetDefsByFiletype(manually, filetype) "{{{3
     if empty(def)
         return defs
     endif
-    if g:checksyntax#auto_mode == 0
-        let auto = 0
-    elseif g:checksyntax#auto_mode == 1
-        let auto = get(def, 'auto', 0)
-    elseif g:checksyntax#auto_mode == 2
+    if !empty(g:checksyntax#auto_enable_rx) && a:filetype =~ g:checksyntax#auto_enable_rx
         let auto = 1
+    elseif !empty(g:checksyntax#auto_disable_rx) && a:filetype =~ g:checksyntax#auto_disable_rx
+        let auto = 0
+    else
+        let auto = get(def, 'auto', 0)
     endif
     " TLogVAR auto
     if !(a:manually || auto)

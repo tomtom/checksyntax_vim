@@ -4,7 +4,7 @@
 " @Created:     04-Mai-2005.
 " @Last Change: 2012-08-28.
 " GetLatestVimScripts: 1431 0 :AutoInstall: checksyntax.vim
-" @Revision:    424
+" @Revision:    429
 
 if exists('g:loaded_checksyntax')
     finish
@@ -48,17 +48,21 @@ if !exists('g:checksyntax_auto')
     " file.
     " NOTE: This variable must be customized in vimrc before loading 
     " this plugin.
+    "
+    " See also |g:checksyntax|, |g:checksyntax#auto_enable_rx| and 
+    " |g:checksyntax#auto_disable_rx|.
     let g:checksyntax_auto = 1   "{{{2
 endif
 
 
+" @TPluginInclude
 augroup CheckSyntax
     autocmd!
-    if g:checksyntax_auto >= 1
-        autocmd CheckSyntax BufWritePost * call checksyntax#Check(0)
+    if !exists('g:checksyntax_auto') || g:checksyntax_auto >= 1
+        autocmd BufWritePost * call checksyntax#Check(0)
     endif
-    if g:checksyntax_auto >= 2
-        autocmd CheckSyntax BufEnter * if !exists('b:checksyntax_runs')
+    if exists('g:checksyntax_auto') && g:checksyntax_auto >= 2
+        autocmd BufEnter * if !exists('b:checksyntax_runs')
                     \ | call checksyntax#Check(0, 0, &ft, 1)
                     \ | endif
     endif

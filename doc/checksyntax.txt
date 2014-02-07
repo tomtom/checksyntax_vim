@@ -72,13 +72,16 @@ Contents~
         g:checksyntax_key_single ............. |g:checksyntax_key_single|
         g:checksyntax_key_all ................ |g:checksyntax_key_all|
         g:checksyntax_auto ................... |g:checksyntax_auto|
-        g:checksyntax#auto_mode .............. |g:checksyntax#auto_mode|
+        g:checksyntax#auto_enable_rx ......... |g:checksyntax#auto_enable_rx|
+        g:checksyntax#auto_disable_rx ........ |g:checksyntax#auto_disable_rx|
         g:checksyntax ........................ |g:checksyntax|
         g:checksyntax#preferred .............. |g:checksyntax#preferred|
         g:checksyntax#async_runner ........... |g:checksyntax#async_runner|
         :CheckSyntaxStatus ................... |:CheckSyntaxStatus|
         g:checksyntax#run_alternatives ....... |g:checksyntax#run_alternatives|
         g:checksyntax#run_all_alternatives ... |g:checksyntax#run_all_alternatives|
+        g:checksyntax#windows ................ |g:checksyntax#windows|
+        g:checksyntax#null ................... |g:checksyntax#null|
         CheckSyntaxSucceed ................... |CheckSyntaxSucceed()|
         CheckSyntaxFail ...................... |CheckSyntaxFail()|
         g:checksyntax#prototypes ............. |g:checksyntax#prototypes|
@@ -88,6 +91,7 @@ Contents~
         checksyntax#RemoveJob ................ |checksyntax#RemoveJob()|
         checksyntax#Status ................... |checksyntax#Status()|
         checksyntax#GetList .................. |checksyntax#GetList()|
+        checksyntax#NullOutput ............... |checksyntax#NullOutput()|
 
 
 ========================================================================
@@ -119,17 +123,28 @@ g:checksyntax_auto             (default: 1)
     NOTE: This variable must be customized in vimrc before loading 
     this plugin.
 
+    See also |g:checksyntax|, |g:checksyntax#auto_enable_rx| and 
+    |g:checksyntax#auto_disable_rx|.
+
 
 ========================================================================
 autoload/checksyntax.vim~
 
-                                                    *g:checksyntax#auto_mode*
-g:checksyntax#auto_mode        (default: 1)
-    If 1, enable automatically running syntax checkers when saving a 
-    file if the syntax checker definitions has 'auto' == 1 (see 
-    |g:checksyntax|).
-    If 2, enforces automatic syntax checks for all known filetypes.
-    If 0, disable automatic syntax checks.
+                                                    *g:checksyntax#auto_enable_rx*
+g:checksyntax#auto_enable_rx   (default: '')
+    Enable automatic checking for filetypes matching this rx.
+    Set to "." to enable for all filetypes.
+    This requires |g:checksyntax_auto| to be > 0.
+    This variable overrules any filetype-specific settings in 
+    |g:checksyntax|.
+
+                                                    *g:checksyntax#auto_disable_rx*
+g:checksyntax#auto_disable_rx  (default: '')
+    Disable automatic checking for filetypes matching this rx.
+    Set to "." to disable for all filetypes.
+    This requires |g:checksyntax_auto| to be > 0.
+    This variable overrules any filetype-specific settings in 
+    |g:checksyntax|.
 
                                                     *g:checksyntax*
 g:checksyntax                  (default: {...})
@@ -143,7 +158,8 @@ g:checksyntax                  (default: {...})
 
     Optional:
       auto* ...... Run automatically when saving a file (see also 
-                   |g:checksyntax#auto_mode|)
+                   |g:checksyntax#auto_enable_rx| and 
+                   |g:checksyntax#auto_disable_rx|)
       efm  ....... An 'errorformat' string.
       prepare .... An ex command that is run before doing anything.
       ignore_nr .. A list of error numbers that should be ignored.
@@ -199,7 +215,7 @@ g:checksyntax#preferred        (default: {'xml': '.'})
                                                     *g:checksyntax#async_runner*
 g:checksyntax#async_runner     (default: exists(':AsyncMake') ? 'asynccommand' : '')
     Supported values:
-      asynccommand ... Use the Asynccommand plugin
+      asynccommand ... Use the AsyncCommand plugin
 
                                                     *:CheckSyntaxStatus*
 :CheckSyntaxStatus
@@ -222,6 +238,12 @@ g:checksyntax#run_alternatives (default: 'first' . (!empty(g:checksyntax#async_r
 g:checksyntax#run_all_alternatives (default: 'all' . (!empty(g:checksyntax#async_runner) ? ' async' : ''))
     How to run "all" alternatives -- e.g., when calling the 
     |:CheckSyntax| command with a bang.
+
+                                                    *g:checksyntax#windows*
+g:checksyntax#windows          (default: &shell !~ 'sh' && (has('win16') || has('win32') || has('win64')))
+
+                                                    *g:checksyntax#null*
+g:checksyntax#null             (default: g:checksyntax#windows ? 'nul' : (filereadable('/dev/null') ? '/dev/null' : ''))
 
                                                     *CheckSyntaxSucceed()*
 CheckSyntaxSucceed(type, manually)
@@ -259,6 +281,9 @@ checksyntax#Status()
 
                                                     *checksyntax#GetList()*
 checksyntax#GetList(name, def, type)
+
+                                                    *checksyntax#NullOutput()*
+checksyntax#NullOutput(flag)
 
 
 
