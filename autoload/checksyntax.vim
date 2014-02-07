@@ -1,10 +1,7 @@
-" checksyntax.vim
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Created:     2010-01-03.
-" @Last Change: 2014-02-05.
-" @Revision:    1006
+" @Revision:    1026
 
 
 if !exists('g:checksyntax#auto_mode')
@@ -15,6 +12,7 @@ if !exists('g:checksyntax#auto_mode')
     " If 0, disable automatic syntax checks.
     let g:checksyntax#auto_mode = 1   "{{{2
 endif
+
 
 if !exists('g:checksyntax#debug')
     let g:checksyntax#debug = 0
@@ -33,23 +31,23 @@ if !exists('g:checksyntax')
     "   compiler ... A vim compiler that is used to check the file.
     " 
     " Optional:
-    "   auto* ... Run automatically when saving a file.
-    "   efm  ... An 'errorformat' string.
-    "   prepare ... An ex command that is run before doing anything.
-    "   ignore_nr ... A list of error numbers that should be ignored.
+    "   auto* ...... Run automatically when saving a file (see also 
+    "                |g:checksyntax#auto_mode|)
+    "   efm  ....... An 'errorformat' string.
+    "   prepare .... An ex command that is run before doing anything.
+    "   ignore_nr .. A list of error numbers that should be ignored.
     "   listtype ... Either loc (default) or qfl
-    "   include ... Include another definition
-    "   process_list ... Process a list of issues
-    "   if ... An expression to test *once* whether a syntax checker 
-    "            should be used.
-    "   if_executable ... Test whether an application is executable.
-    "   modified* ... If the buffer was modified, use an alternative 
-    "            checker
-    "   alternatives* ... A list of syntax checker definitions (the first 
-    "            one with a valid executable is used. If used, no other 
-    "            elements are allowed. This list is checked only once.
+    "   include .... Include another definition
+    "   process_list .. Process a list of issues
+    "   if ......... An expression to test *once* whether a syntax checker 
+    "                should be used.
+    "   if_executable .. Test whether an application is executable.
+    "   modified* .. If the buffer was modified, use an alternative 
+    "                checker
+    "   alternatives* ... A list of syntax checker definitions.
     "   run_alternatives* ... A string that defines how to run 
-    "            alternatives (overrides |g:checksyntax#run_alternatives|).
+    "                alternatives (overrides 
+    "                |g:checksyntax#run_alternatives|).
     "
     " The keys marked with "*" can be used only on the top level of a 
     " syntax checker definition.
@@ -60,11 +58,13 @@ if !exists('g:checksyntax')
     "   c, cpp       ... Requires splint
     "   html         ... Requires tidy
     "   java         ... Requires jlint or checkstyle
-    "   javascript   ... Syntax check; requires jslint, jshint, gjslint, or jsl
+    "   javascript   ... Syntax check; requires jshint, esprima, 
+    "                    gjslint, jslint, or jsl
     "   lua          ... Requires luac
     "   php          ... Syntax check; requires php
     "   python       ... Requires pyflakes or pylint
-    "   r            ... Requires lint::lint or svTools::lint
+    "   r            ... Requires codetools::checkUsage, lint::lint, or 
+    "                    svTools::lint
     "   ruby         ... Requires ruby
     "   tex, latex   ... Requires chktex
     "   viki         ... Requires deplate
@@ -73,6 +73,9 @@ if !exists('g:checksyntax')
     "
     " Syntax checker definitions are kept in:
     " autoload/checksyntax/defs/{&filetype}.vim
+    "
+    " Run this command to find out, which filetypes are supported: >
+    "   :echo globpath(&rtp, 'autoload/checksyntax/defs/*.vim')
     " :read: let g:checksyntax = {...}   "{{{2
     let g:checksyntax = {}
 endif
