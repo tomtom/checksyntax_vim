@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    1031
+" @Revision:    1047
 
 
 if !exists('g:checksyntax#auto_mode')
@@ -122,6 +122,16 @@ if !exists('g:checksyntax#run_all_alternatives')
     " How to run "all" alternatives -- e.g., when calling the 
     " |:CheckSyntax| command with a bang.
     let g:checksyntax#run_all_alternatives = 'all' . (!empty(g:checksyntax#async_runner) ? ' async' : '')   "{{{2
+endif
+
+
+if !exists('g:checksyntax#windows')
+    let g:checksyntax#windows = &shell !~ 'sh' && (has('win16') || has('win32') || has('win64'))   "{{{2
+endif
+
+
+if !exists('g:checksyntax#null')
+    let g:checksyntax#null = g:checksyntax#windows ? 'nul' : (filereadable('/dev/null') ? '/dev/null' : '')    "{{{2
 endif
 
 
@@ -601,7 +611,7 @@ function! s:Run_async(make_def) "{{{3
         let cmd .= ' '. shellescape(make_def.filename)
     elseif has_key(make_def, 'compiler')
         let compiler_def = s:WithCompiler(make_def.compiler,
-                    \ 'return s:ExtractCompilerParams()',
+                    \ 'return s:ExtractCompilerParams('. string(get(a:make_def, 'args', '')) .')',
                     \ {})
         " TLogVAR compiler_def
         if !empty(compiler_def)
@@ -609,6 +619,7 @@ function! s:Run_async(make_def) "{{{3
             let make_def.efm = compiler_def.efm
         endif
     endif
+    " TLogVAR cmd
     if !empty(cmd)
         try
             let rv = checksyntax#async#{g:checksyntax#async_runner}#Run(cmd, make_def)
@@ -630,8 +641,11 @@ function! s:Run_async(make_def) "{{{3
 endf
 
 
-function! s:ExtractCompilerParams() "{{{3
+function! s:ExtractCompilerParams(args) "{{{3
     let cmd = &makeprg
+    if !empty(a:args) && stridx(cmd, '$*') == -1
+        let cmd .= ' '. a:args
+    endif
     let replaced = []
     if stridx(cmd, '%') != -1
         let cmd = substitute(cmd, '\V%', escape(expand('%:p'), '\'), 'g')
@@ -639,9 +653,9 @@ function! s:ExtractCompilerParams() "{{{3
     endif
     if stridx(cmd, '$*') != -1
         if index(replaced, '%') == -1
-            let cmd = substitute(cmd, '\V$*', escape(expand('%:p'), '\'), 'g')
+            let cmd = substitute(cmd, '\V$*', a:args .' '. escape(expand('%:p'), '\'), 'g')
         else
-            let cmd = substitute(cmd, '\V$*', '', 'g')
+            let cmd = substitute(cmd, '\V$*', a:args, 'g')
         endif
         call add(replaced, '$*')
     endif
@@ -824,4 +838,14 @@ function! checksyntax#Alternative(filetype, alternative) "{{{3
         let g:checksyntax[a:filetype] = a:alternative
     endif
 endf
+
+
+function! checksyntax#NullOutput(flag) "{{{3
+    if empty(g:checksyntax#null)
+        return ''
+    else
+        return a:flag .' '. g:checksyntax#null
+    endif
+endf
+
 
