@@ -1,8 +1,14 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Created:     2012-08-28.
-" @Last Change: 2014-02-04.
-" @Revision:    0.0.125
+" @Revision:    144
+
+" :doc:
+" Syntax checkers for R:
+"
+"   codetools::checkUsageEnv ... Requires http://cran.r-project.org/web/packages/codetools/
+"   lint::lint ... Requires http://cran.r-project.org/web/packages/lint/
+"   svTools::lint ... Requires http://cran.r-project.org/web/packages/svTools/
+
 
 if !exists('g:checksyntax#defs#r#progname')
     let g:checksyntax#defs#r#progname = executable('Rterm') ? 'Rterm' : 'R'   "{{{2
@@ -51,39 +57,29 @@ if !exists('g:checksyntax#defs#r#checkUsage_search_other_buffers')
 endif
 
 
-if !exists('g:checksyntax.r')
-    " Syntax checkers for R:
-    "
-    "   lint::lint ... See http://cran.r-project.org/web/packages/lint/
-    "   codetools::checkUsageEnv ... See http://cran.r-project.org/web/packages/codetools/
-    "   svTools::lint ... See http://cran.r-project.org/web/packages/svTools/
-    " :read: let g:checksyntax['r'] = {...} "{{{2
-    let g:checksyntax['r'] = {
-                \ 'alternatives': [
-                \   {
-                \     'listtype': 'qfl',
-                \     'name': 'codetools',
-                \     'cmd': g:checksyntax#defs#r#progname .' '.
-                \         printf(g:checksyntax#defs#r#options, 'try({library(codetools); source(commandArgs(TRUE)); checkUsageEnv(globalenv(),'. g:checksyntax#defs#r#checkUsage_options .')})'),
-                \     'efm': '%m (%f:%l), %s : <anonymous>: %m, %s : %m, %s: %m',
-                \     'process_list': 'checksyntax#defs#r#CheckUsageEnv'
-                \   },
-                \   {
-                \     'name': 'lint',
-                \     'cmd': g:checksyntax#defs#r#progname .' '.
-                \         printf(g:checksyntax#defs#r#options, 'try(lint::lint(commandArgs(TRUE)))'),
-                \     'efm': 'Lint: %m,%E%f:%l:%c,%Z%\\s\\+%m',
-                \     'process_list': 'checksyntax#defs#r#LintLint'
-                \   },
-                \   {
-                \     'name': 'svTools::lint',
-                \     'cmd': g:checksyntax#defs#r#progname .' '.
-                \         printf(g:checksyntax#defs#r#options, 'try(svTools::lint(commandArgs(TRUE),type=''flat''))'),
-                \     'efm': '%t%\\w%\\++++%l+++%c+++%m',
-                \   }
-                \ ]
-                \ }
-endif
+call checksyntax#AddChecker('r?',
+            \   {
+            \     'listtype': 'qfl',
+            \     'name': 'codetools',
+            \     'cmd': g:checksyntax#defs#r#progname .' '.
+            \         printf(g:checksyntax#defs#r#options, 'try({library(codetools); source(commandArgs(TRUE)); checkUsageEnv(globalenv(),'. g:checksyntax#defs#r#checkUsage_options .')})'),
+            \     'efm': '%m (%f:%l), %s : <anonymous>: %m, %s : %m, %s: %m',
+            \     'process_list': 'checksyntax#defs#r#CheckUsageEnv'
+            \   },
+            \   {
+            \     'name': 'lint',
+            \     'cmd': g:checksyntax#defs#r#progname .' '.
+            \         printf(g:checksyntax#defs#r#options, 'try(lint::lint(commandArgs(TRUE)))'),
+            \     'efm': 'Lint: %m,%E%f:%l:%c,%Z%\\s\\+%m',
+            \     'process_list': 'checksyntax#defs#r#LintLint'
+            \   },
+            \   {
+            \     'name': 'svTools::lint',
+            \     'cmd': g:checksyntax#defs#r#progname .' '.
+            \         printf(g:checksyntax#defs#r#options, 'try(svTools::lint(commandArgs(TRUE),type=''flat''))'),
+            \     'efm': '%t%\\w%\\++++%l+++%c+++%m',
+            \   }
+            \ )
 
 
 " :nodoc:
@@ -115,11 +111,12 @@ endf
 
 " :nodoc:
 function! checksyntax#defs#r#CheckUsageEnv(list) "{{{3
+    " TLogVAR a:list
     let view = winsaveview()
     try
         let list = map(a:list, 's:CompleteCheckUsageEnvItem(v:val)')
         unlet! s:lnum s:bufnr
-        let list = filter(a:list, '!empty(v:val)')
+        let list = filter(list, '!empty(v:val)')
     finally
         call winrestview(view)
     endtry
@@ -142,6 +139,7 @@ function! s:CompleteCheckUsageEnvItem(item) "{{{3
                 \ item.text =~ '\C\V\<no visible global function definition for '''. g:checksyntax#defs#r#checkUsage_ignore_undefined_rx .''''
         return {}
     endif
+    " TLogVAR bufname(item.bufnr)
     if get(item, 'bufnr', 0) == 0 && !empty(pattern)
         let pattern = substitute(pattern, '\\\$', '\\>', '')
         let s:bufnr = bufnr('%')
@@ -170,6 +168,8 @@ function! s:CompleteCheckUsageEnvItem(item) "{{{3
         else
             return {}
         endif
+    elseif bufname(item.bufnr) == '<Text>'
+        return {}
     endif
     return item
 endf

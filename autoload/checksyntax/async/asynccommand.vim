@@ -1,6 +1,6 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    10
+" @Revision:    21
 
 
 let s:async_handler = {}
@@ -13,22 +13,21 @@ function s:async_handler.get(temp_file_name) dict
         try
             " TLogVAR self.async_type, self.bufnr, bufnr('%')
             if self.async_type != 'loc' || self.bufnr == bufnr('%')
-                " let all_issues = g:checksyntax#prototypes[self.async_type].Get()
-                " TLogVAR len(all_issues)
                 let &errorformat = self.async_efm
                 " TLogVAR self.async_efm
                 " TLogVAR self.async_cmd, a:temp_file_name
-                exe self.async_cmd a:temp_file_name
+                let lines = readfile(a:temp_file_name)
+                " TLogVAR lines
+                exec self.async_cmd a:temp_file_name
                 let list = checksyntax#GetList(self.name, self, self.async_type)
                 " TLogVAR list
-                if g:checksyntax#debug
-                    echo
-                    echom printf('CheckSyntax: Processing %s (%s items)', self.name, len(list))
-                endif
                 " TLogVAR self.name, len(list)
                 if !empty(list)
                     let g:checksyntax#async_issues += list
-                    " echom "DBG async_handler.get all_issues:" len(all_issues)
+                endif
+                if g:checksyntax#debug
+                    echo
+                    echom printf('CheckSyntax: Processing %s (%s items)', self.name, len(list))
                 endif
                 if empty(g:checksyntax#async_pending)
                     " let bg = self.bg
@@ -48,6 +47,7 @@ endf
 
 
 function! s:AsyncCommandHandler(make_def)
+    " TLogVAR a:make_def
     let type = get(a:make_def, 'listtype', 'loc')
     let async_handler = {
                 \ 'async_cmd': type == 'loc' ? 'lgetfile' : 'cgetfile',
@@ -56,11 +56,13 @@ function! s:AsyncCommandHandler(make_def)
                 \ }
     call extend(async_handler, a:make_def)
     call extend(async_handler, s:async_handler, 'keep')
+    " TLogVAR async_handler
     return asynccommand#tab_restore(async_handler)
 endf
 
 
 function! checksyntax#async#asynccommand#Run(cmd, make_def) "{{{3
+    " TLogVAR a:cmd, a:make_def
     let async_handler = s:AsyncCommandHandler(a:make_def)
     " TLogVAR async_handler
     call asynccommand#run(a:cmd, async_handler)

@@ -26,23 +26,30 @@ The |:CheckSyntax| command takes one optional argument: the mode (default:
 As the plugin doesn't provide syntax checks by its own. This is done by 
 an external syntax checker that has to be installed on your computer.
 
-For the following filetypes, syntax checkers are pre-defined:
+Pre-defined syntax checkers (the respective syntax checker has to 
+be installed):
 
-    c, cpp :: Check syntax via splint
-    html :: Check syntax via tidy
-    javascript :: Check syntax via jslint, jshint, jsl, or gjslint
-    java :: Check syntax via jlint or javaCheckstyle
-    lua :: Parse file (luac -p)
-    php  :: Check syntax (php -l)
-    python :: Check file with pyflakes or pylint
-    r :: Check syntax & style with lint::lint or svTools::lint
-    ruby :: Check syntax (ruby -c)
-    tex, latex :: Parse file (chktex -q -v0)
-    xml, docbk :: Check syntax via xmllint
+  c, cpp       ... Requires splint
+  html         ... Requires tidy
+  java         ... Requires jlint or checkstyle
+  javascript   ... Syntax check; requires jshint, esprima, 
+                   gjslint, jslint, or jsl
+  lua          ... Requires luac (run luac -p)
+  php          ... Syntax check; requires php (run php -l)
+  python       ... Requires pyflakes or pylint
+  r            ... Requires codetools::checkUsage, lint::lint, or 
+                   svTools::lint
+  ruby         ... Requires ruby (run ruby -c)
+  tex, latex   ... Requires chktex (run chktex -q -v0)
+  viki         ... Requires deplate
+  xhtml        ... Requires tidy
+  xml, docbk   ... Requires xmllint
 
-See the autoload/checksyntax/defs/ directory for a complete list of 
-supported syntax checkers. See |g:checksyntax| also for how to define 
-your own syntax checkers.
+Syntax checker definitions are kept in:
+autoload/checksyntax/defs/{&filetype}.vim
+
+Run this command to find out, which filetypes are supported: >
+  :echo globpath(&rtp, 'autoload/checksyntax/defs/*.vim')
 
 This plugin was originally based on Klaus Horsten's php_console 
 (vimscript #779) and it is the successor of php_check_syntax.vim 

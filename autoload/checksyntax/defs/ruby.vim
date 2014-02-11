@@ -1,9 +1,6 @@
-" ruby.vim
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Created:     2012-07-02.
-" @Last Change: 2012-08-24.
-" @Revision:    8
+" @Revision:    9
 
 
 if !exists('g:checksyntax#defs#ruby#interpreter')
@@ -11,14 +8,16 @@ if !exists('g:checksyntax#defs#ruby#interpreter')
 endif
 
 
-if !exists('g:checksyntax.ruby')
-    let g:checksyntax['ruby'] = {
-                \ 'prepare': 'compiler ruby',
-                \ 'cmd': 'ruby -c',
-                \ }
-    if g:checksyntax#defs#ruby#interpreter =~ '\<jruby'
-        let g:checksyntax['ruby'].efm = 'SyntaxError in %f:%l:%m'
-    endif
+let s:def = {
+            \ 'prepare': 'compiler ruby',
+            \ 'cmd': 'ruby -c',
+            \ }
+
+if g:checksyntax#defs#ruby#interpreter =~ '\<jruby'
+    let s:def.efm = 'SyntaxError in %f:%l:%m'
 endif
 
+call checksyntax#AddChecker('ruby?', s:def)
+
+unlet s:def
 
