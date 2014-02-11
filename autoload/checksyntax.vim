@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    1152
+" @Revision:    1153
 
 
 if !exists('g:checksyntax#auto_enable_rx')
@@ -41,7 +41,7 @@ endif
 if !exists('g:checksyntax#async_runner')
     " Supported values:
     "   asynccommand ... Use the AsyncCommand plugin
-    let g:checksyntax#async_runner = has('clientserver') && exists(':AsyncMake') ? 'asynccommand' : ''  "{{{2
+    let g:checksyntax#async_runner = has('clientserver') && !empty(v:servername) && exists(':AsyncMake') ? 'asynccommand' : ''  "{{{2
 endif
 
 

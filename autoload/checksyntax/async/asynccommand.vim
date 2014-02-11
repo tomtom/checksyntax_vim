@@ -1,14 +1,14 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    21
+" @Revision:    24
 
 
 let s:async_handler = {}
 
 
 function s:async_handler.get(temp_file_name) dict
+    " echom "DBG async_handler.get" self.name self.job_id
     if checksyntax#RemoveJob(self.job_id)
-        " echom "DBG async_handler.get" self.name self.job_id
         let errorformat = &errorformat
         try
             " TLogVAR self.async_type, self.bufnr, bufnr('%')
