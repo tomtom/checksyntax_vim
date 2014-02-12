@@ -26,23 +26,30 @@ The |:CheckSyntax| command takes one optional argument: the mode (default:
 As the plugin doesn't provide syntax checks by its own. This is done by 
 an external syntax checker that has to be installed on your computer.
 
-For the following filetypes, syntax checkers are pre-defined:
+Pre-defined syntax checkers (the respective syntax checker has to 
+be installed):
 
-    c, cpp :: Check syntax via splint
-    html :: Check syntax via tidy
-    javascript :: Check syntax via jslint, jshint, jsl, or gjslint
-    java :: Check syntax via jlint or javaCheckstyle
-    lua :: Parse file (luac -p)
-    php  :: Check syntax (php -l)
-    python :: Check file with pyflakes or pylint
-    r :: Check syntax & style with lint::lint or svTools::lint
-    ruby :: Check syntax (ruby -c)
-    tex, latex :: Parse file (chktex -q -v0)
-    xml, docbk :: Check syntax via xmllint
+  c, cpp       ... Requires splint
+  html         ... Requires tidy
+  java         ... Requires jlint or checkstyle
+  javascript   ... Syntax check; requires jshint, esprima, 
+                   gjslint, jslint, or jsl
+  lua          ... Requires luac (run luac -p)
+  php          ... Syntax check; requires php (run php -l)
+  python       ... Requires pyflakes or pylint
+  r            ... Requires codetools::checkUsage, lint::lint, or 
+                   svTools::lint
+  ruby         ... Requires ruby (run ruby -c)
+  tex, latex   ... Requires chktex (run chktex -q -v0)
+  viki         ... Requires deplate
+  xhtml        ... Requires tidy
+  xml, docbk   ... Requires xmllint
 
-See the autoload/checksyntax/defs/ directory for a complete list of 
-supported syntax checkers. See |g:checksyntax| also for how to define 
-your own syntax checkers.
+Syntax checker definitions are kept in:
+autoload/checksyntax/defs/{&filetype}.vim
+
+Run this command to find out, which filetypes are supported: >
+  :echo globpath(&rtp, 'autoload/checksyntax/defs/*.vim')
 
 This plugin was originally based on Klaus Horsten's php_console 
 (vimscript #779) and it is the successor of php_check_syntax.vim 
@@ -74,7 +81,6 @@ Contents~
         g:checksyntax_auto ................... |g:checksyntax_auto|
         g:checksyntax#auto_enable_rx ......... |g:checksyntax#auto_enable_rx|
         g:checksyntax#auto_disable_rx ........ |g:checksyntax#auto_disable_rx|
-        g:checksyntax ........................ |g:checksyntax|
         g:checksyntax#preferred .............. |g:checksyntax#preferred|
         g:checksyntax#async_runner ........... |g:checksyntax#async_runner|
         :CheckSyntaxStatus ................... |:CheckSyntaxStatus|
@@ -82,9 +88,14 @@ Contents~
         g:checksyntax#run_all_alternatives ... |g:checksyntax#run_all_alternatives|
         g:checksyntax#windows ................ |g:checksyntax#windows|
         g:checksyntax#null ................... |g:checksyntax#null|
+        g:checksyntax#cygwin_path_rx ......... |g:checksyntax#cygwin_path_rx|
+        g:checksyntax#cygwin_expr ............ |g:checksyntax#cygwin_expr|
+        g:checksyntax#check_cygpath .......... |g:checksyntax#check_cygpath|
         CheckSyntaxSucceed ................... |CheckSyntaxSucceed()|
         CheckSyntaxFail ...................... |CheckSyntaxFail()|
         g:checksyntax#prototypes ............. |g:checksyntax#prototypes|
+        checksyntax#AddChecker ............... |checksyntax#AddChecker()|
+        checksyntax#GetChecker ............... |checksyntax#GetChecker()|
         checksyntax#Check .................... |checksyntax#Check()|
         checksyntax#HandleIssues ............. |checksyntax#HandleIssues()|
         checksyntax#AddJob ................... |checksyntax#AddJob()|
@@ -92,6 +103,7 @@ Contents~
         checksyntax#Status ................... |checksyntax#Status()|
         checksyntax#GetList .................. |checksyntax#GetList()|
         checksyntax#NullOutput ............... |checksyntax#NullOutput()|
+        checksyntax#MaybeUseCygpath .......... |checksyntax#MaybeUseCygpath()|
 
 
 ========================================================================
@@ -146,65 +158,6 @@ g:checksyntax#auto_disable_rx  (default: '')
     This variable overrules any filetype-specific settings in 
     |g:checksyntax|.
 
-                                                    *g:checksyntax*
-g:checksyntax                  (default: {...})
-    A dictionary {name/filetype => definition} of syntax checkers, where 
-    definition is a dictionary with the following fields:
-
-    Mandatory (either one of the following):
-      cmd ... A shell command used as 'makeprg' to check the file.
-      exec ... A vim command used to check the file.
-      compiler ... A vim compiler that is used to check the file.
-
-    Optional:
-      auto* ...... Run automatically when saving a file (see also 
-                   |g:checksyntax#auto_enable_rx| and 
-                   |g:checksyntax#auto_disable_rx|)
-      efm  ....... An 'errorformat' string.
-      prepare .... An ex command that is run before doing anything.
-      ignore_nr .. A list of error numbers that should be ignored.
-      listtype ... Either loc (default) or qfl
-      include .... Include another definition
-      process_list .. Process a list of issues
-      if ......... An expression to test *once* whether a syntax checker 
-                   should be used.
-      if_executable .. Test whether an application is executable.
-      modified* .. If the buffer was modified, use an alternative 
-                   checker
-      alternatives* ... A list of syntax checker definitions.
-      run_alternatives* ... A string that defines how to run 
-                   alternatives (overrides 
-                   |g:checksyntax#run_alternatives|).
-
-    The keys marked with "*" can be used only on the top level of a 
-    syntax checker definition.
-
-    Pre-defined syntax checkers (the respective syntax checker has to 
-    be installed):
-
-      c, cpp       ... Requires splint
-      html         ... Requires tidy
-      java         ... Requires jlint or checkstyle
-      javascript   ... Syntax check; requires jshint, esprima, 
-                       gjslint, jslint, or jsl
-      lua          ... Requires luac
-      php          ... Syntax check; requires php
-      python       ... Requires pyflakes or pylint
-      r            ... Requires codetools::checkUsage, lint::lint, or 
-                       svTools::lint
-      ruby         ... Requires ruby
-      tex, latex   ... Requires chktex
-      viki         ... Requires deplate
-      xhtml        ... Requires tidy
-      xml, docbk   ... Requires xmllint
-
-    Syntax checker definitions are kept in:
-    autoload/checksyntax/defs/{&filetype}.vim
-
-    Run this command to find out, which filetypes are supported: >
-      :echo globpath(&rtp, 'autoload/checksyntax/defs/*.vim')
-<
-
                                                     *g:checksyntax#preferred*
 g:checksyntax#preferred        (default: {'xml': '.'})
     A dictionary of 'filetype' => |regexp|.
@@ -213,7 +166,7 @@ g:checksyntax#preferred        (default: {'xml': '.'})
     checkers whose names matches |regexp|.
 
                                                     *g:checksyntax#async_runner*
-g:checksyntax#async_runner     (default: exists(':AsyncMake') ? 'asynccommand' : '')
+g:checksyntax#async_runner     (default: has('clientserver') && !empty(v:servername) && exists(':AsyncMake') ? 'asynccommand' : '')
     Supported values:
       asynccommand ... Use the AsyncCommand plugin
 
@@ -245,6 +198,21 @@ g:checksyntax#windows          (default: &shell !~ 'sh' && (has('win16') || has(
                                                     *g:checksyntax#null*
 g:checksyntax#null             (default: g:checksyntax#windows ? 'nul' : (filereadable('/dev/null') ? '/dev/null' : ''))
 
+                                                    *g:checksyntax#cygwin_path_rx*
+g:checksyntax#cygwin_path_rx   (default: '/cygwin/')
+    If a full windows filename (with slashes instead of backslashes) 
+    matches this |regexp|, it is assumed to be a cygwin executable.
+
+                                                    *g:checksyntax#cygwin_expr*
+g:checksyntax#cygwin_expr      (default: '"bash -c ''". escape(%s, "''\\") ."''"')
+    For cygwin binaries, convert command calls using this vim 
+    expression.
+
+                                                    *g:checksyntax#check_cygpath*
+g:checksyntax#check_cygpath    (default: g:checksyntax#windows && s:Executable('cygpath'))
+    If true, check whether we have to convert a path via cyppath -- 
+    see |checksyntax#MaybeUseCygpath|
+
                                                     *CheckSyntaxSucceed()*
 CheckSyntaxSucceed(type, manually)
     This function is called when no syntax errors were found.
@@ -257,6 +225,50 @@ CheckSyntaxFail(type, manually, bg)
 g:checksyntax#prototypes       (default: {'loc': {}, 'qfl': {}})
     Contains prototype definitions for syntax checkers that use the 
     |location-list| ("loc") or the |quixfix|-list.
+
+                                                    *checksyntax#AddChecker()*
+checksyntax#AddChecker(filetype, ...)
+    Define a syntax checker definition for a given filetype.
+    If filetype ends with "?", add only if no checker with the given name 
+    is defined.
+
+    A checker definition is a dictionary with the following fields:
+
+    Mandatory (either one of the following):
+
+      cmd ........ A shell command used as 'makeprg' to check the file.
+      cmdexpr .... A vim expression that returns the cmd
+      compiler ... A vim compiler that is used to check the file.
+      exec ....... A vim command used to check the file (deprecated; use 
+                   cmdexpr & process_list instead)
+
+    Optional:
+
+      efm  ....... An 'errorformat' string.
+      prepare .... An ex command that is run before doing anything.
+      ignore_nr .. A list of error numbers that should be ignored.
+      listtype ... Either loc (default) or qfl
+      include .... Include another definition
+      process_list .. Process a list of issues
+      if ......... An expression to test *once* whether a syntax checker 
+                   should be used.
+      if_executable .. Test whether an application is executable.
+
+    Optional top-level fields:
+
+      auto ....... Run automatically when saving a file (see also 
+                   |g:checksyntax#auto_enable_rx| and 
+                   |g:checksyntax#auto_disable_rx|)
+      modified ... The name of a pseudo-filetype that should be used if 
+                   the buffer was modified
+      run_alternatives ... A string that defines how to run 
+                   alternatives (overrides 
+                   |g:checksyntax#run_alternatives|).
+
+    Top-level fields affect how syntax checkers for a filetype are run.
+
+                                                    *checksyntax#GetChecker()*
+checksyntax#GetChecker(filetype, ...)
 
                                                     *checksyntax#Check()*
 checksyntax#Check(manually, ?bang='', ?filetype=&ft, ?background=1)
@@ -280,10 +292,16 @@ checksyntax#RemoveJob(job_id)
 checksyntax#Status()
 
                                                     *checksyntax#GetList()*
-checksyntax#GetList(name, def, type)
+checksyntax#GetList(name, make_def, type)
 
                                                     *checksyntax#NullOutput()*
 checksyntax#NullOutput(flag)
+
+                                                    *checksyntax#MaybeUseCygpath()*
+checksyntax#MaybeUseCygpath(cmd)
+    If cmd seems to be a cygwin executable, use cygpath to convert 
+    filenames. This assumes that cygwin's which command returns full 
+    filenames for non-cygwin executables.
 
 
 
