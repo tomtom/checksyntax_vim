@@ -1,43 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    1309
-
-
-let s:cygwin = {}
-
-function! s:CygwinBin(cmd) "{{{3
-    if has_key(s:cygwin, a:cmd)
-        let rv = s:cygwin[a:cmd]
-    else
-        if !s:Executable('cygpath') || !s:Executable('which')
-            let rv = 0
-        else
-            let which = substitute(system('which '. shellescape(a:cmd)), '\n$', '', '')
-            " echom "DBG which:" which
-            if which =~ '^/'
-                let filename = system('cygpath -ma '. shellescape(which))
-                " echom "DBG filename:" filename
-                let rv = filename =~ g:checksyntax#cygwin_path_rx
-            else
-                let rv = 0
-            endif
-        endif
-        let s:cygwin[a:cmd] = rv
-    endif
-    return rv
-endf
-
-
-let s:executables = {}
-
-function! s:Executable(cmd) "{{{3
-    if !has_key(s:executables, a:cmd)
-        let s:executables[a:cmd] = executable(a:cmd) != 0 || s:CygwinBin(a:cmd)
-        " echom "DBG Executable" a:cmd s:executables[a:cmd]
-    endif
-    return s:executables[a:cmd]
-endf
+" @Revision:    1313
 
 
 if !exists('g:checksyntax#auto_enable_rx')
@@ -119,13 +83,6 @@ if !exists('g:checksyntax#null')
 endif
 
 
-if !exists('g:checksyntax#check_cygpath')
-    " If true, check whether we have to convert a path via cyppath -- 
-    " see |checksyntax#MaybeUseCygpath|
-    let g:checksyntax#check_cygpath = g:checksyntax#windows && s:Executable('cygpath')   "{{{2
-endif
-
-
 if !exists('g:checksyntax#cygwin_path_rx')
     " If a full windows filename (with slashes instead of backslashes) 
     " matches this |regexp|, it is assumed to be a cygwin executable.
@@ -137,6 +94,52 @@ if !exists('g:checksyntax#cygwin_expr')
     " For cygwin binaries, convert command calls using this vim 
     " expression.
     let g:checksyntax#cygwin_expr = '"bash -c ''". escape(%s, "''\\") ."''"'   "{{{2
+endif
+
+
+let s:cygwin = {}
+
+function! s:CygwinBin(cmd) "{{{3
+    if !g:checksyntax#windows
+        return 0
+    elseif has_key(s:cygwin, a:cmd)
+        let rv = s:cygwin[a:cmd]
+    else
+        if !s:Executable('cygpath', 1) || !s:Executable('which', 1)
+            let rv = 0
+        else
+            let which = substitute(system('which '. shellescape(a:cmd)), '\n$', '', '')
+            " echom "DBG which:" which
+            if which =~ '^/'
+                let filename = system('cygpath -ma '. shellescape(which))
+                " echom "DBG filename:" filename
+                let rv = filename =~ g:checksyntax#cygwin_path_rx
+            else
+                let rv = 0
+            endif
+        endif
+        let s:cygwin[a:cmd] = rv
+    endif
+    return rv
+endf
+
+
+let s:executables = {}
+
+function! s:Executable(cmd, ...) "{{{3
+    if !has_key(s:executables, a:cmd)
+        let ignore_cyg = a:0 >= 1 ? a:1 : !g:checksyntax#windows
+        let s:executables[a:cmd] = executable(a:cmd) != 0 || ignore_cyg || s:CygwinBin(a:cmd)
+        " echom "DBG Executable" a:cmd s:executables[a:cmd]
+    endif
+    return s:executables[a:cmd]
+endf
+
+
+if !exists('g:checksyntax#check_cygpath')
+    " If true, check whether we have to convert a path via cyppath -- 
+    " see |checksyntax#MaybeUseCygpath|
+    let g:checksyntax#check_cygpath = g:checksyntax#windows && s:Executable('cygpath')   "{{{2
 endif
 
 
