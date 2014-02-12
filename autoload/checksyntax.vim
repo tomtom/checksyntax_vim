@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    1313
+" @Revision:    1319
 
 
 if !exists('g:checksyntax#auto_enable_rx')
@@ -375,8 +375,9 @@ function! s:RunSyncWithEFM(make_def) "{{{3
     endif
     try
         if has_key(a:make_def, 'cmd')
-            let cmddef = s:ExtractCompilerParams(a:make_def, a:make_def.cmd)
+            let cmddef = s:ExtractCompilerParams(a:make_def, '%', a:make_def.cmd)
             let cmd = s:NativeCmd(cmddef.cmd)
+            " TLogVAR cmd
             let rv = g:checksyntax#prototypes[type].GetExpr(cmd)
             " TLogVAR rv, getqflist()
             return rv
@@ -783,7 +784,7 @@ function! s:Run_async(make_def) "{{{3
         let cmd .= ' '. escape(make_def.filename, '"''\ ')
     elseif has_key(make_def, 'compiler')
         let compiler_def = s:WithCompiler(make_def.compiler,
-                    \ 'return s:ExtractCompilerParams('. string(a:make_def) .')',
+                    \ 'return s:ExtractCompilerParams('. string(a:make_def) .', "")',
                     \ {})
         " TLogVAR compiler_def
         if !empty(compiler_def)
@@ -856,9 +857,9 @@ function! s:Filename(make_def, type, mod) "{{{3
 endf
 
 
-function! s:ExtractCompilerParams(make_def, ...) "{{{3
+function! s:ExtractCompilerParams(make_def, args, ...) "{{{3
     let cmd = a:0 >= 1 ? a:1 : &makeprg
-    let args = get(a:make_def, 'compiler_args', '')
+    let args = get(a:make_def, 'compiler_args', a:args)
     let cmd = s:ReplaceMakeArgs(a:make_def, cmd, args)
     let compiler_def = {
                 \ 'cmd': cmd,
@@ -870,7 +871,6 @@ endf
 
 
 let s:status_expr = 'checksyntax#Status()'
-
 
 function! checksyntax#AddJob(make_def) "{{{3
     let g:checksyntax#async_pending[a:make_def.job_id] = a:make_def
