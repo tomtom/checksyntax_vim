@@ -1,7 +1,43 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    1153
+" @Revision:    1309
+
+
+let s:cygwin = {}
+
+function! s:CygwinBin(cmd) "{{{3
+    if has_key(s:cygwin, a:cmd)
+        let rv = s:cygwin[a:cmd]
+    else
+        if !s:Executable('cygpath') || !s:Executable('which')
+            let rv = 0
+        else
+            let which = substitute(system('which '. shellescape(a:cmd)), '\n$', '', '')
+            " echom "DBG which:" which
+            if which =~ '^/'
+                let filename = system('cygpath -ma '. shellescape(which))
+                " echom "DBG filename:" filename
+                let rv = filename =~ g:checksyntax#cygwin_path_rx
+            else
+                let rv = 0
+            endif
+        endif
+        let s:cygwin[a:cmd] = rv
+    endif
+    return rv
+endf
+
+
+let s:executables = {}
+
+function! s:Executable(cmd) "{{{3
+    if !has_key(s:executables, a:cmd)
+        let s:executables[a:cmd] = executable(a:cmd) != 0 || s:CygwinBin(a:cmd)
+        " echom "DBG Executable" a:cmd s:executables[a:cmd]
+    endif
+    return s:executables[a:cmd]
+endf
 
 
 if !exists('g:checksyntax#auto_enable_rx')
@@ -83,6 +119,27 @@ if !exists('g:checksyntax#null')
 endif
 
 
+if !exists('g:checksyntax#check_cygpath')
+    " If true, check whether we have to convert a path via cyppath -- 
+    " see |checksyntax#MaybeUseCygpath|
+    let g:checksyntax#check_cygpath = g:checksyntax#windows && s:Executable('cygpath')   "{{{2
+endif
+
+
+if !exists('g:checksyntax#cygwin_path_rx')
+    " If a full windows filename (with slashes instead of backslashes) 
+    " matches this |regexp|, it is assumed to be a cygwin executable.
+    let g:checksyntax#cygwin_path_rx = '/cygwin/'   "{{{2
+endif
+
+
+if !exists('g:checksyntax#cygwin_expr')
+    " For cygwin binaries, convert command calls using this vim 
+    " expression.
+    let g:checksyntax#cygwin_expr = '"bash -c ''". escape(%s, "''\\") ."''"'   "{{{2
+endif
+
+
 if !exists('*CheckSyntaxSucceed')
     " This function is called when no syntax errors were found.
     function! CheckSyntaxSucceed(type, manually)
@@ -123,16 +180,13 @@ if empty(g:checksyntax#prototypes.loc)
         endif
     endf
 
+    function! g:checksyntax#prototypes.loc.GetExpr(args) dict "{{{3
+        " TLogDBG system(a:args)
+        return s:RunCmd('lgetexpr', 'system('. string(a:args). ')')
+    endf
+
     function! g:checksyntax#prototypes.loc.Make(args) dict "{{{3
-        try
-            exec 'silent lmake!' a:args
-            return 1
-        catch
-            echohl Error
-            echom v:exception
-            echohl NONE
-            return 0
-        endtry
+        return s:RunCmd('lmake!', a:args)
     endf
 
     function! g:checksyntax#prototypes.loc.Get() dict "{{{3
@@ -156,16 +210,13 @@ if empty(g:checksyntax#prototypes.qfl)
         endif
     endf
 
+    function! g:checksyntax#prototypes.qfl.GetExpr(args) dict "{{{3
+        " TLogDBG system(a:args)
+        return s:RunCmd('cgetexpr', 'system('. string(a:args). ')')
+    endf
+
     function! g:checksyntax#prototypes.qfl.Make(args) dict "{{{3
-        try
-            exec 'silent make!' a:args
-            return 1
-        catch
-            echohl Error
-            echom v:exception
-            echohl NONE
-            return 0
-        endtry
+        return s:RunCmd('make!', a:args)
     endf
 
     function! g:checksyntax#prototypes.qfl.Get() dict "{{{3
@@ -178,7 +229,23 @@ if empty(g:checksyntax#prototypes.qfl)
 endif
 
 
+function! s:RunCmd(cmd, args) "{{{3
+    try
+        " TLogVAR a:cmd, a:args, &efm
+        exec 'silent' a:cmd a:args
+        return 1
+    catch
+        echohl Error
+        echom v:exception
+        echohl NONE
+        return 0
+    endtry
+endf
+
+
 let s:checkers = {}
+let s:top_level_fields = ['modified', 'auto', 'run_alternatives', 'alternatives']
+let s:mandatory = ['cmd', 'cmdexpr', 'compiler', 'exec']
 
 
 " Define a syntax checker definition for a given filetype.
@@ -188,14 +255,15 @@ let s:checkers = {}
 " A checker definition is a dictionary with the following fields:
 " 
 " Mandatory (either one of the following):
-"   cmd ... A shell command used as 'makeprg' to check the file.
-"   exec ... A vim command used to check the file.
+"
+"   cmd ........ A shell command used as 'makeprg' to check the file.
+"   cmdexpr .... A vim expression that returns the cmd
 "   compiler ... A vim compiler that is used to check the file.
+"   exec ....... A vim command used to check the file (deprecated; use 
+"                cmdexpr & process_list instead)
 " 
 " Optional:
-"   auto* ...... Run automatically when saving a file (see also 
-"                |g:checksyntax#auto_enable_rx| and 
-"                |g:checksyntax#auto_disable_rx|)
+"
 "   efm  ....... An 'errorformat' string.
 "   prepare .... An ex command that is run before doing anything.
 "   ignore_nr .. A list of error numbers that should be ignored.
@@ -205,47 +273,74 @@ let s:checkers = {}
 "   if ......... An expression to test *once* whether a syntax checker 
 "                should be used.
 "   if_executable .. Test whether an application is executable.
-"   modified* .. If the buffer was modified, use an alternative 
-"                checker
-"   alternatives* ... A list of syntax checker definitions.
-"   run_alternatives* ... A string that defines how to run 
+"
+" Optional top-level fields:
+"
+"   auto ....... Run automatically when saving a file (see also 
+"                |g:checksyntax#auto_enable_rx| and 
+"                |g:checksyntax#auto_disable_rx|)
+"   modified ... The name of a pseudo-filetype that should be used if 
+"                the buffer was modified
+"   run_alternatives ... A string that defines how to run 
 "                alternatives (overrides 
 "                |g:checksyntax#run_alternatives|).
 "
-" The keys marked with "*" can be used only on the top level of a 
-" syntax checker definition.
+" Top-level fields affect how syntax checkers for a filetype are run.
 function! checksyntax#AddChecker(filetype, ...) "{{{3
-    if a:filetype =~ '?$'
-        let update = 0
-        let filetype = substitute(a:filetype, '?$', '', '')
-    else
-        let update = 1
-        let filetype = a:filetype
-    endif
-    " TLogVAR filetype, update, a:000, a:0, type(a:1)
     if a:0 == 1 && type(a:1) == 3
         let alternatives = a:1
     else
         let alternatives = a:000
     endif
     " TLogVAR alternatives
-    for alternative in alternatives
-        let name = s:GetName(alternative)
-        if empty(name)
-            throw "CheckSyntax: Name must not be empty: ". filetype .': '. string(alternative)
-        else
-            if !has_key(s:checkers, filetype)
-                let s:checkers[filetype] = {'alternatives': {}, 'order': []}
-            endif
-            let new_item = !has_key(s:checkers[filetype].alternatives, name)
-            if update || new_item
-                let s:checkers[filetype].alternatives[name] = alternative
-                if new_item
-                    call add(s:checkers[filetype].order, name)
+    if !empty(alternatives)
+        let [update, filetype] = s:UpName(a:filetype)
+        " TLogVAR filetype, update, a:000, a:0, type(a:1)
+        if !has_key(s:checkers, filetype)
+            let s:checkers[filetype] = {'alternatives': {}, 'order': []}
+        endif
+        for alternative in alternatives
+            " Copy top_level_fields
+            for upkey in s:top_level_fields
+                let [kupdate, key] = s:UpName(upkey)
+                if has_key(alternative, key) && (kupdate || !has_key(s:checkers[filetype], key))
+                    let s:checkers[filetype][key] = remove(alternative, key)
+                endif
+            endfor
+            " If there are other fields, add alternative
+            if !empty(alternative)
+                if has_key(alternative, 'cmdexpr')
+                    let alternative.cmd = eval(alternative.cmdexpr)
+                endif
+                let name = s:GetName(alternative)
+                if empty(name)
+                    throw "CheckSyntax: Name must not be empty: ". filetype .': '. string(alternative)
+                elseif empty(filter(copy(s:mandatory), 'has_key(alternative, v:val)'))
+                    throw "CheckSyntax: One of ". join(s:mandatory, ', ') ." must be defined: ". filetype .': '. string(alternative)
+                else
+                    let new_item = !has_key(s:checkers[filetype].alternatives, name)
+                    if update || new_item
+                        let s:checkers[filetype].alternatives[name] = alternative
+                        if new_item
+                            call add(s:checkers[filetype].order, name)
+                        endif
+                    endif
                 endif
             endif
-        endif
-    endfor
+        endfor
+    endif
+endf
+
+
+function! s:UpName(upname) "{{{3
+    if a:upname =~ '?$'
+        let update = 0
+        let name = substitute(a:upname, '?$', '', '')
+    else
+        let update = 1
+        let name = a:upname
+    endif
+    return [update, name]
 endf
 
 
@@ -262,40 +357,66 @@ endf
 
 " :nodoc:
 " Run |:make| based on a syntax checker definition.
-function! checksyntax#Make(def) "{{{3
-    " TLogVAR a:def
-    let type = get(a:def, 'listtype', 'loc')
-    let makeprg = &makeprg
+function! s:RunSyncWithEFM(make_def) "{{{3
+    " TLogVAR a:make_def
+    let type = get(a:make_def, 'listtype', 'loc')
     let shellpipe = &shellpipe
     let errorformat = &errorformat
-    if has_key(a:def, 'shellpipe')
-        let &l:shellpipe = get(a:def, 'shellpipe')
-        " TLogVAR &l:shellpipe
+    if has_key(a:make_def, 'shellpipe')
+        let &shellpipe = get(a:make_def, 'shellpipe')
+        " TLogVAR &shellpipe
     endif
-    if has_key(a:def, 'efm')
-        let &l:errorformat = get(a:def, 'efm')
-        " TLogVAR &l:errorformat
+    if has_key(a:make_def, 'efm')
+        let &errorformat = get(a:make_def, 'efm')
+        " TLogVAR &errorformat
     endif
     try
-        if has_key(a:def, 'cmd')
-            let &l:makeprg = a:def.cmd
-            " TLogVAR &l:makeprg
-            return g:checksyntax#prototypes[type].Make(get(a:def, 'args', '%'))
-        elseif has_key(a:def, 'exec')
-            exec a:def.exec
+        if has_key(a:make_def, 'cmd')
+            let cmddef = s:ExtractCompilerParams(a:make_def, a:make_def.cmd)
+            let cmd = s:NativeCmd(cmddef.cmd)
+            let rv = g:checksyntax#prototypes[type].GetExpr(cmd)
+            " TLogVAR rv, getqflist()
+            return rv
+        elseif has_key(a:make_def, 'exec')
+            exec a:make_def.exec
             return 1
         endif
     finally
-        if &l:makeprg != makeprg
-            let &l:makeprg = makeprg
+        if &shellpipe != shellpipe
+            let &shellpipe = shellpipe
         endif
-        if &l:shellpipe != shellpipe
-            let &l:shellpipe = shellpipe
-        endif
-        if &l:errorformat != errorformat
-            let &l:errorformat = errorformat
+        if &errorformat != errorformat
+            let &errorformat = errorformat
         endif
     endtry
+endf
+
+
+let s:convert_filenames = {}
+
+function! s:ConvertFilenames(make_def, props) "{{{3
+    for key in ['filename', 'altname']
+        let filename = a:props[key]
+        let convert_filename = get(a:make_def, 'convert_filename', '')
+        if !empty(convert_filename)
+            if !has_key(s:convert_filenames, convert_filename)
+                let s:convert_filenames[convert_filename] = {}
+            endif
+            if has_key(s:convert_filenames[convert_filename], filename)
+                let filename = s:convert_filenames[convert_filename][filename]
+            else
+                " TLogVAR filename, convert_filename
+                let cmd = printf(convert_filename, shellescape(filename))
+                " TLogVAR cmd
+                let filename = system(cmd)
+                let filename = substitute(filename, '\n$', '', '')
+                let s:convert_filenames[convert_filename][filename] = filename
+            endif
+            " TLogVAR filename
+        endif
+        let a:make_def[key] = filename
+    endfor
+    return a:make_def
 endf
 
 
@@ -315,13 +436,21 @@ function! checksyntax#Require(filetype) "{{{3
 endf
 
 
+function! s:NativeCmd(cmd) "{{{3
+    if !empty(g:checksyntax#cygwin_expr) && s:CygwinBin(matchstr(a:cmd, '^\S\+'))
+        let cmd = eval(printf(g:checksyntax#cygwin_expr, string(a:cmd)))
+        " TLogVAR cmd
+        return cmd
+    else
+        return a:cmd
+    endif
+endf
+
+
 " :nodoc:
-function! s:Cmd(def) "{{{3
-    if has_key(a:def, 'cmd')
-        let cmd = matchstr(a:def.cmd, '^\(\\\s\|\S\+\|"\([^"]\|\\"\)\+"\)\+')
-        " TLogVAR cmd
-        " let cmd = fnamemodify(cmd, ':t')
-        " TLogVAR cmd
+function! s:Cmd(make_def) "{{{3
+    if has_key(a:make_def, 'cmd')
+        let cmd = matchstr(a:make_def.cmd, '^\(\\\s\|\S\+\|"\([^"]\|\\"\)\+"\)\+')
     else
         let cmd = ''
     endif
@@ -330,33 +459,23 @@ endf
 
 
 " :nodoc:
-function! s:GetName(def) "{{{3
-    let name = get(a:def, 'name', '')
+function! s:GetName(make_def) "{{{3
+    let name = get(a:make_def, 'name', '')
     if empty(name)
-        let name = get(a:def, 'compiler', '')
+        let name = get(a:make_def, 'compiler', '')
     endif
     if empty(name)
-        let name = s:Cmd(a:def)
+        let name = s:Cmd(a:make_def)
     endif
     return name
 endf
 
 
-let s:executables = {}
-
-function! s:Executable(cmd) "{{{3
-    if !has_key(s:executables, a:cmd)
-        let s:executables[a:cmd] = executable(a:cmd) != 0
-    endif
-    return s:executables[a:cmd]
-endf
-
-
-function! s:ValidAlternative(def) "{{{3
-    if has_key(a:def, 'if')
-        return eval(a:def.if)
-    elseif has_key(a:def, 'if_executable')
-        return s:Executable(a:def.if_executable)
+function! s:ValidAlternative(make_def) "{{{3
+    if has_key(a:make_def, 'if')
+        return eval(a:make_def.if)
+    elseif has_key(a:make_def, 'if_executable')
+        return s:Executable(a:make_def.if_executable)
     else
         return 1
     endif
@@ -389,9 +508,9 @@ endf
 let s:run_alternatives_all = 0
 
 " :nodoc:
-function! checksyntax#RunAlternativesMode(def) "{{{3
-    let rv = s:run_alternatives_all ? g:checksyntax#run_all_alternatives : get(a:def, 'run_alternatives', g:checksyntax#run_alternatives)
-    " TLogVAR a:def, rv
+function! checksyntax#RunAlternativesMode(make_def) "{{{3
+    let rv = s:run_alternatives_all ? g:checksyntax#run_all_alternatives : get(a:make_def, 'run_alternatives', g:checksyntax#run_alternatives)
+    " TLogVAR a:make_def, rv
     return rv
 endf
 
@@ -436,6 +555,10 @@ function! checksyntax#Check(manually, ...)
     let bg   = a:0 >= 3 && a:3 != '' ? a:3 : 0
     " TLogVAR a:manually, bang, filetype, bg
     let s:run_alternatives_all = bang
+    if !&autochdir
+        let wd = getcwd()
+        exec 'lcd' fnameescape(expand('%:p'))
+    endif
     try
         let defs = s:GetDefsByFiletype(a:manually, filetype)
         " TLogVAR defs
@@ -464,7 +587,8 @@ function! checksyntax#Check(manually, ...)
             let props = {
                         \ 'bg': bg,
                         \ 'bufnr': bufnr('%'),
-                        \ 'filename': expand('%:p'),
+                        \ 'filename': expand('%'),
+                        \ 'altname': expand('#'),
                         \ 'manually': a:manually,
                         \ }
             let use_qfl = 0
@@ -472,16 +596,18 @@ function! checksyntax#Check(manually, ...)
             let g:checksyntax#async_issues = []
             for [name, make_def] in items(defs.make_defs)
                 " TLogVAR make_def, async
+                let make_def1 = copy(make_def)
                 let done = 0
                 if async
-                    let make_def1 = copy(make_def)
                     call extend(make_def1, props)
+                    let make_def1 = s:ConvertFilenames(make_def1, make_def1)
                     let make_def1.name = name
                     let make_def1.job_id = name .'_'. make_def1.bufnr
                     let done = s:Run_async(make_def1)
                 endif
                 if !done
-                    let use_qfl += s:Run_sync(all_issues, name, filetype, make_def)
+                    let make_def1 = s:ConvertFilenames(make_def1, props)
+                    let use_qfl += s:Run_sync(all_issues, name, filetype, make_def1)
                 endif
             endfor
             " echom "DBG 1" string(list)
@@ -495,6 +621,9 @@ function! checksyntax#Check(manually, ...)
             endif
         endif
     finally
+        if !&autochdir
+            exec 'lcd' fnameescape(wd)
+        endif
         let s:run_alternatives_all = 0
     endtry
     redraw!
@@ -522,17 +651,16 @@ function! s:GetDefsByFiletype(manually, filetype) "{{{3
     let defs = {'mode': '', 'make_defs': {}}
     call checksyntax#Require(a:filetype)
     " let defs.mode = 'auto'
-    let def = a:manually ? {} : s:GetDef(a:filetype .',auto')
-    " TLogVAR 1, def
-    if empty(def)
-        let def = s:GetDef(a:filetype)
-        " TLogVAR 2, def
+    let make_def = a:manually ? {} : s:GetDef(a:filetype .',auto')
+    " TLogVAR 1, make_def
+    if empty(make_def)
+        let make_def = s:GetDef(a:filetype)
+        " TLogVAR 2, make_def
     endif
     if &modified
-        if has_key(def, 'modified')
-            " let defs.mode = 'auto'
-            let def = s:GetDef(def.modified)
-            " TLogVAR 3, def
+        if has_key(make_def, 'modified')
+            let make_def = s:GetDef(make_def.modified)
+            " TLogVAR 3, make_def
         else
             echohl WarningMsg
             echom "Buffer was modified. Please save it before calling :CheckSyntax."
@@ -540,8 +668,8 @@ function! s:GetDefsByFiletype(manually, filetype) "{{{3
             return
         endif
     endif
-    " TLogVAR def
-    if empty(def)
+    " TLogVAR make_def
+    if empty(make_def)
         return defs
     endif
     if !empty(g:checksyntax#auto_enable_rx) && a:filetype =~ g:checksyntax#auto_enable_rx
@@ -549,16 +677,16 @@ function! s:GetDefsByFiletype(manually, filetype) "{{{3
     elseif !empty(g:checksyntax#auto_disable_rx) && a:filetype =~ g:checksyntax#auto_disable_rx
         let auto = 0
     else
-        let auto = get(def, 'auto', 0)
+        let auto = get(make_def, 'auto', 0)
     endif
     " TLogVAR auto
     if !(a:manually || auto)
         return defs
     endif
-    let defs.run_alternatives = checksyntax#RunAlternativesMode(def)
+    let defs.run_alternatives = checksyntax#RunAlternativesMode(make_def)
     " TLogVAR &makeprg, &l:makeprg, &g:makeprg, &errorformat
-    " TLogVAR def
-    let defs.make_defs = get(def, 'alternatives', {'*': def})
+    " TLogVAR make_def
+    let defs.make_defs = get(make_def, 'alternatives', {'*': make_def})
     return defs
 endf
 
@@ -606,18 +734,19 @@ function! s:WithCompiler(compiler, exec, default) "{{{3
 endf
 
 
-function! s:Make(filetype, def)
+function! s:RunSyncChecker(filetype, make_def)
     let bufnr = bufnr('%')
     let pos = getpos('.')
-    let type = get(a:def, 'listtype', 'loc')
+    let type = get(a:make_def, 'listtype', 'loc')
     try
-        if has_key(a:def, 'compiler')
-            let args = get(a:def, 'compiler_args', '')
-            let rv = s:WithCompiler(a:def.compiler,
+        if has_key(a:make_def, 'compiler')
+            " <+TODO+> Use s:ExtractCompilerParams and run s:RunSyncWithEFM
+            let args = get(a:make_def, 'compiler_args', '%')
+            let rv = s:WithCompiler(a:make_def.compiler,
                         \ 'call g:checksyntax#prototypes[type].Make('. string(args) .')',
                         \ 1)
         else
-            let rv = checksyntax#Make(a:def)
+            let rv = s:RunSyncWithEFM(a:make_def)
         endif
         " TLogVAR rv
         return rv
@@ -647,7 +776,8 @@ function! s:Run_async(make_def) "{{{3
     let cmd = ''
     if has_key(make_def, 'cmd')
         let cmd = get(make_def, 'cmd', '')
-        let cmd .= ' '. shellescape(make_def.filename)
+        " let cmd .= ' '. shellescape(make_def.filename)
+        let cmd .= ' '. escape(make_def.filename, '"''\ ')
     elseif has_key(make_def, 'compiler')
         let compiler_def = s:WithCompiler(make_def.compiler,
                     \ 'return s:ExtractCompilerParams('. string(a:make_def) .')',
@@ -661,6 +791,7 @@ function! s:Run_async(make_def) "{{{3
     " TLogVAR cmd
     if !empty(cmd)
         try
+            let cmd = s:NativeCmd(cmd)
             let rv = checksyntax#async#{g:checksyntax#async_runner}#Run(cmd, make_def)
             call checksyntax#AddJob(make_def)
             return rv
@@ -680,33 +811,57 @@ function! s:Run_async(make_def) "{{{3
 endf
 
 
-function! s:ExtractCompilerParams(make_def) "{{{3
-    let cmd = &makeprg
-    let args = get(a:make_def, 'args', get(a:make_def, 'compiler_args', ''))
-    if !empty(args) && stridx(cmd, '$*') == -1
-        let cmd .= ' '. args
+function! s:ReplaceMakeArgs(make_def, cmd, args) "{{{3
+    let cmd = a:cmd
+    if !empty(a:args) && stridx(cmd, '$*') == -1
+        let cmd .= ' '. a:args
     endif
     let replaced = []
     if stridx(cmd, '%') != -1
-        let cmd = substitute(cmd, '\V%', escape(expand('%:p'), '\'), 'g')
+        let cmd = substitute(cmd, '%\(\%(:[phtre]\)\+\)\?', '\=s:Filename(a:make_def, "%", submatch(1))', 'g')
         call add(replaced, '%')
     endif
     if stridx(cmd, '$*') != -1
         if index(replaced, '%') == -1
-            let cmd = substitute(cmd, '\V$*', args .' '. escape(expand('%:p'), '\'), 'g')
+            let cmd = substitute(cmd, '\V$*', a:args .' '. escape(a:make_def['filename'], '\'), 'g')
+            call add(replaced, '%')
         else
-            let cmd = substitute(cmd, '\V$*', args, 'g')
+            let cmd = substitute(cmd, '\V$*', a:args, 'g')
         endif
         call add(replaced, '$*')
     endif
     if stridx(cmd, '#') != -1
-        let cmd = substitute(cmd, '\V%', escape(expand('#:p'), '\'), 'g')
+        let cmd = substitute(cmd, '#\(\%(:[phtre]\)\+\)\?', '\=s:Filename(a:make_def, "#", submatch(1))', 'g')
         call add(replaced, '#')
     endif
+    return cmd
+endf
+
+
+function! s:Filename(make_def, type, mod) "{{{3
+    if a:type == '%'
+        let filename = a:make_def.filename
+    elseif a:type == '#'
+        let filename = a:make_def.altname
+    else
+        throw "CheckSyntax/s:Filename: Internal error: type = ". a:type
+    endif
+    if !empty(a:mod)
+        let filename = fnamemodify(filename, a:mod)
+    endif
+    return escape(filename, '\')
+endf
+
+
+function! s:ExtractCompilerParams(make_def, ...) "{{{3
+    let cmd = a:0 >= 1 ? a:1 : &makeprg
+    let args = get(a:make_def, 'compiler_args', '')
+    let cmd = s:ReplaceMakeArgs(a:make_def, cmd, args)
     let compiler_def = {
                 \ 'cmd': cmd,
                 \ 'efm': &errorformat
                 \ }
+    " TLogVAR compiler_def
     return compiler_def
 endf
 
@@ -749,23 +904,24 @@ function! checksyntax#Status() "{{{3
 endf
 
 
-function! s:Run_sync(all_issues, name, filetype, def) "{{{3
-    " TLogVAR a:name, a:filetype, a:def
+function! s:Run_sync(all_issues, name, filetype, make_def) "{{{3
+    " TLogVAR a:name, a:filetype, a:make_def
     let use_qfl = 0
-    let def = a:def
-    if has_key(def, 'include')
-        let include = s:GetDef(def.include)
+    let make_def = a:make_def
+    if has_key(make_def, 'include')
+        let include = s:GetDef(make_def.include)
         if !empty(include)
-            let def = extend(copy(def), include, 'keep')
+            let make_def = extend(copy(make_def), include, 'keep')
         endif
     endif
-    exec get(def, 'prepare', '')
-    if s:Make(a:filetype, def)
-        let type = get(def, 'listtype', 'loc')
+    exec get(make_def, 'prepare', '')
+    if s:RunSyncChecker(a:filetype, make_def)
+        let type = get(make_def, 'listtype', 'loc')
         if type != 'loc'
             let use_qfl = 1
         endif
-        let list = checksyntax#GetList(a:name, def, type)
+        " TLogVAR type, use_qfl
+        let list = checksyntax#GetList(a:name, make_def, type)
         if !empty(list)
             call extend(a:all_issues, list)
         endif
@@ -774,22 +930,22 @@ function! s:Run_sync(all_issues, name, filetype, def) "{{{3
 endf
 
 
-function! checksyntax#GetList(name, def, type) "{{{3
+function! checksyntax#GetList(name, make_def, type) "{{{3
     " TLogVAR a:type
     let list = g:checksyntax#prototypes[a:type].Get()
     " TLogVAR list
-    " TLogVAR 1, len(list), has_key(a:def, 'process_list')
-    if !empty(list) && has_key(a:def, 'process_list')
-        " TLogVAR a:def.process_list
-        let list = call(a:def.process_list, [list])
+    " TLogVAR 1, len(list), has_key(a:make_def, 'process_list')
+    if !empty(list) && has_key(a:make_def, 'process_list')
+        " TLogVAR a:make_def.process_list
+        let list = call(a:make_def.process_list, [list])
         " TLogVAR 2, len(list)
     endif
     if !empty(list)
-        let list = filter(list, 's:FilterItem(a:def, v:val)')
+        let list = filter(list, 's:FilterItem(a:make_def, v:val)')
         " TLogVAR 3, len(list)
         " TLogVAR a:type, list
         if !empty(list)
-            let list = map(list, 's:CompleteItem(a:name, a:def, v:val)')
+            let list = map(list, 's:CompleteItem(a:name, a:make_def, v:val)')
             " TLogVAR 4, len(list)
             " TLogVAR a:type, list
         endif
@@ -799,8 +955,8 @@ function! checksyntax#GetList(name, def, type) "{{{3
 endf
 
 
-function! s:CompleteItem(name, def, val) "{{{3
-    " TLogVAR a:name, a:def, a:val
+function! s:CompleteItem(name, make_def, val) "{{{3
+    " TLogVAR a:name, a:make_def, a:val
     if get(a:val, 'bufnr', 0) == 0
         let a:val.bufnr = bufnr('%')
     endif
@@ -821,10 +977,10 @@ function! s:CompleteItem(name, def, val) "{{{3
 endf
 
 
-function! s:FilterItem(def, val) "{{{3
+function! s:FilterItem(make_def, val) "{{{3
     if a:val.lnum == 0 && a:val.pattern == ''
         return 0
-    elseif has_key(a:val, 'nr') && has_key(a:def, 'ignore_nr') && index(a:def.ignore_nr, a:val.nr) != -1
+    elseif has_key(a:val, 'nr') && has_key(a:make_def, 'ignore_nr') && index(a:make_def.ignore_nr, a:val.nr) != -1
         return 0
     endif
     return 1
@@ -839,4 +995,15 @@ function! checksyntax#NullOutput(flag) "{{{3
     endif
 endf
 
+
+" If cmd seems to be a cygwin executable, use cygpath to convert 
+" filenames. This assumes that cygwin's which command returns full 
+" filenames for non-cygwin executables.
+function! checksyntax#MaybeUseCygpath(cmd) "{{{3
+    " echom "DBG" a:cmd
+    if g:checksyntax#check_cygpath && s:CygwinBin(a:cmd)
+        return 'cygpath -u %s'
+    endif
+    return ''
+endf
 
