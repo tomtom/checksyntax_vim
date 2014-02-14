@@ -1,6 +1,6 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    24
+" @Revision:    27
 
 
 if !exists('checksyntax#defs#xml#pmd_rulesets')
@@ -22,17 +22,15 @@ call checksyntax#AddChecker('xml?',
             \ )
 
 
-let s:pmd = checksyntax#pmd#Cmd('ecmascript', checksyntax#defs#xml#pmd_args, checksyntax#defs#xml#pmd_rulesets)
-if !empty(s:pmd)
+if !empty(g:checksyntax#pmd#cmd)
     call checksyntax#AddChecker('xml?',
                 \ {
                 \ 'name': 'pmd',
                 \ 'type': 'qfl',
-                \ 'cmd': s:pmd,
+                \ 'cmdexpr': "checksyntax#pmd#Cmd('xml', g:checksyntax#defs#xml#pmd_args, g:checksyntax#defs#xml#pmd_rulesets)",
                 \ 'cmd_args': '',
                 \ 'buffers': 'listed',
                 \ 'efm': '%f:%l:%m',
                 \ })
 endif
-unlet s:pmd
 

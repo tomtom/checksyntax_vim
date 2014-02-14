@@ -1,6 +1,6 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    42
+" @Revision:    46
 
 
 if !exists('checksyntax#defs#java#pmd_rulesets')
@@ -41,18 +41,15 @@ call checksyntax#AddChecker('java?',
             " \ 'cmdexpr': 'checksyntax#defs#java#Jlint()'
             " \ },
 
-
-let s:pmd = checksyntax#pmd#Cmd('java', checksyntax#defs#java#pmd_args, checksyntax#defs#java#pmd_rulesets)
-if !empty(s:pmd)
+if !empty(g:checksyntax#pmd#cmd)
     call checksyntax#AddChecker('java?',
                 \ {
                 \ 'name': 'pmd',
                 \ 'type': 'qfl',
-                \ 'cmd': s:pmd,
+                \ 'cmdexpr': 'checksyntax#pmd#Cmd("java", g:checksyntax#defs#java#pmd_args, g:checksyntax#defs#java#pmd_rulesets)',
                 \ 'cmd_args': '',
                 \ 'buffers': 'listed',
                 \ 'efm': '%f:%l:%m',
                 \ })
 endif
-unlet s:pmd
 

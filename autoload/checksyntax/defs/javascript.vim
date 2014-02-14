@@ -1,6 +1,6 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    64
+" @Revision:    66
 
 
 if !exists('g:checksyntax#defs#javascript#closure')
@@ -70,17 +70,15 @@ if !empty(g:checksyntax#defs#javascript#closure)
 endif
 
 
-let s:pmd = checksyntax#pmd#Cmd('ecmascript', checksyntax#defs#javascript#pmd_args, checksyntax#defs#javascript#pmd_rulesets)
-if !empty(s:pmd)
+if !empty(g:checksyntax#pmd#cmd)
     call checksyntax#AddChecker('javascript?',
                 \ {
                 \ 'name': 'pmd',
                 \ 'type': 'qfl',
-                \ 'cmd': s:pmd,
+                \ 'cmdexpr': "checksyntax#pmd#Cmd('ecmascript', g:checksyntax#defs#javascript#pmd_args, g:checksyntax#defs#javascript#pmd_rulesets)",
                 \ 'cmd_args': '',
                 \ 'buffers': 'listed',
                 \ 'efm': '%f:%l:%m',
                 \ })
 endif
-unlet s:pmd
 

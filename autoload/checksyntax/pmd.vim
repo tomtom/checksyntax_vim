@@ -1,6 +1,6 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    12
+" @Revision:    13
 
 
 if !exists('g:checksyntax#pmd#cmd')
@@ -19,11 +19,14 @@ function! checksyntax#pmd#Cmd(language, args, rulesets) "{{{3
         return ''
     else
         let args = [g:checksyntax#pmd#args, a:args, '-l', a:language]
-        if exists('b:project_dir')
-            call add(args, '-d '. shellescape(b:project_dir))
-        else
-            call add(args, '-d '. shellescape(expand('%:h')))
+        if !exists('b:checksyntax_project_dir')
+            if exists('b:project_dir')
+                let b:checksyntax_project_dir = b:project_dir
+            else
+                let b:checksyntax_project_dir = expand('%:h')
+            endif
         endif
+        call add(args, '-d '. shellescape(b:checksyntax_project_dir))
         let rulesets = join(map(copy(a:rulesets), 'a:language ."-". v:val'), ',')
         let args += ['-R', rulesets]
         return printf("%s %s",
