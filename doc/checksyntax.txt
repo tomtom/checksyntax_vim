@@ -103,6 +103,9 @@ Contents~
         checksyntax#GetList .................. |checksyntax#GetList()|
         checksyntax#NullOutput ............... |checksyntax#NullOutput()|
         checksyntax#MaybeUseCygpath .......... |checksyntax#MaybeUseCygpath()|
+        g:checksyntax#pmd#cmd ................ |g:checksyntax#pmd#cmd|
+        g:checksyntax#pmd#args ............... |g:checksyntax#pmd#args|
+        checksyntax#pmd#Cmd .................. |checksyntax#pmd#Cmd()|
 
 
 ========================================================================
@@ -252,6 +255,10 @@ checksyntax#AddChecker(filetype, ...)
       if ......... An expression to test *once* whether a syntax checker 
                    should be used.
       if_executable .. Test whether an application is executable.
+      buffers .... Keep results only for either "current", "listed", or 
+                   "all" buffers
+      compiler_args .. Internal use
+      cmd_args ... Internal use
 
     Optional top-level fields:
 
@@ -298,6 +305,20 @@ checksyntax#MaybeUseCygpath(cmd)
     If cmd seems to be a cygwin executable, use cygpath to convert 
     filenames. This assumes that cygwin's which command returns full 
     filenames for non-cygwin executables.
+
+
+========================================================================
+autoload/checksyntax/pmd.vim~
+
+                                                    *g:checksyntax#pmd#cmd*
+g:checksyntax#pmd#cmd          (default: '')
+    The command to run pmd.
+
+                                                    *g:checksyntax#pmd#args*
+g:checksyntax#pmd#args         (default: '-f text')
+
+                                                    *checksyntax#pmd#Cmd()*
+checksyntax#pmd#Cmd(language, args, rulesets)
 
 
 

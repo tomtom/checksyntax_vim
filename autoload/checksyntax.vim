@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    1353
+" @Revision:    1368
 
 
 if !exists('g:checksyntax#auto_enable_rx')
@@ -105,6 +105,7 @@ endif
 let s:cygwin = {}
 
 function! s:CygwinBin(cmd) "{{{3
+    " TLogVAR a:cmd
     if !g:checksyntax#windows
         return 0
     elseif has_key(s:cygwin, a:cmd)
@@ -125,6 +126,7 @@ function! s:CygwinBin(cmd) "{{{3
         endif
         let s:cygwin[a:cmd] = rv
     endif
+    " TLogVAR rv
     return rv
 endf
 
@@ -132,11 +134,13 @@ endf
 let s:executables = {}
 
 function! s:Executable(cmd, ...) "{{{3
+    " TLogVAR a:cmd
+    " echom "DBG has_key(s:executables, a:cmd)" has_key(s:executables, a:cmd)
     if !has_key(s:executables, a:cmd)
         let ignore_cyg = a:0 >= 1 ? a:1 : !g:checksyntax#windows
-        let s:executables[a:cmd] = executable(a:cmd) != 0 || ignore_cyg || s:CygwinBin(a:cmd)
-        " echom "DBG Executable" a:cmd s:executables[a:cmd]
+        let s:executables[a:cmd] = executable(a:cmd) != 0 && (ignore_cyg || s:CygwinBin(a:cmd))
     endif
+    " echom "DBG s:executables[a:cmd]" s:executables[a:cmd]
     return s:executables[a:cmd]
 endf
 
@@ -281,6 +285,10 @@ let s:mandatory = ['cmd', 'cmdexpr', 'compiler', 'exec']
 "   if ......... An expression to test *once* whether a syntax checker 
 "                should be used.
 "   if_executable .. Test whether an application is executable.
+"   buffers .... Keep results only for either "current", "listed", or 
+"                "all" buffers
+"   compiler_args .. Internal use
+"   cmd_args ... Internal use
 "
 " Optional top-level fields:
 "
@@ -482,6 +490,7 @@ endf
 
 
 function! s:ValidAlternative(make_def) "{{{3
+    " TLogVAR a:make_def
     if has_key(a:make_def, 'if')
         return eval(a:make_def.if)
     elseif has_key(a:make_def, 'if_executable')
@@ -493,6 +502,7 @@ endf
 
 
 function! s:GetValidAlternatives(filetype, run_alternatives, alternatives) "{{{3
+    " TLogVAR a:filetype, a:run_alternatives, a:alternatives
     let valid = {}
     for name in get(get(s:checkers, a:filetype, {}), 'order', [])
         let alternative = a:alternatives[name]
@@ -801,7 +811,12 @@ function! s:Run_async(make_def) "{{{3
     if has_key(make_def, 'cmd')
         let cmd = get(make_def, 'cmd', '')
         " let cmd .= ' '. shellescape(make_def.filename)
-        let cmd .= ' '. escape(make_def.filename, '"''\ ')
+        if has_key(a:make_def, 'cmd_args')
+            let cmddef = s:ExtractCompilerParams(a:make_def, '', a:make_def.cmd)
+            let cmd = cmddef.cmd
+        else
+            let cmd .= ' '. escape(make_def.filename, '"''\ ')
+        endif
     elseif has_key(make_def, 'compiler')
         let compiler_def = s:WithCompiler(make_def.compiler,
                     \ 'return s:ExtractCompilerParams('. string(a:make_def) .', "")',
@@ -816,6 +831,7 @@ function! s:Run_async(make_def) "{{{3
     if !empty(cmd)
         try
             let cmd = s:NativeCmd(cmd)
+            " TLogVAR cmd
             let rv = checksyntax#async#{g:checksyntax#async_runner}#Run(cmd, make_def)
             call checksyntax#AddJob(make_def)
             return rv
@@ -999,6 +1015,13 @@ function! s:FilterItem(make_def, val) "{{{3
         return 0
     elseif has_key(a:val, 'nr') && has_key(a:make_def, 'ignore_nr') && index(a:make_def.ignore_nr, a:val.nr) != -1
         return 0
+    elseif has_key(a:make_def, 'buffers')
+        let buffers = a:make_def.buffers
+        if buffers == 'listed' && !buflisted(a:val.bufnr)
+            return 0
+        elseif buffers == 'current' && a:val.bufnr != a:make_def.bufnr
+            return 0
+        endif
     endif
     return 1
 endf

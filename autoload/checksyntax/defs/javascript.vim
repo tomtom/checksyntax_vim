@@ -1,6 +1,6 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    61
+" @Revision:    64
 
 
 if !exists('g:checksyntax#defs#javascript#closure')
@@ -11,6 +11,16 @@ endif
 
 if !exists('g:checksyntax#defs#javascript#closure_warnings')
     let g:checksyntax#defs#javascript#closure_warnings = ['const', 'constantProperty', 'checkRegExp', 'strictModuleDepCheck', 'visibility']   "{{{2
+endif
+
+
+if !exists('checksyntax#defs#javascript#pmd_rulesets')
+    let checksyntax#defs#javascript#pmd_rulesets = ["basic", "braces", "unnecessary"]
+endif
+
+
+if !exists('checksyntax#defs#javascript#pmd_args')
+    let checksyntax#defs#javascript#pmd_args = ''   "{{{2
 endif
 
 
@@ -58,4 +68,19 @@ if !empty(g:checksyntax#defs#javascript#closure)
     unlet s:closure_warnings
     " ,%-C%.%#,%+Z%p^
 endif
+
+
+let s:pmd = checksyntax#pmd#Cmd('ecmascript', checksyntax#defs#javascript#pmd_args, checksyntax#defs#javascript#pmd_rulesets)
+if !empty(s:pmd)
+    call checksyntax#AddChecker('javascript?',
+                \ {
+                \ 'name': 'pmd',
+                \ 'type': 'qfl',
+                \ 'cmd': s:pmd,
+                \ 'cmd_args': '',
+                \ 'buffers': 'listed',
+                \ 'efm': '%f:%l:%m',
+                \ })
+endif
+unlet s:pmd
 
