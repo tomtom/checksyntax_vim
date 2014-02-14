@@ -30,16 +30,16 @@ endf
 
 call checksyntax#AddChecker('java?',
             \ {
-            \ 'name': 'jlint',
-            \ 'if_executable': 'jlint',
-            \ 'efm': '%m',
-            \ 'cmdexpr': 'checksyntax#defs#java#Jlint()'
-            \ },
-            \ {
             \ 'if_executable': 'checkstyle',
             \ 'compiler': 'checkstyle',
             \ 'compiler_args': '%'
             \ })
+            " \ {
+            " \ 'name': 'jlint',
+            " \ 'if_executable': 'jlint',
+            " \ 'efm': '%m',
+            " \ 'cmdexpr': 'checksyntax#defs#java#Jlint()'
+            " \ },
 
 
 let s:pmd = checksyntax#pmd#Cmd('java', checksyntax#defs#java#pmd_args, checksyntax#defs#java#pmd_rulesets)
