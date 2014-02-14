@@ -97,7 +97,6 @@ Contents~
         checksyntax#AddChecker ............... |checksyntax#AddChecker()|
         checksyntax#GetChecker ............... |checksyntax#GetChecker()|
         checksyntax#Check .................... |checksyntax#Check()|
-        checksyntax#HandleIssues ............. |checksyntax#HandleIssues()|
         checksyntax#AddJob ................... |checksyntax#AddJob()|
         checksyntax#RemoveJob ................ |checksyntax#RemoveJob()|
         checksyntax#Status ................... |checksyntax#Status()|
@@ -278,9 +277,6 @@ checksyntax#Check(manually, ?bang='', ?filetype=&ft, ?background=1)
     If filetype is empty, the current buffer's 'filetype' will be used.
     If background is true, display the list of issues in the background, 
     i.e. the active window will keep the focus.
-
-                                                    *checksyntax#HandleIssues()*
-checksyntax#HandleIssues(manually, use_qfl, bg, all_issues)
 
                                                     *checksyntax#AddJob()*
 checksyntax#AddJob(make_def)
