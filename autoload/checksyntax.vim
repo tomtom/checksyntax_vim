@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    1368
+" @Revision:    1374
 
 
 if !exists('g:checksyntax#auto_enable_rx')
@@ -328,17 +328,20 @@ function! checksyntax#AddChecker(filetype, ...) "{{{3
                 if has_key(make_def, 'cmdexpr')
                     let make_def.cmd = eval(make_def.cmdexpr)
                 endif
-                let [update_name, name] = s:UpNameFromDef(make_def)
-                if empty(name)
-                    throw "CheckSyntax: Name must not be empty: ". filetype .': '. string(make_def)
-                elseif empty(filter(copy(s:mandatory), 'has_key(make_def, v:val)'))
-                    throw "CheckSyntax: One of ". join(s:mandatory, ', ') ." must be defined: ". filetype .': '. string(make_def)
-                else
-                    let new_item = !has_key(s:checkers[filetype].alternatives, name)
-                    if update || update_name || new_item
-                        let s:checkers[filetype].alternatives[name] = make_def
-                        if new_item
-                            call add(s:checkers[filetype].order, name)
+                " TLogVAR make_def
+                if !has_key(make_def, 'cmd') || !empty(make_def.cmd)
+                    let [update_name, name] = s:UpNameFromDef(make_def)
+                    if empty(name)
+                        throw "CheckSyntax: Name must not be empty: ". filetype .': '. string(make_def)
+                    elseif empty(filter(copy(s:mandatory), 'has_key(make_def, v:val)'))
+                        throw "CheckSyntax: One of ". join(s:mandatory, ', ') ." must be defined: ". filetype .': '. string(make_def)
+                    else
+                        let new_item = !has_key(s:checkers[filetype].alternatives, name)
+                        if update || update_name || new_item
+                            let s:checkers[filetype].alternatives[name] = make_def
+                            if new_item
+                                call add(s:checkers[filetype].order, name)
+                            endif
                         endif
                     endif
                 endif
@@ -596,6 +599,7 @@ function! g:checksyntax#issues.Display(manually, bg) dict "{{{3
         " TLogVAR self.issues
         call sort(self.issues, 's:CompareIssues')
         " TLogVAR self.issues
+        " TLogVAR self.type
         call g:checksyntax#prototypes[self.type].Set(self.issues)
         " TLogVAR self.type, a:manually, a:bg
         call CheckSyntaxFail(self.type, a:manually, a:bg)
