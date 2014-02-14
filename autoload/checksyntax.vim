@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    1349
+" @Revision:    1353
 
 
 if !exists('g:checksyntax#auto_enable_rx')
@@ -307,28 +307,28 @@ function! checksyntax#AddChecker(filetype, ...) "{{{3
         if !has_key(s:checkers, filetype)
             let s:checkers[filetype] = {'alternatives': {}, 'order': []}
         endif
-        for alternative in alternatives
+        for make_def in alternatives
             " Copy top_level_fields
             for upkey in s:top_level_fields
                 let [kupdate, key] = s:UpName(upkey)
-                if has_key(alternative, key) && (kupdate || !has_key(s:checkers[filetype], key))
-                    let s:checkers[filetype][key] = remove(alternative, key)
+                if has_key(make_def, key) && (kupdate || !has_key(s:checkers[filetype], key))
+                    let s:checkers[filetype][key] = remove(make_def, key)
                 endif
             endfor
-            " If there are other fields, add alternative
-            if !empty(alternative)
-                if has_key(alternative, 'cmdexpr')
-                    let alternative.cmd = eval(alternative.cmdexpr)
+            " If there are other fields, add make_def
+            if !empty(make_def)
+                if has_key(make_def, 'cmdexpr')
+                    let make_def.cmd = eval(make_def.cmdexpr)
                 endif
-                let name = s:GetName(alternative)
+                let [update_name, name] = s:UpNameFromDef(make_def)
                 if empty(name)
-                    throw "CheckSyntax: Name must not be empty: ". filetype .': '. string(alternative)
-                elseif empty(filter(copy(s:mandatory), 'has_key(alternative, v:val)'))
-                    throw "CheckSyntax: One of ". join(s:mandatory, ', ') ." must be defined: ". filetype .': '. string(alternative)
+                    throw "CheckSyntax: Name must not be empty: ". filetype .': '. string(make_def)
+                elseif empty(filter(copy(s:mandatory), 'has_key(make_def, v:val)'))
+                    throw "CheckSyntax: One of ". join(s:mandatory, ', ') ." must be defined: ". filetype .': '. string(make_def)
                 else
                     let new_item = !has_key(s:checkers[filetype].alternatives, name)
-                    if update || new_item
-                        let s:checkers[filetype].alternatives[name] = alternative
+                    if update || update_name || new_item
+                        let s:checkers[filetype].alternatives[name] = make_def
                         if new_item
                             call add(s:checkers[filetype].order, name)
                         endif
@@ -337,18 +337,6 @@ function! checksyntax#AddChecker(filetype, ...) "{{{3
             endif
         endfor
     endif
-endf
-
-
-function! s:UpName(upname) "{{{3
-    if a:upname =~ '?$'
-        let update = 0
-        let name = substitute(a:upname, '?$', '', '')
-    else
-        let update = 1
-        let name = a:upname
-    endif
-    return [update, name]
 endf
 
 
@@ -468,7 +456,20 @@ endf
 
 
 " :nodoc:
-function! s:GetName(make_def) "{{{3
+function! s:UpName(upname) "{{{3
+    if a:upname =~ '?$'
+        let update = 0
+        let name = substitute(a:upname, '?$', '', '')
+    else
+        let update = 1
+        let name = a:upname
+    endif
+    return [update, name]
+endf
+
+
+" :nodoc:
+function! s:UpNameFromDef(make_def) "{{{3
     let name = get(a:make_def, 'name', '')
     if empty(name)
         let name = get(a:make_def, 'compiler', '')
@@ -476,7 +477,7 @@ function! s:GetName(make_def) "{{{3
     if empty(name)
         let name = s:Cmd(a:make_def)
     endif
-    return name
+    return s:UpName(name)
 endf
 
 
@@ -621,7 +622,7 @@ function! checksyntax#Check(manually, ...)
             " TLogVAR &makeprg, &l:makeprg, &g:makeprg, &errorformat
             if defs.run_alternatives =~? '\<first\>' && has_key(g:checksyntax#preferred, filetype)
                 let preferred_rx = g:checksyntax#preferred[filetype]
-                let defs.make_defs = filter(defs.make_defs, 's:GetName(v:val) =~ preferred_rx')
+                let defs.make_defs = filter(defs.make_defs, 's:UpNameFromDef(v:val)[1] =~ preferred_rx')
             endif
             let async = !empty(g:checksyntax#async_runner) && defs.run_alternatives =~? '\<async\>'
             if !empty(s:async_pending)
