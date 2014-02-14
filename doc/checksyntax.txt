@@ -31,9 +31,12 @@ be installed):
 
   c, cpp       ... Requires splint
   html         ... Requires tidy
-  java         ... Requires jlint or checkstyle
+  java         ... Requires
+                    jlint (http://jlint.sourceforge.net),
+                    checkstyle (http://checkstyle.sourceforge.net),
+                    pmd (http://pmd.sourceforge.net)
   javascript   ... Syntax check; requires jshint, esprima, 
-                   gjslint, jslint, or jsl
+                   gjslint, jslint, jsl, pmd
   lua          ... Requires luac (run luac -p)
   php          ... Syntax check; requires php (run php -l)
   python       ... Requires pyflakes or pylint
@@ -43,7 +46,7 @@ be installed):
   tex, latex   ... Requires chktex (run chktex -q -v0)
   viki         ... Requires deplate
   xhtml        ... Requires tidy
-  xml, docbk   ... Requires xmllint
+  xml, docbk   ... Requires xmllint, pmd
 
 Syntax checker definitions are kept in:
 autoload/checksyntax/defs/{&filetype}.vim
