@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    1319
+" @Revision:    1349
 
 
 if !exists('g:checksyntax#auto_enable_rx')
@@ -42,6 +42,11 @@ if !exists('g:checksyntax#async_runner')
     " Supported values:
     "   asynccommand ... Use the AsyncCommand plugin
     let g:checksyntax#async_runner = has('clientserver') && !empty(v:servername) && exists(':AsyncMake') ? 'asynccommand' : ''  "{{{2
+    if has('clientserver') && empty(v:servername)
+        echohl WarningMsg
+        echom "CheckSyntax: Run vim with the --servername NAME command line option to enable use of AsyncCommand"
+        echohl NONE
+    endif
 endif
 
 
@@ -546,6 +551,47 @@ function! s:GetDef(filetype) "{{{3
 endf
 
 
+let s:async_pending = {}
+
+
+let g:checksyntax#issues = {}
+
+
+function! g:checksyntax#issues.Reset() dict "{{{3
+    let self.issues = []
+    let self.type = 'loc'
+endf
+
+call g:checksyntax#issues.Reset()
+
+
+function! g:checksyntax#issues.AddList(name, make_def, type) dict "{{{3
+    if a:type == 'qfl'
+        let self.type = a:type
+    endif
+    let issues = checksyntax#GetList(a:name, a:make_def, a:type)
+    if !empty(issues)
+        let self.issues += issues
+    endif
+    return issues
+endf
+
+
+function! g:checksyntax#issues.Display(manually, bg) dict "{{{3
+    if empty(self.issues)
+        call g:checksyntax#prototypes[self.type].Set(self.issues)
+        call CheckSyntaxSucceed(self.type, a:manually)
+    else
+        " TLogVAR self.issues
+        call sort(self.issues, 's:CompareIssues')
+        " TLogVAR self.issues
+        call g:checksyntax#prototypes[self.type].Set(self.issues)
+        " TLogVAR self.type, a:manually, a:bg
+        call CheckSyntaxFail(self.type, a:manually, a:bg)
+    endif
+endf
+
+
 " :def: function! checksyntax#Check(manually, ?bang='', ?filetype=&ft, ?background=1)
 " Perform a syntax check.
 " If bang is not empty, run all alternatives (see 
@@ -578,14 +624,14 @@ function! checksyntax#Check(manually, ...)
                 let defs.make_defs = filter(defs.make_defs, 's:GetName(v:val) =~ preferred_rx')
             endif
             let async = !empty(g:checksyntax#async_runner) && defs.run_alternatives =~? '\<async\>'
-            if !empty(g:checksyntax#async_pending)
+            if !empty(s:async_pending)
                 if !a:manually && async
                     echohl WarningMsg
                     echo "CheckSyntax: Still waiting for async results ..."
                     echohl NONE
                     return
                 else
-                    let g:checksyntax#async_pending = {}
+                    let s:async_pending = {}
                 endif
             endif
             let props = {
@@ -595,9 +641,7 @@ function! checksyntax#Check(manually, ...)
                         \ 'altname': expand('#'),
                         \ 'manually': a:manually,
                         \ }
-            let use_qfl = 0
-            let all_issues = []
-            let g:checksyntax#async_issues = []
+            call g:checksyntax#issues.Reset()
             for [name, make_def] in items(defs.make_defs)
                 " TLogVAR make_def, async
                 let make_def1 = copy(make_def)
@@ -611,17 +655,12 @@ function! checksyntax#Check(manually, ...)
                 endif
                 if !done
                     let make_def1 = s:ConvertFilenames(make_def1, props)
-                    let use_qfl += s:Run_sync(all_issues, name, filetype, make_def1)
+                    let done = s:Run_sync(name, filetype, make_def1)
                 endif
             endfor
             " echom "DBG 1" string(list)
-            if empty(g:checksyntax#async_pending)
-                if !empty(g:checksyntax#async_issues)
-                    let all_issues += g:checksyntax#async_issues
-                endif
-                call checksyntax#HandleIssues(a:manually, use_qfl, bg, all_issues)
-            else
-                let g:checksyntax#async_issues += all_issues
+            if empty(s:async_pending)
+                call g:checksyntax#issues.Display(a:manually, bg)
             endif
         endif
     finally
@@ -635,11 +674,11 @@ endf
 
 
 function! s:Status() "{{{3
-    if empty(g:checksyntax#async_pending)
+    if empty(s:async_pending)
         echo "CheckSyntax: No pending jobs"
     else
         echo "CheckSyntax: Pending jobs:"
-        for [job_id, make_def] in items(g:checksyntax#async_pending)
+        for [job_id, make_def] in items(s:async_pending)
             echo printf("  %s: bufnr=%s, cmd=%s",
                         \ job_id,
                         \ make_def.bufnr, 
@@ -692,22 +731,6 @@ function! s:GetDefsByFiletype(manually, filetype) "{{{3
     " TLogVAR make_def
     let defs.make_defs = get(make_def, 'alternatives', {'*': make_def})
     return defs
-endf
-
-
-function! checksyntax#HandleIssues(manually, use_qfl, bg, all_issues) "{{{3
-    let type = a:use_qfl > 0 ? 'qfl' : 'loc'
-    if empty(a:all_issues)
-        call g:checksyntax#prototypes[type].Set(a:all_issues)
-        call CheckSyntaxSucceed(type, a:manually)
-    else
-        " TLogVAR a:all_issues
-        call sort(a:all_issues, 's:CompareIssues')
-        " TLogVAR a:all_issues
-        call g:checksyntax#prototypes[type].Set(a:all_issues)
-        " TLogVAR type, a:manually, a:bg
-        call CheckSyntaxFail(type, a:manually, a:bg)
-    endif
 endf
 
 
@@ -768,10 +791,6 @@ function! s:RunSyncChecker(filetype, make_def)
     endtry
     return 0
 endf
-
-
-let g:checksyntax#async_pending = {}
-let g:checksyntax#async_issues = []
 
 
 function! s:Run_async(make_def) "{{{3
@@ -873,7 +892,7 @@ endf
 let s:status_expr = 'checksyntax#Status()'
 
 function! checksyntax#AddJob(make_def) "{{{3
-    let g:checksyntax#async_pending[a:make_def.job_id] = a:make_def
+    let s:async_pending[a:make_def.job_id] = a:make_def
     if exists('g:tstatus_exprs')
         if index(g:tstatus_exprs, s:status_expr) == -1
             call add(g:tstatus_exprs, s:status_expr)
@@ -883,22 +902,22 @@ endf
 
 
 function! checksyntax#RemoveJob(job_id) "{{{3
-    let rv = has_key(g:checksyntax#async_pending, a:job_id)
+    let rv = has_key(s:async_pending, a:job_id)
     if rv
-        call remove(g:checksyntax#async_pending, a:job_id)
-        if empty(g:checksyntax#async_pending) && exists('g:tstatus_exprs')
+        call remove(s:async_pending, a:job_id)
+        if empty(s:async_pending) && exists('g:tstatus_exprs')
             let idx = index(g:tstatus_exprs, s:status_expr)
             if idx != -1
                 call remove(g:tstatus_exprs, idx)
             endif
         endif
     endif
-    return rv
+    return rv ? len(s:async_pending) : -1
 endf
 
 
 function! checksyntax#Status() "{{{3
-    let n = len(g:checksyntax#async_pending)
+    let n = len(s:async_pending)
     if n == 0
         return ''
     else
@@ -907,9 +926,8 @@ function! checksyntax#Status() "{{{3
 endf
 
 
-function! s:Run_sync(all_issues, name, filetype, make_def) "{{{3
+function! s:Run_sync(name, filetype, make_def) "{{{3
     " TLogVAR a:name, a:filetype, a:make_def
-    let use_qfl = 0
     let make_def = a:make_def
     if has_key(make_def, 'include')
         let include = s:GetDef(make_def.include)
@@ -920,16 +938,11 @@ function! s:Run_sync(all_issues, name, filetype, make_def) "{{{3
     exec get(make_def, 'prepare', '')
     if s:RunSyncChecker(a:filetype, make_def)
         let type = get(make_def, 'listtype', 'loc')
-        if type != 'loc'
-            let use_qfl = 1
-        endif
-        " TLogVAR type, use_qfl
-        let list = checksyntax#GetList(a:name, make_def, type)
-        if !empty(list)
-            call extend(a:all_issues, list)
-        endif
+        call g:checksyntax#issues.AddList(a:name, make_def, type)
+        return 1
+    else
+        return 0
     endif
-    return use_qfl
 endf
 
 

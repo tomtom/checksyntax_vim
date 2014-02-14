@@ -1,6 +1,6 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    28
+" @Revision:    35
 
 
 let s:async_handler = {}
@@ -8,7 +8,8 @@ let s:async_handler = {}
 
 function s:async_handler.get(temp_file_name) dict
     " echom "DBG async_handler.get" self.name self.job_id
-    if checksyntax#RemoveJob(self.job_id)
+    let jobs = checksyntax#RemoveJob(self.job_id)
+    if jobs != -1
         let errorformat = &errorformat
         try
             " TLogVAR self.async_type, self.bufnr, bufnr('%')
@@ -19,24 +20,19 @@ function s:async_handler.get(temp_file_name) dict
                 " let lines = readfile(a:temp_file_name) " DBG
                 " TLogVAR lines
                 exec self.async_cmd a:temp_file_name
-                let list = checksyntax#GetList(self.name, self, self.async_type)
+                let list = g:checksyntax#issues.AddList(self.name, self, self.async_type)
                 " TLogVAR list
                 " TLogVAR self.name, len(list)
-                if !empty(list)
-                    let g:checksyntax#async_issues += list
-                endif
                 if g:checksyntax#debug
                     echo
                     echom printf('CheckSyntax: Processing %s (%s items)', self.name, len(list))
                 endif
-                if empty(g:checksyntax#async_pending)
+                if jobs == 0
                     " let bg = self.bg
                     let bg = 1
                     " let manually = self.manually
                     let manually = g:checksyntax#debug
-                    let use_qfl = self.async_type == 'qfl'
-                    " TLogVAR manually, bg, use_qfl
-                    call checksyntax#HandleIssues(manually, use_qfl, bg, g:checksyntax#async_issues)
+                    call g:checksyntax#issues.Display(manually, bg)
                 endif
             endif
         finally
