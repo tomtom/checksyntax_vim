@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    1374
+" @Revision:    1379
 
 
 if !exists('g:checksyntax#auto_enable_rx')
@@ -186,9 +186,13 @@ if empty(g:checksyntax#prototypes.loc)
 
     function! g:checksyntax#prototypes.loc.Open(bg) dict "{{{3
         " TLogVAR a:bg
-        lopen
-        if a:bg
-            wincmd p
+        let lines = min([&previewheight, &lines / 2, len(getloclist(0))])
+        " TLogVAR lines
+        if lines > 0
+            exec 'lopen' lines
+            if a:bg
+                wincmd p
+            endif
         endif
     endf
 
@@ -216,9 +220,12 @@ if empty(g:checksyntax#prototypes.qfl)
     endf
 
     function! g:checksyntax#prototypes.qfl.Open(bg) dict "{{{3
-        copen
-        if a:bg
-            wincmd p
+        let lines = min([&previewheight, &lines / 2, len(getqflist())])
+        if lines > 0
+            exec 'copen' lines
+            if a:bg
+                wincmd p
+            endif
         endif
     endf
 
