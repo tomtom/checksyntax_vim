@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    1379
+" @Revision:    1393
 
 
 if !exists('g:checksyntax#auto_enable_rx')
@@ -21,6 +21,23 @@ if !exists('g:checksyntax#auto_disable_rx')
     " This variable overrules any filetype-specific settings in 
     " |g:checksyntax|.
     let g:checksyntax#auto_disable_rx = ''   "{{{2
+endif
+
+
+if !exists('g:checksyntax#show_cmd')
+    " A dictionary of VIM commands that are used to display the qf/loc 
+    " lists.
+    " If empty, do nothing.
+    let g:checksyntax#show_cmd = {'qfl': 'copen', 'loc': 'lopen'}   "{{{2
+endif
+
+
+if !exists('g:checksyntax#lines_expr')
+    " A vim expression that determines the number of lines of the 
+    " qfl/loc window. If empty, don't set the size.
+    " A useful value is: >
+    "   let g:checksyntax#lines_expr = 'min([&previewheight, &lines / 2, len(getloclist(0))])'
+    let g:checksyntax#lines_expr = ''   "{{{2
 endif
 
 
@@ -179,21 +196,36 @@ if !exists('g:checksyntax#prototypes')
     let g:checksyntax#prototypes = {'loc': {}, 'qfl': {}} "{{{2
 endif
 
+    
+function! s:Open(bg, type) "{{{3
+    " TLogVAR a:bg
+    let cmd = get(g:checksyntax#show_cmd, a:type, '')
+    if !empty(cmd)
+        if !empty(g:checksyntax#lines_expr)
+            let lines = eval(g:checksyntax#lines_expr)
+        else
+            let lines = ''
+        endif
+        " TLogVAR lines
+        if empty(g:checksyntax#lines_expr) || !empty(lines)
+            let bufnr = bufnr('%')
+            let winnr = winnr()
+            exec cmd lines
+            if a:bg && bufnr != bufnr('%')
+                wincmd p
+            endif
+        endif
+    endif
+endf
+
+
 if empty(g:checksyntax#prototypes.loc)
     function! g:checksyntax#prototypes.loc.Close() dict "{{{3
         lclose
     endf
 
     function! g:checksyntax#prototypes.loc.Open(bg) dict "{{{3
-        " TLogVAR a:bg
-        let lines = min([&previewheight, &lines / 2, len(getloclist(0))])
-        " TLogVAR lines
-        if lines > 0
-            exec 'lopen' lines
-            if a:bg
-                wincmd p
-            endif
-        endif
+        call s:Open(a:bg, 'loc')
     endf
 
     function! g:checksyntax#prototypes.loc.GetExpr(args) dict "{{{3
@@ -214,19 +246,14 @@ if empty(g:checksyntax#prototypes.loc)
     endf
 endif
 
+
 if empty(g:checksyntax#prototypes.qfl)
     function! g:checksyntax#prototypes.qfl.Close() dict "{{{3
         cclose
     endf
 
     function! g:checksyntax#prototypes.qfl.Open(bg) dict "{{{3
-        let lines = min([&previewheight, &lines / 2, len(getqflist())])
-        if lines > 0
-            exec 'copen' lines
-            if a:bg
-                wincmd p
-            endif
-        endif
+        call s:Open(a:bg, 'qfl')
     endf
 
     function! g:checksyntax#prototypes.qfl.GetExpr(args) dict "{{{3
