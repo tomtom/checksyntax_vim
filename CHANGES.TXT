@@ -193,3 +193,28 @@ version: "3.00"
   - Support for tstatus (replaces toptions)
   MD5 checksum: c9a7ae5304038568ea2309ed13c8ed96
 
+version: "4.00"
+  - Move AsyncCommand related code to autoload/checksyntax/async/asynccommand.vim
+  - Check validity of g:checksyntax#async_runner only when running an async check
+  - Compile to /dev/null; properly handle tasks for async tasks
+  - g:checksyntax#auto_enable_rx and g:checksyntax#auto_disable_rx replace g:checksyntax#auto_mode
+  - javascript: Initial support for checkTypes by closure compiler
+  - javascript: closure: g:checksyntax#defs#javascript#closure_warnings
+  - Misc changes (use checksyntax#AddChecker() to define checkers) & cleanup
+  - Don't use async if v:servername is empty (vim with clientserver)
+  - Re-enable support for "top-level field"; some support for cygwin; misc improvements
+  - Don't check for cygwin on non-windows OS
+  - FIX pass filename when running synchronously
+  - Minor improvement to acync commands
+  - Support for scalastyle
+  - Improved use of scalastyle
+  - Support for pmd (java, javascript, xml); new options: cmd_args, buffers
+  - Disable support for jlint
+  - pmd: Use cmdexpr to provide for buffer-local options
+  - Don't run make_def, if cmd is set but empty
+  - scala: Use sbt scalastyle if there is a scalastyle-config.xml in the same dir as build.sbt
+  - Make the qfl/loc window adapt to the length of the issues list
+  - Facilitate configuration of showing the error list
+  - Use :resize to set qfl window height
+  MD5 checksum: 1838eb8aeb4748b55d50511fc9fc6380
+
