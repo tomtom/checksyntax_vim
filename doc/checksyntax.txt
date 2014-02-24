@@ -84,6 +84,8 @@ Contents~
         g:checksyntax_auto ................... |g:checksyntax_auto|
         g:checksyntax#auto_enable_rx ......... |g:checksyntax#auto_enable_rx|
         g:checksyntax#auto_disable_rx ........ |g:checksyntax#auto_disable_rx|
+        g:checksyntax#show_cmd ............... |g:checksyntax#show_cmd|
+        g:checksyntax#lines_expr ............. |g:checksyntax#lines_expr|
         g:checksyntax#preferred .............. |g:checksyntax#preferred|
         g:checksyntax#async_runner ........... |g:checksyntax#async_runner|
         :CheckSyntaxStatus ................... |:CheckSyntaxStatus|
@@ -162,6 +164,20 @@ g:checksyntax#auto_disable_rx  (default: '')
     This requires |g:checksyntax_auto| to be > 0.
     This variable overrules any filetype-specific settings in 
     |g:checksyntax|.
+
+                                                    *g:checksyntax#show_cmd*
+g:checksyntax#show_cmd         (default: {'qfl': 'copen', 'loc': 'lopen'})
+    A dictionary of VIM commands that are used to display the qf/loc 
+    lists.
+    If empty, do nothing.
+
+                                                    *g:checksyntax#lines_expr*
+g:checksyntax#lines_expr       (default: '')
+    A vim expression that determines the number of lines of the 
+    qfl/loc window. If empty, don't set the size.
+    A useful value is: >
+      let g:checksyntax#lines_expr = 'min([&previewheight, &lines / 2, len(getloclist(0))])'
+<
 
                                                     *g:checksyntax#preferred*
 g:checksyntax#preferred        (default: {'xml': '.'})
