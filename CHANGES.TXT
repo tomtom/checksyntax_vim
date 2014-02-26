@@ -218,3 +218,8 @@ version: "4.00"
   - Use :resize to set qfl window height
   MD5 checksum: 1838eb8aeb4748b55d50511fc9fc6380
 
+version: "4.01"
+  - Fix #17: error when running with noautochdir
+  - Remove debug info
+  MD5 checksum: 59458811257639ba95f13068aa0d289f
+
