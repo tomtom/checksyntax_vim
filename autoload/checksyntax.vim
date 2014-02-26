@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    1395
+" @Revision:    1397
 
 
 if !exists('g:checksyntax#auto_enable_rx')
@@ -655,7 +655,7 @@ function! checksyntax#Check(manually, ...)
     let s:run_alternatives_all = bang
     if !&autochdir
         let wd = getcwd()
-        exec 'lcd' fnameescape(expand('%:p'))
+        exec 'lcd' expand('%:p:h')
     endif
     try
         let defs = s:GetDefsByFiletype(a:manually, filetype)
