@@ -1,6 +1,6 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    37
+" @Revision:    38
 
 
 let s:async_handler = {}
@@ -59,7 +59,6 @@ endf
 
 function! checksyntax#async#asynccommand#Run(cmd, make_def) "{{{3
     " TLogVAR a:cmd, a:make_def
-    let @+ = a:cmd
     let async_handler = s:AsyncCommandHandler(a:make_def)
     " TLogVAR async_handler
     call asynccommand#run(a:cmd, async_handler)
