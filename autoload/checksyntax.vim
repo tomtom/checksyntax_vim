@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    1397
+" @Revision:    1403
 
 
 if !exists('g:checksyntax#auto_enable_rx')
@@ -653,9 +653,11 @@ function! checksyntax#Check(manually, ...)
     let bg   = a:0 >= 3 && a:3 != '' ? a:3 : 0
     " TLogVAR a:manually, bang, filetype, bg
     let s:run_alternatives_all = bang
-    if !&autochdir
-        let wd = getcwd()
-        exec 'lcd' expand('%:p:h')
+    let wd = getcwd()
+    let bd = expand('%:p:h')
+    let chdir = !&autochdir && wd != bd
+    if chdir
+        exec 'lcd!' fnameescape(bd)
     endif
     try
         let defs = s:GetDefsByFiletype(a:manually, filetype)
@@ -712,8 +714,8 @@ function! checksyntax#Check(manually, ...)
             endif
         endif
     finally
-        if !&autochdir
-            exec 'lcd' fnameescape(wd)
+        if chdir
+            exec 'lcd!' fnameescape(wd)
         endif
         let s:run_alternatives_all = 0
     endtry
