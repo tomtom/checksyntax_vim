@@ -44,6 +44,7 @@ be installed):
                    svTools::lint
   ruby         ... Requires ruby (run ruby -c)
   tex, latex   ... Requires chktex (run chktex -q -v0)
+  typescript   ... Requires tsc
   viki         ... Requires deplate
   xhtml        ... Requires tidy
   xml, docbk   ... Requires xmllint, pmd
