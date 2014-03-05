@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    1403
+" @Revision:    1413
 
 
 if !exists('g:checksyntax#auto_enable_rx')
@@ -154,8 +154,14 @@ function! s:Executable(cmd, ...) "{{{3
     " TLogVAR a:cmd
     " echom "DBG has_key(s:executables, a:cmd)" has_key(s:executables, a:cmd)
     if !has_key(s:executables, a:cmd)
+        let executable = executable(a:cmd)
+        " TLogVAR 1, executable
         let ignore_cyg = a:0 >= 1 ? a:1 : !g:checksyntax#windows
-        let s:executables[a:cmd] = executable(a:cmd) != 0 && (ignore_cyg || s:CygwinBin(a:cmd))
+        if !executable && !ignore_cyg
+            let executable = s:CygwinBin(a:cmd)
+            " TLogVAR 2, executable
+        endif
+        let s:executables[a:cmd] = executable
     endif
     " echom "DBG s:executables[a:cmd]" s:executables[a:cmd]
     return s:executables[a:cmd]
@@ -674,6 +680,7 @@ function! checksyntax#Check(manually, ...)
                 let defs.make_defs = filter(defs.make_defs, 's:UpNameFromDef(v:val)[1] =~ preferred_rx')
             endif
             let async = !empty(g:checksyntax#async_runner) && defs.run_alternatives =~? '\<async\>'
+            " TLogVAR async
             if !empty(s:async_pending)
                 if !a:manually && async
                     echohl WarningMsg
@@ -693,7 +700,7 @@ function! checksyntax#Check(manually, ...)
                         \ }
             call g:checksyntax#issues.Reset()
             for [name, make_def] in items(defs.make_defs)
-                " TLogVAR make_def, async
+                " TLogVAR make_def
                 let make_def1 = copy(make_def)
                 let done = 0
                 if async
@@ -780,6 +787,7 @@ function! s:GetDefsByFiletype(manually, filetype) "{{{3
     " TLogVAR &makeprg, &l:makeprg, &g:makeprg, &errorformat
     " TLogVAR make_def
     let defs.make_defs = get(make_def, 'alternatives', {'*': make_def})
+    " TLogVAR defs
     return defs
 endf
 
