@@ -1,6 +1,6 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    145
+" @Revision:    146
 
 " :doc:
 " Syntax checkers for R:
@@ -73,13 +73,13 @@ call checksyntax#AddChecker('r?',
             \     'efm': 'Lint: %m,%E%f:%l:%c,%Z%\\s\\+%m',
             \     'process_list': 'checksyntax#defs#r#LintLint'
             \   },
-            \   {
-            \     'name': 'svTools::lint',
-            \     'cmd': g:checksyntax#defs#r#progname .' '.
-            \         printf(g:checksyntax#defs#r#options, 'try(svTools::lint(commandArgs(TRUE),type=''flat''))'),
-            \     'efm': '%t%\\w%\\++++%l+++%c+++%m',
-            \   }
             \ )
+            " \   {
+            " \     'name': 'svTools::lint',
+            " \     'cmd': g:checksyntax#defs#r#progname .' '.
+            " \         printf(g:checksyntax#defs#r#options, 'try(svTools::lint(commandArgs(TRUE),type=''flat''))'),
+            " \     'efm': '%t%\\w%\\++++%l+++%c+++%m',
+            " \   }
 
 
 " :nodoc:
