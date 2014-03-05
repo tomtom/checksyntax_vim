@@ -8,52 +8,53 @@ the |location-list| is opened (users can redefine |CheckSyntaxFail()| to change
 this behaviour). You can use any |location-list| related command to navigate 
 the list of syntax errors.
 
-If quickfixsigns (vimscript #2584) is installed, lines containing syntax errors 
-will be marked with signs.
+By default, |:CheckSyntax| is mapped to <F5> (if not mapped already), and 
+automatically executed when saving the buffer. If multiple syntax checkers are 
+defined for the given filetype, this will by default invoke the preferred (see 
+|g:checksyntax#preferred|) or first good (i.e. installed) syntax checker for a 
+given filetype.
 
-Experimental: If AsyncCommand (vimscript #3431) is installed, syntax checks can 
-be peformed asynchronously -- see also |g:checksyntax#run_alternatives|, 
-|g:checksyntax#run_all_alternatives| and |g:checksyntax#async_runner|.
+:CheckSyntax! (with the optional <bang>) or <C-F5> will run all supported 
+syntax checkers for a given filetype if multiple syntax checkers are defined 
+for a given filetype and if the software is installed on your computer.
 
-By default, |:CheckSyntax| is mapped to <F5> (if not mapped already), 
-and automatically executed when saving the buffer. :CheckSyntax! or <C-F5> will 
-run all syntax checkers for a given filetype if multiple alternatives are 
-defined and installed on your computer.
+In order to automatically run a syntax check when saving a file, please set 
+|g:checksyntax#auto_enable_rx| to an appropriate value. If the variable is set 
+to '.', which matches all filetypes, automatic syntax checks are enabled for 
+all supported filetypes. Automatic checks are equivalent to running 
+|:CheckSyntax| with no <bang>.
 
-The |:CheckSyntax| command takes one optional argument: the mode (default: 
-&filetype).
+The syntax checks are performed by external syntax checker. This software has 
+to be installed on your computer. Pre-defined syntax checkers are:
 
-As the plugin doesn't provide syntax checks by its own. This is done by 
-an external syntax checker that has to be installed on your computer.
-
-Pre-defined syntax checkers (the respective syntax checker has to 
-be installed):
-
-  c, cpp       ... Requires splint
-  html         ... Requires tidy
-  java         ... Requires
+  c, cpp       ... Use splint
+  html         ... Use tidy
+  java         ... Use
                     jlint (http://jlint.sourceforge.net),
                     checkstyle (http://checkstyle.sourceforge.net),
                     pmd (http://pmd.sourceforge.net)
-  javascript   ... Syntax check; requires jshint, esprima, 
-                   gjslint, jslint, jsl, pmd
-  lua          ... Requires luac (run luac -p)
-  php          ... Syntax check; requires php (run php -l)
-  python       ... Requires pyflakes or pylint
-  r            ... Requires codetools::checkUsage, lint::lint, or 
+  javascript   ... Use jshint, esprima, gjslint, jslint, jsl, pmd
+  lua          ... Use luac (run luac -p)
+  php          ... Use php (run php -l)
+  python       ... Use pyflakes or pylint
+  r            ... Use codetools::checkUsage, lint::lint, or 
                    svTools::lint
-  ruby         ... Requires ruby (run ruby -c)
-  tex, latex   ... Requires chktex (run chktex -q -v0)
-  typescript   ... Requires tsc
-  viki         ... Requires deplate
-  xhtml        ... Requires tidy
-  xml, docbk   ... Requires xmllint, pmd
+  ruby         ... Use ruby (run ruby -c)
+  tex, latex   ... Use chktex (run chktex -q -v0)
+  typescript   ... Use tsc
+  viki         ... Use deplate
+  xhtml        ... Use tidy
+  xml, docbk   ... Use xmllint, pmd
 
 Syntax checker definitions are kept in:
 autoload/checksyntax/defs/{&filetype}.vim
 
 Run this command to find out, which filetypes are supported: >
+
   :echo globpath(&rtp, 'autoload/checksyntax/defs/*.vim')
+
+
+Credits:
 
 This plugin was originally based on Klaus Horsten's php_console 
 (vimscript #779) and it is the successor of php_check_syntax.vim 
@@ -72,8 +73,15 @@ please make sure, you have the current version of vimball (vimscript
 #1502) installed or update your runtime.
 
 Optional enhancements:
-    quickfixsigns (vimscript #2584) ... Use signs
-    AsyncCommand (vimscript #3431) ... Run commands asynchronously
+
+If quickfixsigns (vimscript #2584) is installed, lines containing syntax errors 
+will be marked with signs.
+
+Experimental: If AsyncCommand (vimscript #3431) is installed, syntax checks can 
+be peformed asynchronously -- see also |g:checksyntax#run_alternatives|, 
+|g:checksyntax#run_all_alternatives| and |g:checksyntax#async_runner|. This 
+requires a version of vim with |clientserver| support and |v:servername| to be 
+set (for vim see also |--servername|).
 
 
 ========================================================================
