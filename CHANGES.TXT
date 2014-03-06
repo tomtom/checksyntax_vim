@@ -223,3 +223,10 @@ version: "4.01"
   - Remove debug info
   MD5 checksum: 59458811257639ba95f13068aa0d289f
 
+version: "4.02"
+  - checksyntax#Check(): Use fnameescape() for :lcd
+  - php: Facilitate changing cmd & args
+  - s:Executable(): Fix windows vs cygwin executables
+  - r: Disable svTools::lint (it's only a shortcut to codetools)
+  MD5 checksum: 59a1082c5e936b66f38b4a9e873516eb
+
