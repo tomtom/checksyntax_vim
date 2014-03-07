@@ -87,39 +87,59 @@ set (for vim see also |--servername|).
 ========================================================================
 Contents~
 
-        :CheckSyntax ......................... |:CheckSyntax|
-        g:checksyntax_key_single ............. |g:checksyntax_key_single|
-        g:checksyntax_key_all ................ |g:checksyntax_key_all|
-        g:checksyntax_auto ................... |g:checksyntax_auto|
-        g:checksyntax#auto_enable_rx ......... |g:checksyntax#auto_enable_rx|
-        g:checksyntax#auto_disable_rx ........ |g:checksyntax#auto_disable_rx|
-        g:checksyntax#show_cmd ............... |g:checksyntax#show_cmd|
-        g:checksyntax#lines_expr ............. |g:checksyntax#lines_expr|
-        g:checksyntax#preferred .............. |g:checksyntax#preferred|
-        g:checksyntax#async_runner ........... |g:checksyntax#async_runner|
-        :CheckSyntaxStatus ................... |:CheckSyntaxStatus|
-        g:checksyntax#run_alternatives ....... |g:checksyntax#run_alternatives|
-        g:checksyntax#run_all_alternatives ... |g:checksyntax#run_all_alternatives|
-        g:checksyntax#windows ................ |g:checksyntax#windows|
-        g:checksyntax#null ................... |g:checksyntax#null|
-        g:checksyntax#cygwin_path_rx ......... |g:checksyntax#cygwin_path_rx|
-        g:checksyntax#cygwin_expr ............ |g:checksyntax#cygwin_expr|
-        g:checksyntax#check_cygpath .......... |g:checksyntax#check_cygpath|
-        CheckSyntaxSucceed ................... |CheckSyntaxSucceed()|
-        CheckSyntaxFail ...................... |CheckSyntaxFail()|
-        g:checksyntax#prototypes ............. |g:checksyntax#prototypes|
-        checksyntax#AddChecker ............... |checksyntax#AddChecker()|
-        checksyntax#GetChecker ............... |checksyntax#GetChecker()|
-        checksyntax#Check .................... |checksyntax#Check()|
-        checksyntax#AddJob ................... |checksyntax#AddJob()|
-        checksyntax#RemoveJob ................ |checksyntax#RemoveJob()|
-        checksyntax#Status ................... |checksyntax#Status()|
-        checksyntax#GetList .................. |checksyntax#GetList()|
-        checksyntax#NullOutput ............... |checksyntax#NullOutput()|
-        checksyntax#MaybeUseCygpath .......... |checksyntax#MaybeUseCygpath()|
-        g:checksyntax#pmd#cmd ................ |g:checksyntax#pmd#cmd|
-        g:checksyntax#pmd#args ............... |g:checksyntax#pmd#args|
-        checksyntax#pmd#Cmd .................. |checksyntax#pmd#Cmd()|
+        :CheckSyntax ........................................... |:CheckSyntax|
+        g:checksyntax_key_single ............................... |g:checksyntax_key_single|
+        g:checksyntax_key_all .................................. |g:checksyntax_key_all|
+        g:checksyntax_auto ..................................... |g:checksyntax_auto|
+        g:checksyntax#auto_enable_rx ........................... |g:checksyntax#auto_enable_rx|
+        g:checksyntax#auto_disable_rx .......................... |g:checksyntax#auto_disable_rx|
+        g:checksyntax#show_cmd ................................. |g:checksyntax#show_cmd|
+        g:checksyntax#lines_expr ............................... |g:checksyntax#lines_expr|
+        g:checksyntax#preferred ................................ |g:checksyntax#preferred|
+        g:checksyntax#async_runner ............................. |g:checksyntax#async_runner|
+        :CheckSyntaxStatus ..................................... |:CheckSyntaxStatus|
+        g:checksyntax#run_alternatives ......................... |g:checksyntax#run_alternatives|
+        g:checksyntax#run_all_alternatives ..................... |g:checksyntax#run_all_alternatives|
+        g:checksyntax#windows .................................. |g:checksyntax#windows|
+        g:checksyntax#null ..................................... |g:checksyntax#null|
+        g:checksyntax#cygwin_path_rx ........................... |g:checksyntax#cygwin_path_rx|
+        g:checksyntax#cygwin_expr .............................. |g:checksyntax#cygwin_expr|
+        g:checksyntax#check_cygpath ............................ |g:checksyntax#check_cygpath|
+        CheckSyntaxSucceed ..................................... |CheckSyntaxSucceed()|
+        CheckSyntaxFail ........................................ |CheckSyntaxFail()|
+        g:checksyntax#prototypes ............................... |g:checksyntax#prototypes|
+        checksyntax#AddChecker ................................. |checksyntax#AddChecker()|
+        checksyntax#GetChecker ................................. |checksyntax#GetChecker()|
+        checksyntax#Check ...................................... |checksyntax#Check()|
+        checksyntax#AddJob ..................................... |checksyntax#AddJob()|
+        checksyntax#RemoveJob .................................. |checksyntax#RemoveJob()|
+        checksyntax#Status ..................................... |checksyntax#Status()|
+        checksyntax#GetList .................................... |checksyntax#GetList()|
+        checksyntax#NullOutput ................................. |checksyntax#NullOutput()|
+        checksyntax#MaybeUseCygpath ............................ |checksyntax#MaybeUseCygpath()|
+        checksyntax#defs#xml#pmd_args .......................... |checksyntax#defs#xml#pmd_args|
+        g:checksyntax#defs#r#progname .......................... |g:checksyntax#defs#r#progname|
+        g:checksyntax#defs#r#options ........................... |g:checksyntax#defs#r#options|
+        g:checksyntax#defs#r#checkUsage_options ................ |g:checksyntax#defs#r#checkUsage_options|
+        g:checksyntax#defs#r#checkUsage_ignore_undefined_rx .... |g:checksyntax#defs#r#checkUsage_ignore_undefined_rx|
+        g:checksyntax#defs#r#checkUsage_ignore_functions ....... |g:checksyntax#defs#r#checkUsage_ignore_functions|
+        g:checksyntax#defs#r#checkUsage_search_other_buffers ... |g:checksyntax#defs#r#checkUsage_search_other_buffers|
+        g:checksyntax#defs#php#cmd ............................. |g:checksyntax#defs#php#cmd|
+        g:checksyntax#defs#php#args ............................ |g:checksyntax#defs#php#args|
+        g:checksyntax#defs#javascript#closure .................. |g:checksyntax#defs#javascript#closure|
+        g:checksyntax#defs#javascript#closure_warnings ......... |g:checksyntax#defs#javascript#closure_warnings|
+        checksyntax#defs#javascript#pmd_args ................... |checksyntax#defs#javascript#pmd_args|
+        g:checksyntax#defs#ruby#interpreter .................... |g:checksyntax#defs#ruby#interpreter|
+        g:checksyntax#defs#scala#scalastyle .................... |g:checksyntax#defs#scala#scalastyle|
+        checksyntax#defs#scala#Cmd ............................. |checksyntax#defs#scala#Cmd()|
+        checksyntax#defs#java#pmd_rulesets ..................... |checksyntax#defs#java#pmd_rulesets|
+        checksyntax#defs#java#pmd_args ......................... |checksyntax#defs#java#pmd_args|
+        checksyntax#defs#java#Jlint ............................ |checksyntax#defs#java#Jlint()|
+        g:checksyntax#pmd#cmd .................................. |g:checksyntax#pmd#cmd|
+        g:checksyntax#pmd#args ................................. |g:checksyntax#pmd#args|
+        checksyntax#pmd#Cmd .................................... |checksyntax#pmd#Cmd()|
+        checksyntax#async#asyncaddon#Run ....................... |checksyntax#async#asyncaddon#Run()|
+        checksyntax#async#asynccommand#Run ..................... |checksyntax#async#asynccommand#Run()|
 
 
 ========================================================================
@@ -336,6 +356,135 @@ checksyntax#MaybeUseCygpath(cmd)
 
 
 ========================================================================
+autoload/checksyntax/defs/xml.vim~
+
+                                                    *checksyntax#defs#xml#pmd_args*
+checksyntax#defs#xml#pmd_args  (default: '')
+
+
+========================================================================
+autoload/checksyntax/defs/r.vim~
+
+
+Syntax checkers for R:
+
+  codetools::checkUsageEnv ... Requires http://cran.r-project.org/web/packages/codetools/
+  lint::lint ... Requires http://cran.r-project.org/web/packages/lint/
+  svTools::lint ... Requires http://cran.r-project.org/web/packages/svTools/
+
+                                                    *g:checksyntax#defs#r#progname*
+g:checksyntax#defs#r#progname  (default: executable('Rterm') ? 'Rterm' : 'R')
+
+                                                    *g:checksyntax#defs#r#options*
+g:checksyntax#defs#r#options   (default: '--slave --ess --restore --no-save -e "%s" --args')
+
+                                                    *g:checksyntax#defs#r#checkUsage_options*
+g:checksyntax#defs#r#checkUsage_options (default: 'all = TRUE')
+    Optons passed to codetools::checkUsageEnv.
+    Must not be empty.
+
+                                                    *g:checksyntax#defs#r#checkUsage_ignore_undefined_rx*
+g:checksyntax#defs#r#checkUsage_ignore_undefined_rx (default: '')
+    A |/\V| regexp pattern of names that should be ignored, when 
+    codetools::checkUsageEnv reports "no visible global function 
+    definition".
+
+                                                    *g:checksyntax#defs#r#checkUsage_ignore_functions*
+g:checksyntax#defs#r#checkUsage_ignore_functions (default: [])
+    A list of function names that will be ignored when parsing the 
+    result list from codetools::checkUsageEnv.
+
+                                                    *g:checksyntax#defs#r#checkUsage_search_other_buffers*
+g:checksyntax#defs#r#checkUsage_search_other_buffers (default: 0)
+    If 2, also search other buffers for patterns returned by 
+    codetools::checkUsageEnv. This may cause unreponsive behaviour.
+
+    If 1, show unidentifiable patterns as is.
+
+    If 0, remove unidentifiable patterns.
+
+
+========================================================================
+autoload/checksyntax/defs/php.vim~
+
+                                                    *g:checksyntax#defs#php#cmd*
+g:checksyntax#defs#php#cmd     (default: 'php')
+
+                                                    *g:checksyntax#defs#php#args*
+g:checksyntax#defs#php#args    (default: '-l -n -d display_errors=1 -d error_log= -d error_reporting=E_ALL')
+    Displaying errors for php files is surprisingly fragile since it 
+    depends on the php version and the php.ini file. If you get 
+    duplicate errors or no errors at all, change the command-line 
+    arguments defined with this variable. Please consider the 
+    information kindly collected by Björn Oelke:
+
+      Somehow the values in the php.ini and those passed via '--define' 
+      seem to be independent, so either value in checksyntax' def file 
+      seems to be a problem with one of the possible values in the 
+      php.ini:
+
+      | cmd | php.ini | Errors |
+      +-----+---------+--------+
+      | 1   | On      | 2      |
+      | 0   | On      | 1      |
+      | 1   | Off     | 1      |
+      | 0   | Off     | 0      |
+
+      There's an additional flag in the manpage called '--no-php-ini', 
+      that could solve the problem.
+
+    You can run `php -i | grep display_errors` to find out if 
+    display_errors is On because of the php.ini. By default, the 
+    setting in php.ini is ignored ("-n" command-line flag).
+
+
+========================================================================
+autoload/checksyntax/defs/javascript.vim~
+
+                                                    *g:checksyntax#defs#javascript#closure*
+g:checksyntax#defs#javascript#closure (default: '')
+    If non-empty, enable some checks via closure compiler.
+
+                                                    *g:checksyntax#defs#javascript#closure_warnings*
+g:checksyntax#defs#javascript#closure_warnings (default: ['const', 'constantProperty', 'checkRegExp', 'strictModuleDepCheck', 'visibility'])
+
+                                                    *checksyntax#defs#javascript#pmd_args*
+checksyntax#defs#javascript#pmd_args (default: '')
+
+
+========================================================================
+autoload/checksyntax/defs/ruby.vim~
+
+                                                    *g:checksyntax#defs#ruby#interpreter*
+g:checksyntax#defs#ruby#interpreter (default: system('ruby --version'))
+
+
+========================================================================
+autoload/checksyntax/defs/scala.vim~
+
+                                                    *g:checksyntax#defs#scala#scalastyle*
+g:checksyntax#defs#scala#scalastyle (default: '')
+    The command to invoke scalastyle -- see http://www.scalastyle.org 
+    and especially http://www.scalastyle.org/command-line.html
+
+                                                    *checksyntax#defs#scala#Cmd()*
+checksyntax#defs#scala#Cmd()
+
+
+========================================================================
+autoload/checksyntax/defs/java.vim~
+
+                                                    *checksyntax#defs#java#pmd_rulesets*
+checksyntax#defs#java#pmd_rulesets (default: [...])
+
+                                                    *checksyntax#defs#java#pmd_args*
+checksyntax#defs#java#pmd_args (default: '')
+
+                                                    *checksyntax#defs#java#Jlint()*
+checksyntax#defs#java#Jlint()
+
+
+========================================================================
 autoload/checksyntax/pmd.vim~
 
                                                     *g:checksyntax#pmd#cmd*
@@ -347,6 +496,20 @@ g:checksyntax#pmd#args         (default: '-f text')
 
                                                     *checksyntax#pmd#Cmd()*
 checksyntax#pmd#Cmd(language, args, rulesets)
+
+
+========================================================================
+autoload/checksyntax/async/asyncaddon.vim~
+
+                                                    *checksyntax#async#asyncaddon#Run()*
+checksyntax#async#asyncaddon#Run(cmd, make_def)
+
+
+========================================================================
+autoload/checksyntax/async/asynccommand.vim~
+
+                                                    *checksyntax#async#asynccommand#Run()*
+checksyntax#async#asynccommand#Run(cmd, make_def)
 
 
 
