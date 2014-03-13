@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    1413
+" @Revision:    1414
 
 
 if !exists('g:checksyntax#auto_enable_rx')
@@ -101,7 +101,7 @@ endif
 
 
 if !exists('g:checksyntax#null')
-    let g:checksyntax#null = g:checksyntax#windows ? 'nul' : (filereadable('/dev/null') ? '/dev/null' : '')    "{{{2
+    let g:checksyntax#null = g:checksyntax#windows ? 'NUL' : (filereadable('/dev/null') ? '/dev/null' : '')    "{{{2
 endif
 
 
