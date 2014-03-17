@@ -118,6 +118,7 @@ Contents~
         checksyntax#GetList .................................... |checksyntax#GetList()|
         checksyntax#NullOutput ................................. |checksyntax#NullOutput()|
         checksyntax#MaybeUseCygpath ............................ |checksyntax#MaybeUseCygpath()|
+        checksyntax#SetupSyntax ................................ |checksyntax#SetupSyntax()|
         checksyntax#defs#xml#pmd_args .......................... |checksyntax#defs#xml#pmd_args|
         g:checksyntax#defs#r#progname .......................... |g:checksyntax#defs#r#progname|
         g:checksyntax#defs#r#options ........................... |g:checksyntax#defs#r#options|
@@ -183,6 +184,16 @@ g:checksyntax_enable_syntax    (default: ['vim'])
 
     See :echo globpath(&rtp, 'autoload/checksyntax/syntax/*.vim') for 
     supported filetypes.
+
+    The variable can also be buffer-local. In this case all named 
+    types will be loaded.
+
+    E.g. in order to enable highlighting trailing whitespace, use: >
+
+      let b:checksyntax_enable_syntax = ['trailing_whitespace']
+
+<   If you want to enable this for all file of filetype X, add this 
+    line to in `after/syntax/X.vim`.
 
 
 ========================================================================
@@ -364,6 +375,9 @@ checksyntax#MaybeUseCygpath(cmd)
     filenames. This assumes that cygwin's which command returns full 
     filenames for non-cygwin executables.
 
+                                                    *checksyntax#SetupSyntax()*
+checksyntax#SetupSyntax(syntax)
+
 
 ========================================================================
 autoload/checksyntax/defs/xml.vim~
@@ -506,6 +520,26 @@ g:checksyntax#pmd#args         (default: '-f text')
 
                                                     *checksyntax#pmd#Cmd()*
 checksyntax#pmd#Cmd(language, args, rulesets)
+
+
+========================================================================
+autoload/checksyntax/syntax/vim.vim~
+
+
+                                                    *checksyntax_enable_syntax-vim*
+Simple syntax checks for the vim 'filetype'~
+
+Setting |g:checksyntax_enable_syntax| enables the following checks:
+
+- Assignment in |:if| expression
+- `else if` instead of |:elseif|
+- Propably wrong arguments for |bufnr()| or |winnr()|
+- Don't ignore/simplify the return value of |exists()| for cmdnames
+- Calls like exists('fnname()')
+- Don't write exists('foo'). If it's a variable, make the scope explicit 
+  (like `g:foo`). Otherwise it was an error anyway.
+- Variables with scope (|g:|, |l:|, |a:var| etc.) in function 
+  argument position
 
 
 ========================================================================
