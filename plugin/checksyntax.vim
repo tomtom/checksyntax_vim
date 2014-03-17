@@ -4,7 +4,7 @@
 " @Created:     04-Mai-2005.
 " @Last Change: 2012-08-28.
 " GetLatestVimScripts: 1431 0 :AutoInstall: checksyntax.vim
-" @Revision:    451
+" @Revision:    459
 
 if exists('g:loaded_checksyntax')
     finish
@@ -55,7 +55,6 @@ if !exists('g:checksyntax_auto')
 endif
 
 
-" @TPluginInclude
 if !exists('g:checksyntax_enable_syntax')
     " A list of filetypes for which frequent beginner errors will be 
     " highlighted by matching lines against |regexp|s defined in the 
@@ -63,6 +62,16 @@ if !exists('g:checksyntax_enable_syntax')
     "
     " See :echo globpath(&rtp, 'autoload/checksyntax/syntax/*.vim') for 
     " supported filetypes.
+    "
+    " The variable can also be buffer-local. In this case all named 
+    " types will be loaded.
+    "
+    " E.g. in order to enable highlighting trailing whitespace, use: >
+    "
+    "   let b:checksyntax_enable_syntax = ['trailing_whitespace']
+    "
+    " If you want to enable this for all file of filetype X, add this 
+    " line to in `after/syntax/X.vim`.
     let g:checksyntax_enable_syntax = ['vim']   "{{{2
 endif
 
@@ -79,10 +88,7 @@ augroup CheckSyntax
                     \ | call checksyntax#Check(0, 0, &ft, 1)
                     \ | endif
     endif
-    for s:filetype in g:checksyntax_enable_syntax
-        exec 'autocmd CheckSyntax Syntax' s:filetype 'runtime! autoload/checksyntax/syntax/'. s:filetype .'.vim'
-    endfor
-    unlet! s:filetype
+    autocmd Syntax * call checksyntax#SetupSyntax(expand('<amatch>'))
 augroup END
 
 

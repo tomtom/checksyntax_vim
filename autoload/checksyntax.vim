@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    1417
+" @Revision:    1420
 
 
 if !exists('g:checksyntax#auto_enable_rx')
@@ -1094,5 +1094,20 @@ function! checksyntax#MaybeUseCygpath(cmd) "{{{3
         return 'cygpath -u %s'
     endif
     return ''
+endf
+
+
+function! checksyntax#SetupSyntax(syntax) "{{{3
+    let after_syntax = []
+    if index(g:checksyntax_enable_syntax, a:syntax) != -1
+        call add(after_syntax, a:syntax)
+    endif
+    if exists('b:checksyntax_enable_syntax')
+        let after_syntax += b:checksyntax_enable_syntax
+    endif
+    " TLogVAR after_syntax
+    for asyn in after_syntax
+        exec 'runtime! autoload/checksyntax/syntax/'. asyn .'.vim'
+    endfor
 endf
 
