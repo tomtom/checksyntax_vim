@@ -91,6 +91,7 @@ Contents~
         g:checksyntax_key_single ............................... |g:checksyntax_key_single|
         g:checksyntax_key_all .................................. |g:checksyntax_key_all|
         g:checksyntax_auto ..................................... |g:checksyntax_auto|
+        g:checksyntax_enable_syntax ............................ |g:checksyntax_enable_syntax|
         g:checksyntax#auto_enable_rx ........................... |g:checksyntax#auto_enable_rx|
         g:checksyntax#auto_disable_rx .......................... |g:checksyntax#auto_disable_rx|
         g:checksyntax#show_cmd ................................. |g:checksyntax#show_cmd|
@@ -174,6 +175,15 @@ g:checksyntax_auto             (default: 1)
     See also |g:checksyntax|, |g:checksyntax#auto_enable_rx| and 
     |g:checksyntax#auto_disable_rx|.
 
+                                                    *g:checksyntax_enable_syntax*
+g:checksyntax_enable_syntax    (default: ['vim'])
+    A list of filetypes for which frequent beginner errors will be 
+    highlighted by matching lines against |regexp|s defined in the 
+    file `autoload/checksyntax/syntax/{FILETYPE}.vim`.
+
+    See :echo globpath(&rtp, 'autoload/checksyntax/syntax/*.vim') for 
+    supported filetypes.
+
 
 ========================================================================
 autoload/checksyntax.vim~
@@ -246,7 +256,7 @@ g:checksyntax#run_all_alternatives (default: 'all' . (!empty(g:checksyntax#async
 g:checksyntax#windows          (default: &shell !~ 'sh' && (has('win16') || has('win32') || has('win64')))
 
                                                     *g:checksyntax#null*
-g:checksyntax#null             (default: g:checksyntax#windows ? 'nul' : (filereadable('/dev/null') ? '/dev/null' : ''))
+g:checksyntax#null             (default: g:checksyntax#windows ? 'NUL' : (filereadable('/dev/null') ? '/dev/null' : ''))
 
                                                     *g:checksyntax#cygwin_path_rx*
 g:checksyntax#cygwin_path_rx   (default: '/cygwin/')
