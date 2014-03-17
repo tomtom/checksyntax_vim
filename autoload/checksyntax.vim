@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    1414
+" @Revision:    1417
 
 
 if !exists('g:checksyntax#auto_enable_rx')
@@ -772,7 +772,9 @@ function! s:GetDefsByFiletype(manually, filetype) "{{{3
     if empty(make_def)
         return defs
     endif
-    if !empty(g:checksyntax#auto_enable_rx) && a:filetype =~ g:checksyntax#auto_enable_rx
+    if v:dying
+        let auto = 0
+    elseif !empty(g:checksyntax#auto_enable_rx) && a:filetype =~ g:checksyntax#auto_enable_rx
         let auto = 1
     elseif !empty(g:checksyntax#auto_disable_rx) && a:filetype =~ g:checksyntax#auto_disable_rx
         let auto = 0
