@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    1420
+" @Revision:    1433
 
 
 if !exists('g:checksyntax#auto_enable_rx')
@@ -1106,6 +1106,14 @@ function! checksyntax#SetupSyntax(syntax) "{{{3
         let after_syntax += b:checksyntax_enable_syntax
     endif
     " TLogVAR after_syntax
+    redir => hidef
+    silent! hi CheckSyntaxError
+    redir END
+    if hidef !~ '\<guisp\>'
+        let fg = &bg == 'dark' ? 'yellow' : 'brown'
+        exec 'hi CheckSyntaxError term=standout cterm=underline ctermfg=red gui=undercurl guisp=red guifg='. fg
+        exec 'hi CheckSyntaxWarning term=standout cterm=underline ctermfg=cyan gui=undercurl guisp=cyan guifg='. fg
+    endif
     for asyn in after_syntax
         exec 'runtime! autoload/checksyntax/syntax/'. asyn .'.vim'
     endfor
