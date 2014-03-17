@@ -4,7 +4,7 @@
 " @Created:     04-Mai-2005.
 " @Last Change: 2012-08-28.
 " GetLatestVimScripts: 1431 0 :AutoInstall: checksyntax.vim
-" @Revision:    432
+" @Revision:    451
 
 if exists('g:loaded_checksyntax')
     finish
@@ -56,16 +56,33 @@ endif
 
 
 " @TPluginInclude
+if !exists('g:checksyntax_enable_syntax')
+    " A list of filetypes for which frequent beginner errors will be 
+    " highlighted by matching lines against |regexp|s defined in the 
+    " file `autoload/checksyntax/syntax/{FILETYPE}.vim`.
+    "
+    " See :echo globpath(&rtp, 'autoload/checksyntax/syntax/*.vim') for 
+    " supported filetypes.
+    let g:checksyntax_enable_syntax = ['vim']   "{{{2
+endif
+
+
+" @TPluginInclude
 augroup CheckSyntax
     autocmd!
+    autocmd VimLeave * let s:vimleave = 1
     if !exists('g:checksyntax_auto') || g:checksyntax_auto >= 1
-        autocmd BufWritePost * call checksyntax#Check(0)
+        autocmd BufWritePost * if !exists('s:vimleave') | call checksyntax#Check(0) | endif
     endif
     if exists('g:checksyntax_auto') && g:checksyntax_auto >= 2
-        autocmd BufEnter * if !exists('b:checksyntax_runs')
+        autocmd BufEnter * if !exists('b:checksyntax_runs') && !exists('s:vimleave')
                     \ | call checksyntax#Check(0, 0, &ft, 1)
                     \ | endif
     endif
+    for s:filetype in g:checksyntax_enable_syntax
+        exec 'autocmd CheckSyntax Syntax' s:filetype 'runtime! autoload/checksyntax/syntax/'. s:filetype .'.vim'
+    endfor
+    unlet! s:filetype
 augroup END
 
 
