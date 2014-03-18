@@ -1,6 +1,6 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    75
+" @Revision:    77
 
 " :doc:
 "                                                     *checksyntax_enable_syntax-vim*
@@ -19,15 +19,15 @@
 "   argument position
 
 
-syn match VimCheckSyntaxError /\%(^\||\)\s*\<if\>\%([^|'"]\|'.\{-}'\|".\{-}"\)\{-}[^=!<>]=[^=~<>#?]/ containedin=ALLBUT,vimLineComment,vimString
+syn match VimCheckSyntaxError /\%(^\||\)\s*\zs\<if\>\%('[^']*'\|"[^"]*"\|.\)\{-}[^=!<>]=[^=~<>#?]/ containedin=ALLBUT,vimLineComment,vimString
 
 syn match VimCheckSyntaxError /\<\(bufnr('\.')\|bufnr()\|winnr('[.%]')\)/ containedin=ALLBUT,vimLineComment,vimString
 
-syn match VimCheckSyntaxError /\<exists(\(["']\)[^'"]*()\1)/ containedin=ALLBUT,vimLineComment,vimString
+syn match VimCheckSyntaxError /\<exists(\zs\(["']\)[^'"]*()\1\ze)/ containedin=ALLBUT,vimLineComment,vimString
 
-syn match VimCheckSyntaxWarning /\<exists(\(["']\):.\{-}\1)\s*$/ containedin=ALLBUT,vimLineComment,vimString
+syn match VimCheckSyntaxWarning /\<exists(\zs\(["']\):.\{-}\1\ze)\s*$/ containedin=ALLBUT,vimLineComment,vimString
 
-syn match VimCheckSyntaxWarning /\<exists(\(["']\)\%(\w:\)\@![^*&#+$:].\{-}\1)/ containedin=ALLBUT,vimLineComment,vimString
+syn match VimCheckSyntaxWarning /\<exists(\zs\(["']\)\%(\w:\)\@![^*&#+$:].\{-}\1\ze)/ containedin=ALLBUT,vimLineComment,vimString
 
 syn match VimCheckSyntaxError /\%(^\||\)\s*fu\%[nction]!\?\s[^(]\+([^)]\{-}\<\w:/ containedin=ALLBUT,vimLineComment,vimString
 
