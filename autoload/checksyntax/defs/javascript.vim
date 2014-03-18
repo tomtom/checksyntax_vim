@@ -1,6 +1,6 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    69
+" @Revision:    70
 
 
 if !exists('g:checksyntax#defs#javascript#closure')
@@ -14,13 +14,13 @@ if !exists('g:checksyntax#defs#javascript#closure_warnings')
 endif
 
 
-if !exists('checksyntax#defs#javascript#pmd_rulesets')
-    let checksyntax#defs#javascript#pmd_rulesets = ["basic", "braces", "unnecessary"]
+if !exists('g:checksyntax#defs#javascript#pmd_rulesets')
+    let g:checksyntax#defs#javascript#pmd_rulesets = ["basic", "braces", "unnecessary"]
 endif
 
 
-if !exists('checksyntax#defs#javascript#pmd_args')
-    let checksyntax#defs#javascript#pmd_args = ''   "{{{2
+if !exists('g:checksyntax#defs#javascript#pmd_args')
+    let g:checksyntax#defs#javascript#pmd_args = ''   "{{{2
 endif
 
 
