@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    1434
+" @Revision:    1438
 
 
 if !exists('g:checksyntax#auto_enable_rx')
@@ -661,10 +661,7 @@ function! checksyntax#Check(manually, ...)
     let s:run_alternatives_all = bang
     let wd = getcwd()
     let bd = expand('%:p:h')
-    let chdir = !&autochdir && wd != bd
-    if chdir
-        exec 'lcd!' fnameescape(bd)
-    endif
+    let will_display = 0
     try
         let defs = s:GetDefsByFiletype(a:manually, filetype)
         " TLogVAR defs
@@ -717,14 +714,14 @@ function! checksyntax#Check(manually, ...)
             endfor
             " echom "DBG 1" string(list)
             if empty(s:async_pending)
-                call g:checksyntax#issues.Display(a:manually, bg)
+                let will_display = 1
             endif
         endif
     finally
-        if chdir
-            exec 'lcd!' fnameescape(wd)
-        endif
         let s:run_alternatives_all = 0
+        if will_display
+            call g:checksyntax#issues.Display(a:manually, bg)
+        endif
     endtry
     redraw!
 endf
