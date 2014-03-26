@@ -230,3 +230,17 @@ version: "4.02"
   - r: Disable svTools::lint (it's only a shortcut to codetools)
   MD5 checksum: 59a1082c5e936b66f38b4a9e873516eb
 
+version: "4.03"
+  - g:checksyntax#null: upper-case NUL
+  - Don't perform auto-checks when dying
+  - g:checksyntax_enable_syntax: Highlight frequent beginner errors by means of regexps; set s:vimleave on VimLeave
+  - g:checksyntax_enable_syntax: Improved handling; option to mark trailing whitespace
+  - checksyntax_enable_syntax: Use own highlight group
+  - vim syntax: Minor improvments
+  - javascript: FIX no scope for global variables
+  - Support for haxe
+  - haxe: use -D no-compilation
+  - FIX #19: Don't emulate autochdir if it isn't enabled
+  - g:checksyntax_enable_syntax: disable by default
+  MD5 checksum: 2870d7ccd62e1d7990665b07123c9da0
+
