@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    1438
+" @Revision:    1449
 
 
 if !exists('g:checksyntax#auto_enable_rx')
@@ -21,6 +21,37 @@ if !exists('g:checksyntax#auto_disable_rx')
     " This variable overrules any filetype-specific settings in 
     " |g:checksyntax|.
     let g:checksyntax#auto_disable_rx = ''   "{{{2
+endif
+
+
+if !exists('g:checksyntax#enable_syntax')
+    " A list of filetypes for which frequent beginner errors will be 
+    " highlighted by matching lines against |regexp|s defined in the 
+    " file `autoload/checksyntax/syntax/{FILETYPE}.vim`.
+    "
+    " See :echo globpath(&rtp, 'autoload/checksyntax/syntax/*.vim') for 
+    " supported filetypes/checks.
+    "
+    " The variable can also be buffer-local. In this case all named 
+    " types will be loaded.
+    "
+    "                                                   *b:checksyntax_enable_syntax*
+    " E.g. in order to enable highlighting trailing whitespace, use: >
+    "
+    "   let b:checksyntax_enable_syntax = ['trailing_whitespace']
+    "
+    " If you want to enable this for all file of filetype X, add this 
+    " line to in `after/syntax/X.vim` or use
+    "
+    "   let g:checksyntax#enable_syntax_X = ['trailing_whitespace']
+    let g:checksyntax#enable_syntax = []   "{{{2
+endif
+
+
+if !exists('g:checksyntax#enable_syntax_')
+    " A list of syntax checks (see |g:checksyntax#enable_syntax|) that 
+    " should be enabled by default.
+    let g:checksyntax#enable_syntax_ = []   "{{{2
 endif
 
 
@@ -1096,8 +1127,14 @@ endf
 
 function! checksyntax#SetupSyntax(syntax) "{{{3
     let after_syntax = []
-    if index(g:checksyntax_enable_syntax, a:syntax) != -1
+    if index(g:checksyntax#enable_syntax, a:syntax) != -1
         call add(after_syntax, a:syntax)
+    endif
+    if !empty(g:checksyntax#enable_syntax_)
+        let after_syntax += g:checksyntax#enable_syntax_
+    endif
+    if exists('g:checksyntax#enable_syntax_'. a:syntax)
+        let after_syntax += g:checksyntax#enable_syntax_{a:syntax}
     endif
     if exists('b:checksyntax_enable_syntax')
         let after_syntax += b:checksyntax_enable_syntax
