@@ -4,7 +4,7 @@
 " @Created:     04-Mai-2005.
 " @Last Change: 2012-08-28.
 " GetLatestVimScripts: 1431 0 :AutoInstall: checksyntax.vim
-" @Revision:    459
+" @Revision:    461
 
 if exists('g:loaded_checksyntax')
     finish
@@ -61,7 +61,7 @@ if !exists('g:checksyntax_enable_syntax')
     " file `autoload/checksyntax/syntax/{FILETYPE}.vim`.
     "
     " See :echo globpath(&rtp, 'autoload/checksyntax/syntax/*.vim') for 
-    " supported filetypes.
+    " supported filetypes/checks.
     "
     " The variable can also be buffer-local. In this case all named 
     " types will be loaded.
@@ -72,7 +72,7 @@ if !exists('g:checksyntax_enable_syntax')
     "
     " If you want to enable this for all file of filetype X, add this 
     " line to in `after/syntax/X.vim`.
-    let g:checksyntax_enable_syntax = ['vim']   "{{{2
+    let g:checksyntax_enable_syntax = []   "{{{2
 endif
 
 
