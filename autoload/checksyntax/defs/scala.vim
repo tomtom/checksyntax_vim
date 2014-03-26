@@ -1,6 +1,9 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    17
+" @Revision:    18
+"
+" Other candidates:
+" - wartremover https://github.com/typelevel/wartremover
 
 if !exists('g:checksyntax#defs#scala#scalastyle')
     " The command to invoke scalastyle -- see http://www.scalastyle.org 

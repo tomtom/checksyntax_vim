@@ -128,9 +128,12 @@ Contents~
         g:checksyntax#defs#r#checkUsage_search_other_buffers ... |g:checksyntax#defs#r#checkUsage_search_other_buffers|
         g:checksyntax#defs#php#cmd ............................. |g:checksyntax#defs#php#cmd|
         g:checksyntax#defs#php#args ............................ |g:checksyntax#defs#php#args|
+        g:checksyntax#defs#haxe#haxe ........................... |g:checksyntax#defs#haxe#haxe|
+        g:checksyntax#defs#haxe#hxml_files ..................... |g:checksyntax#defs#haxe#hxml_files|
+        checksyntax#defs#haxe#Cmd .............................. |checksyntax#defs#haxe#Cmd()|
         g:checksyntax#defs#javascript#closure .................. |g:checksyntax#defs#javascript#closure|
         g:checksyntax#defs#javascript#closure_warnings ......... |g:checksyntax#defs#javascript#closure_warnings|
-        checksyntax#defs#javascript#pmd_args ................... |checksyntax#defs#javascript#pmd_args|
+        g:checksyntax#defs#javascript#pmd_args ................. |g:checksyntax#defs#javascript#pmd_args|
         g:checksyntax#defs#ruby#interpreter .................... |g:checksyntax#defs#ruby#interpreter|
         g:checksyntax#defs#scala#scalastyle .................... |g:checksyntax#defs#scala#scalastyle|
         checksyntax#defs#scala#Cmd ............................. |checksyntax#defs#scala#Cmd()|
@@ -177,13 +180,13 @@ g:checksyntax_auto             (default: 1)
     |g:checksyntax#auto_disable_rx|.
 
                                                     *g:checksyntax_enable_syntax*
-g:checksyntax_enable_syntax    (default: ['vim'])
+g:checksyntax_enable_syntax    (default: [])
     A list of filetypes for which frequent beginner errors will be 
     highlighted by matching lines against |regexp|s defined in the 
     file `autoload/checksyntax/syntax/{FILETYPE}.vim`.
 
     See :echo globpath(&rtp, 'autoload/checksyntax/syntax/*.vim') for 
-    supported filetypes.
+    supported filetypes/checks.
 
     The variable can also be buffer-local. In this case all named 
     types will be loaded.
@@ -463,6 +466,20 @@ g:checksyntax#defs#php#args    (default: '-l -n -d display_errors=1 -d error_log
 
 
 ========================================================================
+autoload/checksyntax/defs/haxe.vim~
+
+                                                    *g:checksyntax#defs#haxe#haxe*
+g:checksyntax#defs#haxe#haxe   (default: executable('haxe') ? 'haxe' : '')
+    Filename of the haxe executable.
+
+                                                    *g:checksyntax#defs#haxe#hxml_files*
+g:checksyntax#defs#haxe#hxml_files (default: ['compile.hxml'])
+
+                                                    *checksyntax#defs#haxe#Cmd()*
+checksyntax#defs#haxe#Cmd()
+
+
+========================================================================
 autoload/checksyntax/defs/javascript.vim~
 
                                                     *g:checksyntax#defs#javascript#closure*
@@ -472,8 +489,8 @@ g:checksyntax#defs#javascript#closure (default: '')
                                                     *g:checksyntax#defs#javascript#closure_warnings*
 g:checksyntax#defs#javascript#closure_warnings (default: ['const', 'constantProperty', 'checkRegExp', 'strictModuleDepCheck', 'visibility'])
 
-                                                    *checksyntax#defs#javascript#pmd_args*
-checksyntax#defs#javascript#pmd_args (default: '')
+                                                    *g:checksyntax#defs#javascript#pmd_args*
+g:checksyntax#defs#javascript#pmd_args (default: '')
 
 
 ========================================================================
