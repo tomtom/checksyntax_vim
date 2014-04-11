@@ -1,6 +1,6 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    17
+" @Revision:    32
 
 
 if !exists('g:checksyntax#defs#haxe#haxe')
@@ -9,29 +9,75 @@ if !exists('g:checksyntax#defs#haxe#haxe')
 endif
 
 
-function! checksyntax#defs#haxe#Cmd() "{{{3
+if !exists('g:checksyntax#defs#haxe#hxml_files')
+    let g:checksyntax#defs#haxe#hxml_files = ['compile.hxml', 'java.hxml', 'cpp.hxml', 'neko.hxml', 'js.hxml']   "{{{2
+endif
+
+
+" function! checksyntax#defs#haxe#Cmd() "{{{3
+"     if empty(g:checksyntax#defs#haxe#haxe)
+"         echohl Error
+"         echom 'CheckSyntax: Please set g:checksyntax#defs#haxe#haxe!'
+"         echohl NONE
+"         return ''
+"     endif
+"     if exists(":HaxeCtags") == 2
+"         let hxml = vaxe#CurrentBuild()
+"     else
+"         let hxml = findfile('compile.hxml', '.;')
+"     endif
+"     if empty(hxml)
+"         echohl WarningMsg
+"         echom 'CheckSyntax: compile.hxml not found!'
+"         echohl NONE
+"         let cmd = ''
+"     else
+"         let cmd = printf('%s -D no-compilation %s',
+"                     \ g:checksyntax#defs#haxe#haxe,
+"                     \ shellescape(hxml, 1))
+"     endif
+"     return cmd
+" endf
+
+
+function! checksyntax#defs#haxe#Gen(def) "{{{3
     if empty(g:checksyntax#defs#haxe#haxe)
         echohl Error
         echom 'CheckSyntax: Please set g:checksyntax#defs#haxe#haxe!'
         echohl NONE
         return ''
     endif
+    let hxmls = []
     if exists(":HaxeCtags") == 2
-        let hxml = vaxe#CurrentBuild()
-    else
-        let hxml = findfile('compile.hxml', '.;')
+        let chxml = fnamemodify(vaxe#CurrentBuild(), ':p')
+        if !empty(chxml)
+            call add(hxmls, chxml)
+        endif
     endif
-    if empty(hxml)
+    for hxml in g:checksyntax#defs#haxe#hxml_files
+        let file_hxml = fnamemodify(findfile(hxml, '.;'), ':p')
+        if file_hxml != chxml && filereadable(file_hxml)
+            call add(hxmls, file_hxml)
+        endif
+    endfor
+    let checkers = {}
+    if empty(hxmls)
         echohl WarningMsg
         echom 'CheckSyntax: compile.hxml not found!'
         echohl NONE
-        let cmd = ''
     else
-        let cmd = printf('%s -D no-compilation %s',
-                    \ g:checksyntax#defs#haxe#haxe,
-                    \ shellescape(hxml, 1))
+        for hxml in hxmls
+            let cmd = printf('%s -D no-compilation %s',
+                        \ g:checksyntax#defs#haxe#haxe,
+                        \ shellescape(hxml, 1))
+            let checker = copy(a:def)
+            let checker.cmd = cmd
+            let name = fnamemodify(hxml, ':t')
+            let checkers[name] = checker
+        endfor
     endif
-    return cmd
+    " TLogVAR checkers
+    return checkers
 endf
 
 
@@ -39,9 +85,10 @@ call checksyntax#AddChecker('haxe?',
             \ {
             \   'name': 'haxe',
             \   'listtype': 'qfl',
-            \   'cmdexpr': 'checksyntax#defs#haxe#Cmd()',
+            \   'checkergen': 'checksyntax#defs#haxe#Gen',
             \   'cmd_args': '',
             \   'efm': '%f:%l: characters %c-%n : %m',
             \ },
             \ )
+            " \   'cmdexpr': 'checksyntax#defs#haxe#Cmd()',
 

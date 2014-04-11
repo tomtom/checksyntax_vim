@@ -91,9 +91,10 @@ Contents~
         g:checksyntax_key_single ............................... |g:checksyntax_key_single|
         g:checksyntax_key_all .................................. |g:checksyntax_key_all|
         g:checksyntax_auto ..................................... |g:checksyntax_auto|
-        g:checksyntax_enable_syntax ............................ |g:checksyntax_enable_syntax|
         g:checksyntax#auto_enable_rx ........................... |g:checksyntax#auto_enable_rx|
         g:checksyntax#auto_disable_rx .......................... |g:checksyntax#auto_disable_rx|
+        g:checksyntax#enable_syntax ............................ |g:checksyntax#enable_syntax|
+        g:checksyntax#enable_syntax_ ........................... |g:checksyntax#enable_syntax_|
         g:checksyntax#show_cmd ................................. |g:checksyntax#show_cmd|
         g:checksyntax#lines_expr ............................... |g:checksyntax#lines_expr|
         g:checksyntax#preferred ................................ |g:checksyntax#preferred|
@@ -130,7 +131,7 @@ Contents~
         g:checksyntax#defs#php#args ............................ |g:checksyntax#defs#php#args|
         g:checksyntax#defs#haxe#haxe ........................... |g:checksyntax#defs#haxe#haxe|
         g:checksyntax#defs#haxe#hxml_files ..................... |g:checksyntax#defs#haxe#hxml_files|
-        checksyntax#defs#haxe#Cmd .............................. |checksyntax#defs#haxe#Cmd()|
+        checksyntax#defs#haxe#Gen .............................. |checksyntax#defs#haxe#Gen()|
         g:checksyntax#defs#javascript#closure .................. |g:checksyntax#defs#javascript#closure|
         g:checksyntax#defs#javascript#closure_warnings ......... |g:checksyntax#defs#javascript#closure_warnings|
         g:checksyntax#defs#javascript#pmd_args ................. |g:checksyntax#defs#javascript#pmd_args|
@@ -143,7 +144,6 @@ Contents~
         g:checksyntax#pmd#cmd .................................. |g:checksyntax#pmd#cmd|
         g:checksyntax#pmd#args ................................. |g:checksyntax#pmd#args|
         checksyntax#pmd#Cmd .................................... |checksyntax#pmd#Cmd()|
-        checksyntax#async#asyncaddon#Run ....................... |checksyntax#async#asyncaddon#Run()|
         checksyntax#async#asynccommand#Run ..................... |checksyntax#async#asynccommand#Run()|
 
 
@@ -179,25 +179,6 @@ g:checksyntax_auto             (default: 1)
     See also |g:checksyntax|, |g:checksyntax#auto_enable_rx| and 
     |g:checksyntax#auto_disable_rx|.
 
-                                                    *g:checksyntax_enable_syntax*
-g:checksyntax_enable_syntax    (default: [])
-    A list of filetypes for which frequent beginner errors will be 
-    highlighted by matching lines against |regexp|s defined in the 
-    file `autoload/checksyntax/syntax/{FILETYPE}.vim`.
-
-    See :echo globpath(&rtp, 'autoload/checksyntax/syntax/*.vim') for 
-    supported filetypes/checks.
-
-    The variable can also be buffer-local. In this case all named 
-    types will be loaded.
-
-    E.g. in order to enable highlighting trailing whitespace, use: >
-
-      let b:checksyntax_enable_syntax = ['trailing_whitespace']
-
-<   If you want to enable this for all file of filetype X, add this 
-    line to in `after/syntax/X.vim`.
-
 
 ========================================================================
 autoload/checksyntax.vim~
@@ -217,6 +198,33 @@ g:checksyntax#auto_disable_rx  (default: '')
     This requires |g:checksyntax_auto| to be > 0.
     This variable overrules any filetype-specific settings in 
     |g:checksyntax|.
+
+                                                    *g:checksyntax#enable_syntax*
+g:checksyntax#enable_syntax    (default: [])
+    A list of filetypes for which frequent beginner errors will be 
+    highlighted by matching lines against |regexp|s defined in the 
+    file `autoload/checksyntax/syntax/{FILETYPE}.vim`.
+
+    See :echo globpath(&rtp, 'autoload/checksyntax/syntax/*.vim') for 
+    supported filetypes/checks.
+
+    The variable can also be buffer-local. In this case all named 
+    types will be loaded.
+
+                                                      *b:checksyntax_enable_syntax*
+    E.g. in order to enable highlighting trailing whitespace, use: >
+
+      let b:checksyntax_enable_syntax = ['trailing_whitespace']
+
+<   If you want to enable this for all file of filetype X, add this 
+    line to in `after/syntax/X.vim` or use
+
+      let g:checksyntax#enable_syntax_X = ['trailing_whitespace']
+
+                                                    *g:checksyntax#enable_syntax_*
+g:checksyntax#enable_syntax_   (default: [])
+    A list of syntax checks (see |g:checksyntax#enable_syntax|) that 
+    should be enabled by default.
 
                                                     *g:checksyntax#show_cmd*
 g:checksyntax#show_cmd         (default: {'qfl': 'copen', 'loc': 'lopen'})
@@ -312,6 +320,8 @@ checksyntax#AddChecker(filetype, ...)
 
       cmd ........ A shell command used as 'makeprg' to check the file.
       cmdexpr .... A vim expression that returns the cmd
+      checkergen . A vim function, which takes its definition as argument 
+                   and returns a dictionary of {NAME => CHECKER}
       compiler ... A vim compiler that is used to check the file.
       exec ....... A vim command used to check the file (deprecated; use 
                    cmdexpr & process_list instead)
@@ -473,10 +483,10 @@ g:checksyntax#defs#haxe#haxe   (default: executable('haxe') ? 'haxe' : '')
     Filename of the haxe executable.
 
                                                     *g:checksyntax#defs#haxe#hxml_files*
-g:checksyntax#defs#haxe#hxml_files (default: ['compile.hxml'])
+g:checksyntax#defs#haxe#hxml_files (default: ['compile.hxml', 'java.hxml', 'cpp.hxml', 'neko.hxml', 'js.hxml'])
 
-                                                    *checksyntax#defs#haxe#Cmd()*
-checksyntax#defs#haxe#Cmd()
+                                                    *checksyntax#defs#haxe#Gen()*
+checksyntax#defs#haxe#Gen(def)
 
 
 ========================================================================
@@ -557,13 +567,6 @@ Setting |g:checksyntax_enable_syntax| enables the following checks:
   (like `g:foo`). Otherwise it was an error anyway.
 - Variables with scope (|g:|, |l:|, |a:var| etc.) in function 
   argument position
-
-
-========================================================================
-autoload/checksyntax/async/asyncaddon.vim~
-
-                                                    *checksyntax#async#asyncaddon#Run()*
-checksyntax#async#asyncaddon#Run(cmd, make_def)
 
 
 ========================================================================

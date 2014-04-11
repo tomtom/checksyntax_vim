@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    1449
+" @Revision:    1477
 
 
 if !exists('g:checksyntax#auto_enable_rx')
@@ -327,7 +327,7 @@ endf
 
 let s:checkers = {}
 let s:top_level_fields = ['modified', 'auto', 'run_alternatives', 'alternatives']
-let s:mandatory = ['cmd', 'cmdexpr', 'compiler', 'exec']
+let s:mandatory = ['cmd', 'cmdexpr', 'checkergen', 'compiler', 'exec']
 
 
 " Define a syntax checker definition for a given filetype.
@@ -340,6 +340,8 @@ let s:mandatory = ['cmd', 'cmdexpr', 'compiler', 'exec']
 "
 "   cmd ........ A shell command used as 'makeprg' to check the file.
 "   cmdexpr .... A vim expression that returns the cmd
+"   checkergen . A vim function, which takes its definition as argument 
+"                and returns a dictionary of {NAME => CHECKER}
 "   compiler ... A vim compiler that is used to check the file.
 "   exec ....... A vim command used to check the file (deprecated; use 
 "                cmdexpr & process_list instead)
@@ -568,9 +570,12 @@ function! s:ValidAlternative(make_def) "{{{3
         return eval(a:make_def.if)
     elseif has_key(a:make_def, 'if_executable')
         return s:Executable(a:make_def.if_executable)
-    else
-        return 1
+    elseif has_key(a:make_def, 'cmd')
+        let cmd = s:Cmd(a:make_def)
+        " TLogVAR cmd
+        return !empty(cmd) && s:Executable(cmd)
     endif
+    return 1
 endf
 
 
@@ -581,14 +586,17 @@ function! s:GetValidAlternatives(filetype, run_alternatives, alternatives) "{{{3
         let alternative = a:alternatives[name]
         " TLogVAR alternative
         if s:ValidAlternative(alternative)
-            if has_key(alternative, 'cmd')
-                let cmd = s:Cmd(alternative)
-                " TLogVAR cmd
-                if !empty(cmd) && !s:Executable(cmd)
-                    continue
+            if has_key(alternative, 'checkergen')
+                let alt1 = deepcopy(alternative)
+                call remove(alt1, 'checkergen')
+                let alts = call(alternative.checkergen, [alt1])
+                let valid_alts = filter(alts, 's:ValidAlternative(v:val)')
+                if !empty(valid_alts)
+                    call extend(valid, valid_alts)
                 endif
+            else
+                let valid[name] = alternative
             endif
-            let valid[name] = alternative
             if a:run_alternatives =~? '\<first\>'
                 break
             endif

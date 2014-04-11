@@ -1,6 +1,6 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    43
+" @Revision:    46
 
 
 let s:async_handler = {}
@@ -9,6 +9,7 @@ let s:async_handler = {}
 function s:async_handler.get(temp_file_name) dict
     " echom "DBG async_handler.get" self.name self.job_id
     let jobs = checksyntax#RemoveJob(self.job_id)
+    " TLogVAR jobs
     if jobs != -1
         let errorformat = &errorformat
         try
