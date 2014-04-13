@@ -1,6 +1,6 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    32
+" @Revision:    34
 
 
 if !exists('g:checksyntax#defs#haxe#haxe')
@@ -60,6 +60,7 @@ function! checksyntax#defs#haxe#Gen(def) "{{{3
             call add(hxmls, file_hxml)
         endif
     endfor
+    " TLogVAR hxmls
     let checkers = {}
     if empty(hxmls)
         echohl WarningMsg
