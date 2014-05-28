@@ -1,6 +1,6 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    77
+" @Revision:    79
 
 " :doc:
 "                                                     *checksyntax_enable_syntax-vim*
@@ -19,7 +19,7 @@
 "   argument position
 
 
-syn match VimCheckSyntaxError /\%(^\||\)\s*\zs\<if\>\%('[^']*'\|"[^"]*"\|.\)\{-}[^=!<>]=[^=~<>#?]/ containedin=ALLBUT,vimLineComment,vimString
+syn match VimCheckSyntaxError /\%(^\||\)\s*\zs\<if\>\%('[^']*'\|"[^"]*"\|[^|]\)\{-}[^=!<>]=[^=~<>#?]/ containedin=ALLBUT,vimLineComment,vimString
 
 syn match VimCheckSyntaxError /\<\(bufnr('\.')\|bufnr()\|winnr('[.%]')\)/ containedin=ALLBUT,vimLineComment,vimString
 
