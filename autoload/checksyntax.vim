@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    1477
+" @Revision:    1485
 
 
 if !exists('g:checksyntax#auto_enable_rx')
@@ -233,24 +233,29 @@ if !exists('g:checksyntax#prototypes')
     let g:checksyntax#prototypes = {'loc': {}, 'qfl': {}} "{{{2
 endif
 
-    
+
 function! s:Open(bg, type) "{{{3
-    " TLogVAR a:bg
     let cmd = get(g:checksyntax#show_cmd, a:type, '')
+    " TLogVAR a:bg, a:type, cmd
     if !empty(cmd)
-        if empty(g:checksyntax#lines_expr) || !empty(lines)
-            let bufnr = bufnr('%')
-            let winnr = winnr()
+        let bufnr = bufnr('%')
+        let winnr = winnr()
+        " TLogVAR bufnr, winnr
+        try
             exec cmd
+        finally
+            " TLogVAR bufnr('%')
             if a:bg && bufnr != bufnr('%')
                 if !empty(g:checksyntax#lines_expr)
                     let lines = eval(g:checksyntax#lines_expr)
-                    " TLogVAR lines
-                    exec 'resize' lines
+                    if lines > 0
+                        " TLogVAR lines
+                        exec 'resize' lines
+                    endif
                 endif
                 wincmd p
             endif
-        endif
+        endtry
     endif
 endf
 
