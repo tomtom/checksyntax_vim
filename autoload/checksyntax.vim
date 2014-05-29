@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    1485
+" @Revision:    1487
 
 
 if !exists('g:checksyntax#auto_enable_rx')
@@ -251,6 +251,7 @@ function! s:Open(bg, type) "{{{3
                     if lines > 0
                         " TLogVAR lines
                         exec 'resize' lines
+                        redraw!
                     endif
                 endif
                 wincmd p
