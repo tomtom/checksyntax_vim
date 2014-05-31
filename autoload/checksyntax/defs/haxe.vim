@@ -1,6 +1,6 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    34
+" @Revision:    36
 
 
 if !exists('g:checksyntax#defs#haxe#haxe')
@@ -48,6 +48,7 @@ function! checksyntax#defs#haxe#Gen(def) "{{{3
         return ''
     endif
     let hxmls = []
+    let chxml = ''
     if exists(":HaxeCtags") == 2
         let chxml = fnamemodify(vaxe#CurrentBuild(), ':p')
         if !empty(chxml)
