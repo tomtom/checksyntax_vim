@@ -35,6 +35,7 @@ to be installed on your computer. Pre-defined syntax checkers are:
                     pmd (http://pmd.sourceforge.net)
   javascript   ... Use jshint, esprima, gjslint, jslint, jsl, pmd
   lua          ... Use luac (run luac -p)
+  perl         ... Use perl (run perl -Wc)
   php          ... Use php (run php -l)
   python       ... Use pyflakes or pylint
   r            ... Use codetools::checkUsage, lint::lint, or 
