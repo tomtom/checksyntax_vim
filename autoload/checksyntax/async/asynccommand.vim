@@ -1,6 +1,6 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    46
+" @Revision:    48
 
 
 let s:async_handler = {}
@@ -29,9 +29,9 @@ function s:async_handler.get(temp_file_name) dict
                     echom printf('CheckSyntax: Processing %s (%s items)', self.name, len(list))
                 endif
                 if jobs == 0
-                    " let bg = self.bg
+                    let bg = self.bg
                     let bg = 1
-                    " let manually = self.manually
+                    let manually = self.manually
                     let manually = g:checksyntax#debug
                     call g:checksyntax#issues.Display(manually, bg)
                 endif
