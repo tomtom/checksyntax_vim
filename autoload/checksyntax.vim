@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    1487
+" @Revision:    1497
 
 
 if !exists('g:checksyntax#auto_enable_rx')
@@ -1074,8 +1074,18 @@ function! checksyntax#GetList(name, make_def, type) "{{{3
             " TLogVAR a:type, list
         endif
     endif
-    " TLogVAR "return", list
-    return list
+    let ulist = []
+    let items = {}
+    " TLogVAR list
+    for item in list
+        let key = string(item)
+        if !has_key(items, key)
+            call add(ulist, item)
+            let items[key] = 1
+        endif
+    endfor
+    " TLogVAR ulist
+    return ulist
 endf
 
 
