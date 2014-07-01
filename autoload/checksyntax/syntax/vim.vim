@@ -1,6 +1,6 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    79
+" @Revision:    80
 
 " :doc:
 "                                                     *checksyntax_enable_syntax-vim*
@@ -20,6 +20,8 @@
 
 
 syn match VimCheckSyntaxError /\%(^\||\)\s*\zs\<if\>\%('[^']*'\|"[^"]*"\|[^|]\)\{-}[^=!<>]=[^=~<>#?]/ containedin=ALLBUT,vimLineComment,vimString
+
+syn match VimCheckSyntaxError /\%(^\||\)\s*\zs\<\(els\|else \)if\>/ containedin=ALLBUT,vimLineComment,vimString
 
 syn match VimCheckSyntaxError /\<\(bufnr('\.')\|bufnr()\|winnr('[.%]')\)/ containedin=ALLBUT,vimLineComment,vimString
 
