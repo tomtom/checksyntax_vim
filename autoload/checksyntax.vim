@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    1497
+" @Revision:    1498
 
 
 if !exists('g:checksyntax#auto_enable_rx')
@@ -710,7 +710,7 @@ function! checksyntax#Check(manually, ...)
     try
         let defs = s:GetDefsByFiletype(a:manually, filetype)
         " TLogVAR defs
-        if !empty(defs.make_defs)
+        if has_key(defs, 'make_defs') && !empty(defs.make_defs)
             if !exists('b:checksyntax_runs')
                 let b:checksyntax_runs = 1
             else
