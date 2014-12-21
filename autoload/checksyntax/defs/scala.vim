@@ -1,9 +1,14 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    18
+" @Revision:    23
 "
 " Other candidates:
-" - wartremover https://github.com/typelevel/wartremover
+" https://github.com/typelevel/wartremover
+" https://github.com/sksamuel/scalac-scapegoat-plugin
+" https://github.com/HairyFotr/linter
+" https://github.com/sbt/cpd4sbt
+" https://github.com/scala/scala-abide
+
 
 if !exists('g:checksyntax#defs#scala#scalastyle')
     " The command to invoke scalastyle -- see http://www.scalastyle.org 
