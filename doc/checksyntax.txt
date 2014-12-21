@@ -35,7 +35,9 @@ Supported filetypes~
 The syntax checks are performed by external syntax checker. This software has 
 to be installed on your computer. Pre-defined syntax checkers are:
 
+  bash         ... Use shellcheck, bash -n
   c, cpp       ... Use splint
+  haskell      ... hlint, ghc-mod-check
   html         ... Use tidy
   java         ... Use
                     jlint (http://jlint.sourceforge.net),
