@@ -1,6 +1,6 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    31
+" @Revision:    32
 "
 " Other candidates:
 " https://github.com/typelevel/wartremover
@@ -47,7 +47,7 @@ endf
     call checksyntax#AddChecker('scala?',
                 \     {
                 \         'name': 'scala',
-                \         'cmd': g:checksyntax#defs#scala#compiler .' -Ystop-after:'. g:checksyntax#defs#scala#stop_after,
+                \         'cmd': g:checksyntax#defs#scala#compiler .' -Xlint -Ystop-after:'. g:checksyntax#defs#scala#stop_after,
                 \         'efm': '%f:%l: %m',
                 \     },
                 \     {
