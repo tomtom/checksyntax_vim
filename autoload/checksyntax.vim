@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    1506
+" @Revision:    1513
 
 
 if !exists('g:checksyntax#auto_enable_rx')
@@ -87,13 +87,17 @@ endif
 
 
 if !exists('g:checksyntax#async_runner')
-    " Supported values:
-    "   asynccommand ... Use the AsyncCommand plugin
-    let g:checksyntax#async_runner = has('clientserver') && !empty(v:servername) && exists(':AsyncMake') ? 'asynccommand' : ''  "{{{2
-    if has('clientserver') && empty(v:servername)
+    if !has('clientserver')
+        let g:checksyntax#async_runner = ''  "{{{2
+    elseif empty(v:servername)
         echohl WarningMsg
         echom "CheckSyntax: Run vim with the --servername NAME command line option to enable use of AsyncCommand"
         echohl NONE
+        let g:checksyntax#async_runner = ''  "{{{2
+    else
+        " Supported values:
+        "   asynccommand ... Use the AsyncCommand plugin
+        let g:checksyntax#async_runner = exists(':AsyncMake') ? 'asynccommand' : ''  "{{{2
     endif
 endif
 
