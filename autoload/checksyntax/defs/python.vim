@@ -1,9 +1,15 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    16
+" @Revision:    17
 
 
 call checksyntax#AddChecker('python?',
+            \   {
+            \     'cmd': 'flake8',
+            \     'if_executable': 'flake8',
+            \     'efm': '%f:%l:%c: %m',
+            \     'convert_filename': checksyntax#MaybeUseCygpath('flake8'),
+            \   },
             \   {
             \     'cmd': 'pyflakes',
             \     'if_executable': 'pyflakes',

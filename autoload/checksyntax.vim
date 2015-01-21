@@ -607,7 +607,7 @@ function! s:GetValidAlternatives(filetype, run_alternatives, alternatives) "{{{3
             else
                 let valid[name] = alternative
             endif
-            if a:run_alternatives =~? '\<first\>'
+            if a:run_alternatives =~? '\<first\>' && !has_key(g:checksyntax#preferred, a:filetype)
                 break
             endif
         endif
