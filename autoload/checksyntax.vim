@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    1513
+" @Revision:    1514
 
 
 if !exists('g:checksyntax#auto_enable_rx')
@@ -811,7 +811,7 @@ function! s:GetDefsByFiletype(manually, filetype) "{{{3
             echohl WarningMsg
             echom "Buffer was modified. Please save it before calling :CheckSyntax."
             echohl NONE
-            return
+            return {}
         endif
     endif
     " TLogVAR make_def
