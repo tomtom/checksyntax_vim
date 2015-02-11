@@ -113,6 +113,8 @@ Contents~
         g:checksyntax#lines_expr ............................... |g:checksyntax#lines_expr|
         g:checksyntax#preferred ................................ |g:checksyntax#preferred|
         g:checksyntax#async_runner ............................. |g:checksyntax#async_runner|
+        g:checksyntax#async_runner ............................. |g:checksyntax#async_runner|
+        g:checksyntax#async_runner ............................. |g:checksyntax#async_runner|
         :CheckSyntaxStatus ..................................... |:CheckSyntaxStatus|
         g:checksyntax#run_alternatives ......................... |g:checksyntax#run_alternatives|
         g:checksyntax#run_all_alternatives ..................... |g:checksyntax#run_all_alternatives|
@@ -150,8 +152,12 @@ Contents~
         g:checksyntax#defs#javascript#closure_warnings ......... |g:checksyntax#defs#javascript#closure_warnings|
         g:checksyntax#defs#javascript#pmd_args ................. |g:checksyntax#defs#javascript#pmd_args|
         g:checksyntax#defs#ruby#interpreter .................... |g:checksyntax#defs#ruby#interpreter|
+        g:checksyntax#defs#rust#args ........................... |g:checksyntax#defs#rust#args|
+        checksyntax#defs#rust#GuessCmd ......................... |checksyntax#defs#rust#GuessCmd()|
         g:checksyntax#defs#scala#scalastyle .................... |g:checksyntax#defs#scala#scalastyle|
-        checksyntax#defs#scala#Cmd ............................. |checksyntax#defs#scala#Cmd()|
+        g:checksyntax#defs#scala#compiler ...................... |g:checksyntax#defs#scala#compiler|
+        g:checksyntax#defs#scala#stop_after .................... |g:checksyntax#defs#scala#stop_after|
+        checksyntax#defs#scala#ScalaStyle ...................... |checksyntax#defs#scala#ScalaStyle()|
         checksyntax#defs#java#pmd_rulesets ..................... |checksyntax#defs#java#pmd_rulesets|
         checksyntax#defs#java#pmd_args ......................... |checksyntax#defs#java#pmd_args|
         checksyntax#defs#java#Jlint ............................ |checksyntax#defs#java#Jlint()|
@@ -262,7 +268,13 @@ g:checksyntax#preferred        (default: {'xml': '.'})
     checkers whose names matches |regexp|.
 
                                                     *g:checksyntax#async_runner*
-g:checksyntax#async_runner     (default: has('clientserver') && !empty(v:servername) && exists(':AsyncMake') ? 'asynccommand' : '')
+g:checksyntax#async_runner     (default: '')
+
+                                                    *g:checksyntax#async_runner*
+g:checksyntax#async_runner     (default: '')
+
+                                                    *g:checksyntax#async_runner*
+g:checksyntax#async_runner     (default: exists(':AsyncMake') ? 'asynccommand' : '')
     Supported values:
       asynccommand ... Use the AsyncCommand plugin
 
@@ -525,6 +537,16 @@ g:checksyntax#defs#ruby#interpreter (default: system('ruby --version'))
 
 
 ========================================================================
+autoload/checksyntax/defs/rust.vim~
+
+                                                    *g:checksyntax#defs#rust#args*
+g:checksyntax#defs#rust#args   (default: '')
+
+                                                    *checksyntax#defs#rust#GuessCmd()*
+checksyntax#defs#rust#GuessCmd()
+
+
+========================================================================
 autoload/checksyntax/defs/scala.vim~
 
                                                     *g:checksyntax#defs#scala#scalastyle*
@@ -532,8 +554,15 @@ g:checksyntax#defs#scala#scalastyle (default: '')
     The command to invoke scalastyle -- see http://www.scalastyle.org 
     and especially http://www.scalastyle.org/command-line.html
 
-                                                    *checksyntax#defs#scala#Cmd()*
-checksyntax#defs#scala#Cmd()
+                                                    *g:checksyntax#defs#scala#compiler*
+g:checksyntax#defs#scala#compiler (default: 'fsc')
+
+                                                    *g:checksyntax#defs#scala#stop_after*
+g:checksyntax#defs#scala#stop_after (default: 'cleanup')
+    See `scalac -Xshow-phases` for possible values.
+
+                                                    *checksyntax#defs#scala#ScalaStyle()*
+checksyntax#defs#scala#ScalaStyle()
 
 
 ========================================================================

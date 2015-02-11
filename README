@@ -5,6 +5,10 @@ the |location-list| is opened (users can redefine |CheckSyntaxFail()| to change
 this behaviour). You can use any |location-list| related command to navigate 
 the list of syntax errors.
 
+
+Invocation~
+
+Manual invocation:
 By default, |:CheckSyntax| is mapped to <F5> (if not mapped already), and 
 automatically executed when saving the buffer. If multiple syntax checkers are 
 defined for the given filetype, this will by default invoke the preferred (see 
@@ -15,16 +19,22 @@ given filetype.
 syntax checkers for a given filetype if multiple syntax checkers are defined 
 for a given filetype and if the software is installed on your computer.
 
+Automatic invocation:
 In order to automatically run a syntax check when saving a file, please set 
 |g:checksyntax#auto_enable_rx| to an appropriate value. If the variable is set 
 to '.', which matches all filetypes, automatic syntax checks are enabled for 
 all supported filetypes. Automatic checks are equivalent to running 
 |:CheckSyntax| with no <bang>.
 
+
+Supported filetypes~
+
 The syntax checks are performed by external syntax checker. This software has 
 to be installed on your computer. Pre-defined syntax checkers are:
 
+  bash         ... Use shellcheck, bash -n
   c, cpp       ... Use splint
+  haskell      ... hlint, ghc-mod-check
   html         ... Use tidy
   java         ... Use
                     jlint (http://jlint.sourceforge.net),
@@ -32,6 +42,7 @@ to be installed on your computer. Pre-defined syntax checkers are:
                     pmd (http://pmd.sourceforge.net)
   javascript   ... Use jshint, esprima, gjslint, jslint, jsl, pmd
   lua          ... Use luac (run luac -p)
+  perl         ... Use perl (run perl -Wc)
   php          ... Use php (run php -l)
   python       ... Use pyflakes or pylint
   r            ... Use codetools::checkUsage, lint::lint, or 
