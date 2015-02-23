@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    1514
+" @Revision:    1515
 
 
 if !exists('g:checksyntax#auto_enable_rx')
@@ -88,12 +88,12 @@ endif
 
 if !exists('g:checksyntax#async_runner')
     if !has('clientserver')
-        let g:checksyntax#async_runner = ''  "{{{2
+        let g:checksyntax#async_runner = ''
     elseif empty(v:servername)
         echohl WarningMsg
         echom "CheckSyntax: Run vim with the --servername NAME command line option to enable use of AsyncCommand"
         echohl NONE
-        let g:checksyntax#async_runner = ''  "{{{2
+        let g:checksyntax#async_runner = ''
     else
         " Supported values:
         "   asynccommand ... Use the AsyncCommand plugin
