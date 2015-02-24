@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    1515
+" @Revision:    1516
 
 
 if !exists('g:checksyntax#auto_enable_rx')
@@ -607,8 +607,11 @@ function! s:GetValidAlternatives(filetype, run_alternatives, alternatives) "{{{3
             else
                 let valid[name] = alternative
             endif
-            if a:run_alternatives =~? '\<first\>' && !has_key(g:checksyntax#preferred, a:filetype)
-                break
+            if a:run_alternatives =~? '\<first\>'
+                let preferred_rx = get(g:checksyntax#preferred, a:filetype, '')
+                if empty(preferred_rx) || name =~ preferred_rx
+                    break
+                endif
             endif
         endif
     endfor
