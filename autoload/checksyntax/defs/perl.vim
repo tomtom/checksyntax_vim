@@ -5,7 +5,7 @@
 
 call checksyntax#AddChecker('perl?',
             \   {
-            \     'cmd': 'perl -Wc %',
+            \     'cmd': 'perl -c %',
             \     'efm': '%-G%.%#had compilation errors.,%-G%.%#syntax OK,%m at %f line %l.,%+A%.%# at %f line %l\,%.%#,%+C%.%#',
             \     'convert_filename': checksyntax#MaybeUseCygpath('perl'),
             \   },
