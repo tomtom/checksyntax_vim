@@ -698,7 +698,7 @@ function! g:checksyntax#issues.Display(manually, bg) dict "{{{3
 endf
 
 
-" :def: function! checksyntax#Check(manually, ?bang='', ?filetype=&ft, ?background=1)
+" :def: function! checksyntax#Check(manually, ?bang='', ?filetype=&ft, ?background=1, ?preferred_rx='')
 " Perform a syntax check.
 " If bang is not empty, run all alternatives (see 
 " |g:checksyntax#run_alternatives|).
@@ -707,8 +707,9 @@ endf
 " i.e. the active window will keep the focus.
 function! checksyntax#Check(manually, ...)
     let bang = a:0 >= 1 ? !empty(a:1) : 0
-    let filetype   = a:0 >= 2 && a:2 != '' ? a:2 : &filetype
-    let bg   = a:0 >= 3 && a:3 != '' ? a:3 : 0
+    let filetype   = a:0 >= 2 && a:2 != '' && a:2 != '*' ? a:2 : &filetype
+    let bg   = a:0 >= 3 && !empty(a:3)  && a:3 != '*' ? a:3 : 0
+    let arg_preferred_rx = a:0 >= 4 && a:4 != '' ? a:4 : ''
     " TLogVAR a:manually, bang, filetype, bg
     let s:run_alternatives_all = bang
     let wd = getcwd()
@@ -727,6 +728,9 @@ function! checksyntax#Check(manually, ...)
             if defs.run_alternatives =~? '\<first\>' && has_key(g:checksyntax#preferred, filetype)
                 let preferred_rx = g:checksyntax#preferred[filetype]
                 let defs.make_defs = filter(defs.make_defs, 's:UpNameFromDef(v:val)[1] =~ preferred_rx')
+            endif
+            if !empty(arg_preferred_rx)
+                let defs.make_defs = filter(defs.make_defs, 's:UpNameFromDef(v:val)[1] =~ arg_preferred_rx')
             endif
             let async = !empty(g:checksyntax#async_runner) && defs.run_alternatives =~? '\<async\>'
             " TLogVAR async
@@ -749,7 +753,7 @@ function! checksyntax#Check(manually, ...)
                         \ }
             call g:checksyntax#issues.Reset()
             for [name, make_def] in items(defs.make_defs)
-                " TLogVAR make_def
+                " TLogVAR name, make_def
                 let make_def1 = copy(make_def)
                 let done = 0
                 if async
