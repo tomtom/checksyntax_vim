@@ -14,6 +14,19 @@ if !exists('g:checksyntax#defs#haxe#hxml_files')
 endif
 
 
+if !exists('g:checksyntax#defs#haxe#use_checkstyle')
+    " If true, use checkstyle (https://github.com/adireddy/haxe-checkstyle).
+    let g:checksyntax#defs#haxe#use_checkstyle = 0   "{{{2
+endif
+
+
+if !exists('g:checksyntax#defs#haxe#checkstyle_args')
+    " Additional arguments to checkstyle.
+    " Can also be buffer-local as b:checksyntax_defs_haxe_checkstyle_args.
+    let g:checksyntax#defs#haxe#checkstyle_args = ''   "{{{2
+endif
+
+
 " function! checksyntax#defs#haxe#Cmd() "{{{3
 "     if empty(g:checksyntax#defs#haxe#haxe)
 "         echohl Error
@@ -83,6 +96,17 @@ function! checksyntax#defs#haxe#Gen(def) "{{{3
 endf
 
 
+
+function! checksyntax#defs#haxe#CmdCheckstyle() abort "{{{3
+    if exists('b:checksyntax_defs_haxe_checkstyle_args')
+        let args = b:checksyntax_defs_haxe_checkstyle_args
+    else
+        let args = g:checksyntax#defs#haxe#checkstyle_args
+    endif
+    return printf('haxelib run checkstyle %s -s', args)
+endf
+
+
 call checksyntax#AddChecker('haxe?',
             \ {
             \   'name': 'haxe',
@@ -91,6 +115,14 @@ call checksyntax#AddChecker('haxe?',
             \   'cmd_args': '',
             \   'efm': '%f:%l: characters %c-%n : %m',
             \ },
+            \ {
+            \   'name': 'checkstyle',
+            \   'listtype': 'qfl',
+            \   'cmdexpr': 'checksyntax#defs#haxe#CmdCheckstyle()',
+            \   'efm': '%f:%l:%c: %m',
+            \   'if': g:checksyntax#defs#haxe#use_checkstyle,
+            \ },
             \ )
+            " \   'cmd': 'haxelib run checkstyle -s',
             " \   'cmdexpr': 'checksyntax#defs#haxe#Cmd()',
 
