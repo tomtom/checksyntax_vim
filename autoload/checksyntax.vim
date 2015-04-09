@@ -1028,6 +1028,7 @@ function! checksyntax#RemoveJob(job_id) "{{{3
             let idx = index(g:tstatus_exprs, s:status_expr)
             if idx != -1
                 call remove(g:tstatus_exprs, idx)
+                call TStatusForceUpdate()
             endif
         endif
     endif
