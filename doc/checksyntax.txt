@@ -145,8 +145,8 @@ Contents~
         g:checksyntax#defs#r#checkUsage_search_other_buffers ... |g:checksyntax#defs#r#checkUsage_search_other_buffers|
         g:checksyntax#defs#php#cmd ............................. |g:checksyntax#defs#php#cmd|
         g:checksyntax#defs#php#args ............................ |g:checksyntax#defs#php#args|
-        g:checksyntax#defs#phpcs#cmd ............................. |g:checksyntax#defs#phpcs#cmd|
-        g:checksyntax#defs#phpcs#args ............................ |g:checksyntax#defs#phpcs#args|
+        g:checksyntax#defs#phpcs#cmd ........................... |g:checksyntax#defs#phpcs#cmd|
+        g:checksyntax#defs#phpcs#args .......................... |g:checksyntax#defs#phpcs#args|
         g:checksyntax#defs#haxe#haxe ........................... |g:checksyntax#defs#haxe#haxe|
         g:checksyntax#defs#haxe#hxml_files ..................... |g:checksyntax#defs#haxe#hxml_files|
         checksyntax#defs#haxe#Gen .............................. |checksyntax#defs#haxe#Gen()|
