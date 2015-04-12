@@ -7,7 +7,6 @@ if !exists('g:checksyntax#defs#php#cmd')
     let g:checksyntax#defs#php#cmd = 'php'   "{{{2
 endif
 
-
 if !exists('g:checksyntax#defs#php#args')
     " Displaying errors for php files is surprisingly fragile since it 
     " depends on the php version and the php.ini file. If you get 
@@ -44,6 +43,26 @@ call checksyntax#AddChecker('php?',
             \     'if_executable': g:checksyntax#defs#php#cmd,
             \     'convert_filename': checksyntax#MaybeUseCygpath(g:checksyntax#defs#php#cmd),
             \     'efm': '%*[^:]: %m in %f on line %l',
+            \   }
+            \ )
+
+
+if !exists('g:checksyntax#defs#php#phpcs_cmd')
+    let g:checksyntax#defs#php#phpcs_cmd = 'phpcs'   "{{{2
+endif
+
+if !exists('g:checksyntax#defs#php#phpcs_args')
+   " For passing arguments into phpcs. Can be used to set options such 
+   " as '--standard=PSR2 --ignore=foo.php'
+    let g:checksyntax#defs#php#phpcs_args = ''   "{{{2
+endif
+
+call checksyntax#AddChecker('php?',
+            \   {
+            \     'name': 'phpcs',
+            \     'cmd': g:checksyntax#defs#php#phpcs_cmd .' --report=emacs '. g:checksyntax#defs#php#phpcs_args,
+            \     'if_executable': g:checksyntax#defs#php#phpcs_cmd,
+            \     'efm': '%f:%l:%*[^:]: %*[^-]- %m',
             \   }
             \ )
 

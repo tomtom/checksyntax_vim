@@ -145,6 +145,8 @@ Contents~
         g:checksyntax#defs#r#checkUsage_search_other_buffers ... |g:checksyntax#defs#r#checkUsage_search_other_buffers|
         g:checksyntax#defs#php#cmd ............................. |g:checksyntax#defs#php#cmd|
         g:checksyntax#defs#php#args ............................ |g:checksyntax#defs#php#args|
+        g:checksyntax#defs#phpcs#cmd ........................... |g:checksyntax#defs#phpcs#cmd|
+        g:checksyntax#defs#phpcs#args .......................... |g:checksyntax#defs#phpcs#args|
         g:checksyntax#defs#haxe#haxe ........................... |g:checksyntax#defs#haxe#haxe|
         g:checksyntax#defs#haxe#hxml_files ..................... |g:checksyntax#defs#haxe#hxml_files|
         checksyntax#defs#haxe#Gen .............................. |checksyntax#defs#haxe#Gen()|
@@ -500,6 +502,14 @@ g:checksyntax#defs#php#args    (default: '-l -n -d display_errors=1 -d error_log
     display_errors is On because of the php.ini. By default, the 
     setting in php.ini is ignored ("-n" command-line flag).
 
+
+                                                    *g:checksyntax#defs#phpcs#cmd*
+g:checksyntax#defs#phpcs#cmd     (default: 'phpcs')
+
+                                                    *g:checksyntax#defs#phpcs#args*
+g:checksyntax#defs#php#args    (default: '')
+   For passing arguments into phpcs. Can be used to set options such 
+   as '--standard=PSR2 --ignore=foo.php'
 
 ========================================================================
 autoload/checksyntax/defs/haxe.vim~
