@@ -113,8 +113,6 @@ Contents~
         g:checksyntax#lines_expr ............................... |g:checksyntax#lines_expr|
         g:checksyntax#preferred ................................ |g:checksyntax#preferred|
         g:checksyntax#async_runner ............................. |g:checksyntax#async_runner|
-        g:checksyntax#async_runner ............................. |g:checksyntax#async_runner|
-        g:checksyntax#async_runner ............................. |g:checksyntax#async_runner|
         :CheckSyntaxStatus ..................................... |:CheckSyntaxStatus|
         g:checksyntax#run_alternatives ......................... |g:checksyntax#run_alternatives|
         g:checksyntax#run_all_alternatives ..................... |g:checksyntax#run_all_alternatives|
@@ -145,11 +143,14 @@ Contents~
         g:checksyntax#defs#r#checkUsage_search_other_buffers ... |g:checksyntax#defs#r#checkUsage_search_other_buffers|
         g:checksyntax#defs#php#cmd ............................. |g:checksyntax#defs#php#cmd|
         g:checksyntax#defs#php#args ............................ |g:checksyntax#defs#php#args|
-        g:checksyntax#defs#phpcs#cmd ........................... |g:checksyntax#defs#phpcs#cmd|
-        g:checksyntax#defs#phpcs#args .......................... |g:checksyntax#defs#phpcs#args|
+        g:checksyntax#defs#php#phpcs_cmd ....................... |g:checksyntax#defs#php#phpcs_cmd|
+        g:checksyntax#defs#php#phpcs_args ...................... |g:checksyntax#defs#php#phpcs_args|
         g:checksyntax#defs#haxe#haxe ........................... |g:checksyntax#defs#haxe#haxe|
         g:checksyntax#defs#haxe#hxml_files ..................... |g:checksyntax#defs#haxe#hxml_files|
+        g:checksyntax#defs#haxe#use_checkstyle ................. |g:checksyntax#defs#haxe#use_checkstyle|
+        g:checksyntax#defs#haxe#checkstyle_args ................ |g:checksyntax#defs#haxe#checkstyle_args|
         checksyntax#defs#haxe#Gen .............................. |checksyntax#defs#haxe#Gen()|
+        checksyntax#defs#haxe#CmdCheckstyle .................... |checksyntax#defs#haxe#CmdCheckstyle()|
         g:checksyntax#defs#javascript#closure .................. |g:checksyntax#defs#javascript#closure|
         g:checksyntax#defs#javascript#closure_warnings ......... |g:checksyntax#defs#javascript#closure_warnings|
         g:checksyntax#defs#javascript#pmd_args ................. |g:checksyntax#defs#javascript#pmd_args|
@@ -270,12 +271,6 @@ g:checksyntax#preferred        (default: {'xml': '.'})
     checkers whose names matches |regexp|.
 
                                                     *g:checksyntax#async_runner*
-g:checksyntax#async_runner     (default: '')
-
-                                                    *g:checksyntax#async_runner*
-g:checksyntax#async_runner     (default: '')
-
-                                                    *g:checksyntax#async_runner*
 g:checksyntax#async_runner     (default: exists(':AsyncMake') ? 'asynccommand' : '')
     Supported values:
       asynccommand ... Use the AsyncCommand plugin
@@ -387,7 +382,7 @@ checksyntax#AddChecker(filetype, ...)
 checksyntax#GetChecker(filetype, ...)
 
                                                     *checksyntax#Check()*
-checksyntax#Check(manually, ?bang='', ?filetype=&ft, ?background=1)
+checksyntax#Check(manually, ?bang='', ?filetype=&ft, ?background=1, ?preferred_rx='')
     Perform a syntax check.
     If bang is not empty, run all alternatives (see 
     |g:checksyntax#run_alternatives|).
@@ -502,14 +497,12 @@ g:checksyntax#defs#php#args    (default: '-l -n -d display_errors=1 -d error_log
     display_errors is On because of the php.ini. By default, the 
     setting in php.ini is ignored ("-n" command-line flag).
 
+                                                    *g:checksyntax#defs#php#phpcs_cmd*
+g:checksyntax#defs#php#phpcs_cmd (default: 'phpcs')
 
-                                                    *g:checksyntax#defs#phpcs#cmd*
-g:checksyntax#defs#phpcs#cmd     (default: 'phpcs')
+                                                    *g:checksyntax#defs#php#phpcs_args*
+g:checksyntax#defs#php#phpcs_args (default: '')
 
-                                                    *g:checksyntax#defs#phpcs#args*
-g:checksyntax#defs#php#args    (default: '')
-   For passing arguments into phpcs. Can be used to set options such 
-   as '--standard=PSR2 --ignore=foo.php'
 
 ========================================================================
 autoload/checksyntax/defs/haxe.vim~
@@ -521,8 +514,20 @@ g:checksyntax#defs#haxe#haxe   (default: executable('haxe') ? 'haxe' : '')
                                                     *g:checksyntax#defs#haxe#hxml_files*
 g:checksyntax#defs#haxe#hxml_files (default: ['compile.hxml', 'java.hxml', 'cpp.hxml', 'neko.hxml', 'js.hxml'])
 
+                                                    *g:checksyntax#defs#haxe#use_checkstyle*
+g:checksyntax#defs#haxe#use_checkstyle (default: 0)
+    If true, use checkstyle (https://github.com/adireddy/haxe-checkstyle).
+
+                                                    *g:checksyntax#defs#haxe#checkstyle_args*
+g:checksyntax#defs#haxe#checkstyle_args (default: '')
+    Additional arguments to checkstyle.
+    Can also be buffer-local as b:checksyntax_defs_haxe_checkstyle_args.
+
                                                     *checksyntax#defs#haxe#Gen()*
 checksyntax#defs#haxe#Gen(def)
+
+                                                    *checksyntax#defs#haxe#CmdCheckstyle()*
+checksyntax#defs#haxe#CmdCheckstyle()
 
 
 ========================================================================
