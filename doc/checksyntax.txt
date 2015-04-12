@@ -502,6 +502,8 @@ g:checksyntax#defs#php#phpcs_cmd (default: 'phpcs')
 
                                                     *g:checksyntax#defs#php#phpcs_args*
 g:checksyntax#defs#php#phpcs_args (default: '')
+    For passing arguments into phpcs. Can be used to set options such 
+    as '--standard=PSR2 --ignore=foo.php'
 
 
 ========================================================================

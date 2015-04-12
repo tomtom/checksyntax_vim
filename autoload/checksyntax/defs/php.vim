@@ -52,8 +52,8 @@ if !exists('g:checksyntax#defs#php#phpcs_cmd')
 endif
 
 if !exists('g:checksyntax#defs#php#phpcs_args')
-   " For passing arguments into phpcs. Can be used to set options such 
-   " as '--standard=PSR2 --ignore=foo.php'
+    " For passing arguments into phpcs. Can be used to set options such 
+    " as '--standard=PSR2 --ignore=foo.php'
     let g:checksyntax#defs#php#phpcs_args = ''   "{{{2
 endif
 
