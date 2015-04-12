@@ -47,19 +47,21 @@ call checksyntax#AddChecker('php?',
             \ )
 
 
-if !exists('g:checksyntax#defs#phpcs#cmd')
-    let g:checksyntax#defs#phpcs#cmd = 'phpcs'   "{{{2
+if !exists('g:checksyntax#defs#php#phpcs_cmd')
+    let g:checksyntax#defs#php#phpcs_cmd = 'phpcs'   "{{{2
 endif
 
-if !exists('g:checksyntax#defs#phpcs#args')
-    let g:checksyntax#defs#phpcs#args = ''   "{{{2
+if !exists('g:checksyntax#defs#php#phpcs_args')
+   " For passing arguments into phpcs. Can be used to set options such 
+   " as '--standard=PSR2 --ignore=foo.php'
+    let g:checksyntax#defs#php#phpcs_args = ''   "{{{2
 endif
 
 call checksyntax#AddChecker('php?',
             \   {
             \     'name': 'phpcs',
-            \     'cmd': g:checksyntax#defs#phpcs#cmd .' --report=emacs '. g:checksyntax#defs#phpcs#args,
-            \     'if_executable': g:checksyntax#defs#phpcs#cmd,
+            \     'cmd': g:checksyntax#defs#php#phpcs_cmd .' --report=emacs '. g:checksyntax#defs#php#phpcs_args,
+            \     'if_executable': g:checksyntax#defs#php#phpcs_cmd,
             \     'efm': '%f:%l:%*[^:]: %*[^-]- %m',
             \   }
             \ )
