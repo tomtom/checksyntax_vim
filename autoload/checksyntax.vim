@@ -1008,10 +1008,11 @@ function! s:ExtractCompilerParams(make_def, args, ...) "{{{3
 endf
 
 
-let s:status_expr = 'checksyntax#Status()'
+let s:status_expr = '"PendingChecks=".checksyntax#Status()'
 
 function! checksyntax#AddJob(make_def) "{{{3
     let s:async_pending[a:make_def.job_id] = a:make_def
+    call checksyntax#SetStatusMessage()
     if exists('g:tstatus_exprs')
         if index(g:tstatus_exprs, s:status_expr) == -1
             call add(g:tstatus_exprs, s:status_expr)
@@ -1024,6 +1025,7 @@ function! checksyntax#RemoveJob(job_id) "{{{3
     let rv = has_key(s:async_pending, a:job_id)
     if rv
         call remove(s:async_pending, a:job_id)
+        call checksyntax#SetStatusMessage()
         if empty(s:async_pending) && exists('g:tstatus_exprs')
             let idx = index(g:tstatus_exprs, s:status_expr)
             if idx != -1
@@ -1037,11 +1039,16 @@ endf
 
 
 function! checksyntax#Status() "{{{3
-    let n = len(s:async_pending)
-    if n == 0
-        return ''
-    else
-        return 'PendingChecks='. n
+    return len(s:async_pending)
+endf
+
+
+function! checksyntax#SetStatusMessage() abort "{{{3
+    let pending = checksyntax#Status()
+    if pending > 0
+        let g:checksyntax_status = pending
+    elseif exists('g:checksyntax_status')
+        unlet g:checksyntax_status
     endif
 endf
 
@@ -1188,4 +1195,9 @@ function! checksyntax#SetupSyntax(syntax) "{{{3
         exec 'runtime! autoload/checksyntax/syntax/'. asyn .'.vim'
     endfor
 endf
+
+
+" if exists(':TStatusregister') == 2
+"     TStatusregister g:checksyntax_status=PendingChecks
+" endif
 
