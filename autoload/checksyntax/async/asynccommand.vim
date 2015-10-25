@@ -1,12 +1,12 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    56
+" @Revision:    57
 
 
 let s:async_handler = {}
 
 
-function s:async_handler.get(temp_file_name) dict
+function! s:async_handler.get(temp_file_name) dict
     " echom "DBG async_handler.get" self.name self.job_id
     let jobs = checksyntax#RemoveJob(self.job_id)
     " TLogVAR jobs
