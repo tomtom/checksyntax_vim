@@ -1,6 +1,6 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    70
+" @Revision:    72
 
 
 if !exists('g:checksyntax#defs#javascript#closure')
@@ -37,9 +37,9 @@ call checksyntax#AddChecker('javascript?',
             \     },
             \     {
             \         'name': 'gjslint',
-            \         'cmd': 'gjslint',
+            \         'cmd': 'gjslint --nosummary --unix_mode --nodebug_indentation --nobeep',
             \         'ignore_nr': [1, 110],
-            \         'efm': '%P%*[^F]FILE%*[^:]: %f %*[-],Line %l%\, %t:%n: %m,%Q',
+            \         'efm': '%f:%l:(New Error -%\\?\%n) %m,%f:%l:(-%\\?%n) %',
             \     },
             \     {
             \         'name': 'jslint',
