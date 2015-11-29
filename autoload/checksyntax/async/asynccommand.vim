@@ -1,6 +1,6 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    57
+" @Revision:    62
 
 
 let s:async_handler = {}
@@ -20,6 +20,7 @@ function! s:async_handler.get(temp_file_name) dict
                 " TLogVAR self.async_cmd, a:temp_file_name
                 " let lines = readfile(a:temp_file_name) " DBG
                 " TLogVAR lines
+                " echom "DBG" self.async_cmd a:temp_file_name
                 exec self.async_cmd a:temp_file_name
                 let list = g:checksyntax#issues.AddList(self.name, self, self.async_type)
                 " TLogVAR list

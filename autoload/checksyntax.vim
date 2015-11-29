@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    1516
+" @Revision:    1521
 
 
 if !exists('g:checksyntax#auto_enable_rx')
@@ -671,10 +671,12 @@ call g:checksyntax#issues.Reset()
 
 
 function! g:checksyntax#issues.AddList(name, make_def, type) dict "{{{3
+    " TLogVAR a:name, a:make_def, a:type
     if a:type == 'qfl'
         let self.type = a:type
     endif
     let issues = checksyntax#GetList(a:name, a:make_def, a:type)
+    " TLogVAR len(issues)
     if !empty(issues)
         let self.issues += issues
     endif
@@ -768,7 +770,6 @@ function! checksyntax#Check(manually, ...)
                     let done = s:Run_sync(name, filetype, make_def1)
                 endif
             endfor
-            " echom "DBG 1" string(list)
             if empty(s:async_pending)
                 let will_display = 1
             endif
