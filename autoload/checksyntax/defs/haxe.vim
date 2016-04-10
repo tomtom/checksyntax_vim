@@ -1,7 +1,10 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    36
+" @Revision:    37
 
+" Haxe checkers:
+" - http://lib.haxe.org/p/haxelint/
+" - http://lib.haxe.org/p/checkstyle/
 
 if !exists('g:checksyntax#defs#haxe#haxe')
     " Filename of the haxe executable.

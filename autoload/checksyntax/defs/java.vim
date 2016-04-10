@@ -1,6 +1,10 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    46
+" @Revision:    49
+"
+" https://www.reddit.com/r/java/comments/4bmzd2/review_of_java_static_analysis_tools/
+" https://github.com/mcandre/linters#java
+" http://blog.codacy.com/2016/03/22/review-java-static-analysis-tools/
 
 
 if !exists('checksyntax#defs#java#pmd_rulesets')

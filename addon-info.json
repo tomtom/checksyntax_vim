@@ -5,5 +5,5 @@
     "maintainer" : "Tom Link <micathom at gmail com>",
     "repository" : {"type": "git", "url": "git://github.com/tomtom/checksyntax_vim.git"},
     "dependencies" : {},
-    "description" : "Check syntax when saving a file (php etc.)"
+    "description" : "checksyntax -- Check files for syntax errors (r, javascript, php, ruby, tex ...)"
 }
