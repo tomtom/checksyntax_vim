@@ -1,3 +1,8 @@
+Status
+======
+This repository is currently unmaintained and wil not be updated
+
+
 The checksyntax plugin runs an external syntax checker for the current buffer 
 whenever the buffer is saved (by calling the |:CheckSyntax| command). Syntax 
 errors are managed as location or quickfix lists. If any syntax error occurs, 
