@@ -1,8 +1,3 @@
-Status
-======
-This repository is currently unmaintained and wil not be updated
-
-
 The checksyntax plugin runs an external syntax checker for the current buffer 
 whenever the buffer is saved (by calling the |:CheckSyntax| command). Syntax 
 errors are managed as location or quickfix lists. If any syntax error occurs, 
@@ -75,6 +70,32 @@ This plugin was originally based on Klaus Horsten's php_console
 
 
 -----------------------------------------------------------------------
+Install~
+
+Edit the vba file and type: >
+
+    :so %
+
+See :help vimball for details. If you have difficulties or use vim 7.0, 
+please make sure, you have the current version of vimball (vimscript 
+#1502) installed or update your runtime.
+
+Also available via git: http://github.com/tomtom/checksyntax_vim/
+
+
+Optional enhancements~
+
+If quickfixsigns (vimscript #2584) is installed, lines containing syntax errors 
+will be marked with signs.
+
+Experimental: If AsyncCommand (vimscript #3431) is installed, syntax checks can 
+be peformed asynchronously -- see also |g:checksyntax#run_alternatives|, 
+|g:checksyntax#run_all_alternatives| and |g:checksyntax#async_runner|. This 
+requires a version of vim with |clientserver| support and |v:servername| to be 
+set (for vim see also |--servername|).
+
+
+
 
 
 License: GPLv3 or later
