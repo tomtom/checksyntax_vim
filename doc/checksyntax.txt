@@ -8,6 +8,9 @@ the |location-list| is opened (users can redefine |CheckSyntaxFail()| to change
 this behaviour). You can use any |location-list| related command to navigate 
 the list of syntax errors.
 
+Most syntax checks can be run asynchronously (from Vim 8 onwards or, for 
+Vim 7, if the AsyncCommand plugin is installed).
+
 
 Invocation~
 
@@ -91,7 +94,9 @@ Optional enhancements~
 If quickfixsigns (vimscript #2584) is installed, lines containing syntax errors 
 will be marked with signs.
 
-Experimental: If AsyncCommand (vimscript #3431) is installed, syntax checks can 
+For vim8+: Checks will be run asynchronously by default.
+
+For vim7: If AsyncCommand (vimscript #3431) is installed, syntax checks can 
 be peformed asynchronously -- see also |g:checksyntax#run_alternatives|, 
 |g:checksyntax#run_all_alternatives| and |g:checksyntax#async_runner|. This 
 requires a version of vim with |clientserver| support and |v:servername| to be 
@@ -101,44 +106,40 @@ set (for vim see also |--servername|).
 ========================================================================
 Contents~
 
-        :CheckSyntax ........................................... |:CheckSyntax|
-        g:checksyntax_key_single ............................... |g:checksyntax_key_single|
-        g:checksyntax_key_all .................................. |g:checksyntax_key_all|
-        g:checksyntax_auto ..................................... |g:checksyntax_auto|
-        g:checksyntax#auto_filetypes ........................... |g:checksyntax#auto_filetypes|
-        g:checksyntax#auto_enable_rx ........................... |g:checksyntax#auto_enable_rx|
-        g:checksyntax#auto_disable_rx .......................... |g:checksyntax#auto_disable_rx|
-        g:checksyntax#enable_syntax ............................ |g:checksyntax#enable_syntax|
-        g:checksyntax#enable_syntax_ ........................... |g:checksyntax#enable_syntax_|
-        g:checksyntax#show_cmd ................................. |g:checksyntax#show_cmd|
-        g:checksyntax#lines_expr ............................... |g:checksyntax#lines_expr|
-        g:checksyntax#preferred ................................ |g:checksyntax#preferred|
-        g:checksyntax#async_runner ............................. |g:checksyntax#async_runner|
-        :CheckSyntaxStatus ..................................... |:CheckSyntaxStatus|
-        g:checksyntax#run_alternatives ......................... |g:checksyntax#run_alternatives|
-        g:checksyntax#run_all_alternatives ..................... |g:checksyntax#run_all_alternatives|
-        g:checksyntax#cygwin_path_rx ........................... |g:checksyntax#cygwin_path_rx|
-        g:checksyntax#cygwin_expr .............................. |g:checksyntax#cygwin_expr|
-        g:checksyntax#check_cygpath ............................ |g:checksyntax#check_cygpath|
-        CheckSyntaxSucceed ..................................... |CheckSyntaxSucceed()|
-        CheckSyntaxFail ........................................ |CheckSyntaxFail()|
-        g:checksyntax#prototypes ............................... |g:checksyntax#prototypes|
-        checksyntax#AddChecker ................................. |checksyntax#AddChecker()|
-        checksyntax#Check ...................................... |checksyntax#Check()|
-        checksyntax#MaybeUseCygpath ............................ |checksyntax#MaybeUseCygpath()|
-        g:checksyntax#defs#haxe#haxe ........................... |g:checksyntax#defs#haxe#haxe|
-        g:checksyntax#defs#haxe#use_checkstyle ................. |g:checksyntax#defs#haxe#use_checkstyle|
-        g:checksyntax#defs#haxe#checkstyle_args ................ |g:checksyntax#defs#haxe#checkstyle_args|
-        g:checksyntax#defs#javascript#closure .................. |g:checksyntax#defs#javascript#closure|
-        g:checksyntax#defs#php#args ............................ |g:checksyntax#defs#php#args|
-        g:checksyntax#defs#php#phpcs_args ...................... |g:checksyntax#defs#php#phpcs_args|
-        g:checksyntax#defs#r#checkUsage_options ................ |g:checksyntax#defs#r#checkUsage_options|
-        g:checksyntax#defs#r#checkUsage_ignore_undefined_rx .... |g:checksyntax#defs#r#checkUsage_ignore_undefined_rx|
-        g:checksyntax#defs#r#checkUsage_ignore_functions ....... |g:checksyntax#defs#r#checkUsage_ignore_functions|
-        g:checksyntax#defs#r#checkUsage_search_other_buffers ... |g:checksyntax#defs#r#checkUsage_search_other_buffers|
-        g:checksyntax#defs#scala#scalastyle .................... |g:checksyntax#defs#scala#scalastyle|
-        g:checksyntax#defs#scala#stop_after .................... |g:checksyntax#defs#scala#stop_after|
-        g:checksyntax#pmd#cmd .................................. |g:checksyntax#pmd#cmd|
+        :CheckSyntax .......................................... |:CheckSyntax|
+        g:checksyntax_key_single .............................. |g:checksyntax_key_single|
+        g:checksyntax_key_all ................................. |g:checksyntax_key_all|
+        g:checksyntax_auto .................................... |g:checksyntax_auto|
+        g:checksyntax#auto_filetypes .......................... |g:checksyntax#auto_filetypes|
+        g:checksyntax#auto_enable_rx .......................... |g:checksyntax#auto_enable_rx|
+        g:checksyntax#auto_disable_rx ......................... |g:checksyntax#auto_disable_rx|
+        g:checksyntax#enable_syntax ........................... |g:checksyntax#enable_syntax|
+        g:checksyntax#enable_syntax_ .......................... |g:checksyntax#enable_syntax_|
+        g:checksyntax#show_cmd ................................ |g:checksyntax#show_cmd|
+        g:checksyntax#lines_expr .............................. |g:checksyntax#lines_expr|
+        g:checksyntax#preferred ............................... |g:checksyntax#preferred|
+        g:checksyntax#async_runner ............................ |g:checksyntax#async_runner|
+        :CheckSyntaxStatus .................................... |:CheckSyntaxStatus|
+        g:checksyntax#run_alternatives ........................ |g:checksyntax#run_alternatives|
+        g:checksyntax#run_all_alternatives .................... |g:checksyntax#run_all_alternatives|
+        g:checksyntax#cygwin_path_rx .......................... |g:checksyntax#cygwin_path_rx|
+        g:checksyntax#cygwin_expr ............................. |g:checksyntax#cygwin_expr|
+        g:checksyntax#check_cygpath ........................... |g:checksyntax#check_cygpath|
+        CheckSyntaxSucceed .................................... |CheckSyntaxSucceed()|
+        CheckSyntaxFail ....................................... |CheckSyntaxFail()|
+        g:checksyntax#prototypes .............................. |g:checksyntax#prototypes|
+        checksyntax#AddChecker ................................ |checksyntax#AddChecker()|
+        checksyntax#Check ..................................... |checksyntax#Check()|
+        checksyntax#MaybeUseCygpath ........................... |checksyntax#MaybeUseCygpath()|
+        g:checksyntax#defs#haxe#haxe .......................... |g:checksyntax#defs#haxe#haxe|
+        g:checksyntax#defs#haxe#use_checkstyle ................ |g:checksyntax#defs#haxe#use_checkstyle|
+        g:checksyntax#defs#haxe#checkstyle_args ............... |g:checksyntax#defs#haxe#checkstyle_args|
+        g:checksyntax#defs#javascript#closure ................. |g:checksyntax#defs#javascript#closure|
+        g:checksyntax#defs#php#args ........................... |g:checksyntax#defs#php#args|
+        g:checksyntax#defs#php#phpcs_args ..................... |g:checksyntax#defs#php#phpcs_args|
+        g:checksyntax#defs#scala#scalastyle ................... |g:checksyntax#defs#scala#scalastyle|
+        g:checksyntax#defs#scala#stop_after ................... |g:checksyntax#defs#scala#stop_after|
+        g:checksyntax#pmd#cmd ................................. |g:checksyntax#pmd#cmd|
 
 
 ------------------------------------------------------------------------
@@ -423,35 +424,7 @@ g:checksyntax#defs#php#phpcs_args (default: '')
                                                     *autoload/checksyntax/defs/r.vim*
 
 Syntax checkers for R:
-
-  codetools::checkUsageEnv ... Requires http://cran.r-project.org/web/packages/codetools/
-  lint::lint ... Requires http://cran.r-project.org/web/packages/lint/
-  svTools::lint ... Requires http://cran.r-project.org/web/packages/svTools/
-
-                                                    *g:checksyntax#defs#r#checkUsage_options*
-g:checksyntax#defs#r#checkUsage_options (default: 'all = TRUE')
-    Optons passed to codetools::checkUsageEnv.
-    Must not be empty.
-
-                                                    *g:checksyntax#defs#r#checkUsage_ignore_undefined_rx*
-g:checksyntax#defs#r#checkUsage_ignore_undefined_rx (default: '')
-    A |/\V| regexp pattern of names that should be ignored, when 
-    codetools::checkUsageEnv reports "no visible global function 
-    definition".
-
-                                                    *g:checksyntax#defs#r#checkUsage_ignore_functions*
-g:checksyntax#defs#r#checkUsage_ignore_functions (default: [])
-    A list of function names that will be ignored when parsing the 
-    result list from codetools::checkUsageEnv.
-
-                                                    *g:checksyntax#defs#r#checkUsage_search_other_buffers*
-g:checksyntax#defs#r#checkUsage_search_other_buffers (default: 0)
-    If 2, also search other buffers for patterns returned by 
-    codetools::checkUsageEnv. This may cause unreponsive behaviour.
-
-    If 1, show unidentifiable patterns as is.
-
-    If 0, remove unidentifiable patterns.
+- lintr
 
 
 ------------------------------------------------------------------------

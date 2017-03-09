@@ -8,6 +8,9 @@ the |location-list| is opened (users can redefine |CheckSyntaxFail()| to change
 this behaviour). You can use any |location-list| related command to navigate 
 the list of syntax errors.
 
+Most syntax checks can be run asynchronously (from Vim 8 onwards or, for 
+Vim 7, if the AsyncCommand plugin is installed).
+
 
 Invocation~
 
@@ -91,7 +94,9 @@ Optional enhancements~
 If quickfixsigns (vimscript #2584) is installed, lines containing syntax errors 
 will be marked with signs.
 
-Experimental: If AsyncCommand (vimscript #3431) is installed, syntax checks can 
+For vim8+: Checks will be run asynchronously by default.
+
+For vim7: If AsyncCommand (vimscript #3431) is installed, syntax checks can 
 be peformed asynchronously -- see also |g:checksyntax#run_alternatives|, 
 |g:checksyntax#run_all_alternatives| and |g:checksyntax#async_runner|. This 
 requires a version of vim with |clientserver| support and |v:servername| to be 
