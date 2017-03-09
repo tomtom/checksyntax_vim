@@ -1,6 +1,6 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    75
+" @Revision:    84
 
 
 if !exists('g:checksyntax#defs#javascript#closure')
@@ -26,29 +26,20 @@ endif
 
 call checksyntax#AddChecker('javascript?',
             \     {
-            \         'name': 'jshint',
-            \         'cmd': 'jshint --verbose',
-            \         'efm': '%f: line %l\, col %c\, %m (%t%n)',
+            \         'compiler': 'checksyntax/jshint',
             \     },
             \     {
-            \         'name': 'esprima',
-            \         'cmd': 'esvalidate',
-            \         'efm': '%f:%l: %m',
+            \         'compiler': 'checksyntax/esprima',
             \     },
             \     {
-            \         'name': 'gjslint',
-            \         'cmd': 'gjslint --nosummary --unix_mode --nodebug_indentation --nobeep',
+            \         'compiler': 'checksyntax/gjslint',
             \         'ignore_nr': [1, 110],
-            \         'efm': '%f:%l:(New Error -%\\?\%n) %m,%f:%l:(-%\\?%n) %m',
             \     },
             \     {
-            \         'name': 'jslint',
-            \         'cmd': 'jslint --terse',
-            \         'efm': '%f:%l:%c: %m',
+            \         'compiler': 'checksyntax/jslint',
             \     },
             \     {
-            \         'name': 'jsl',
-            \         'cmd': 'jsl -nofilelisting -nocontext -nosummary -nologo -process',
+            \         'compiler': 'checksyntax/jsl',
             \     },
             \ )
 

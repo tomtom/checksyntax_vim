@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    1549
+" @Revision:    1571
 
 if exists(':Tlibtrace') != 2
     command! -nargs=+ -bang Tlibtrace :
@@ -576,7 +576,7 @@ endf
 function! s:UpNameFromDef(make_def) "{{{3
     let name = get(a:make_def, 'name', '')
     if empty(name)
-        let name = get(a:make_def, 'compiler', '')
+        let name = matchstr(get(a:make_def, 'compiler', ''), '[^\/]\+$')
     endif
     if empty(name)
         let name = s:Cmd(a:make_def)
@@ -797,7 +797,7 @@ function! checksyntax#Check(manually, ...)
             " call checksyntax#Debug(string(defs.make_defs))
             for [name, make_def] in items(defs.make_defs)
                 call checksyntax#Debug('run '. name .' (async='. async .')')
-                Tlibtrace 'checksyntax', name, make_def
+                Tlibtrace 'checksyntax', name, make_def, async
                 let make_def1 = copy(make_def)
                 let done = 0
                 if async
@@ -899,19 +899,46 @@ endf
 
 
 function! s:WithCompiler(compiler, exec, default) "{{{3
+    Tlibtrace 'checksyntax', a:compiler, a:exec, a:default
     if exists('g:current_compiler')
-        let cc = g:current_compiler
+        let gcc = g:current_compiler
     else
-        let cc = ''
+        let gcc = ''
     endif
+    if exists('b:current_compiler')
+        let bcc = b:current_compiler
+    else
+        let bcc = ''
+    endif
+    let efm = &errorformat
+    let mprg = &makeprg
     try
-        exec 'compiler '. a:compiler
-        exec a:exec
+        for c in [a:compiler, 'checksyntax/'. a:compiler]
+            let found = findfile('compiler/'. c .'.vim', &rtp)
+            Tlibtrace 'checksyntax', c, found
+            if !empty(found)
+                set makeprg=
+                exec 'compiler' c
+                Tlibtrace 'checksyntax', &makeprg
+                if !empty(&makeprg)
+                    exec a:exec
+                endif
+                break
+            endif
+        endfor
     finally
-        if cc != ''
-            let g:current_compiler = cc
-            exec 'compiler '. cc
+        if gcc != ''
+            let g:current_compiler = gcc
+        else
+            unlet! g:current_compiler
         endif
+        if bcc != ''
+            let g:current_compiler = bcc
+        else
+            unlet! g:current_compiler
+        endif
+        let &errorformat = efm
+        let &makeprg = mprg
     endtry
     return a:default
 endf
@@ -953,6 +980,7 @@ function! s:Run_async(make_def) "{{{3
     Tlibtrace 'checksyntax', a:make_def
     let make_def = a:make_def
     let cmd = checksyntax#GetMakerParam(make_def, g:checksyntax#async_runner, 'cmd', '')
+    Tlibtrace 'checksyntax', cmd
     if !empty(cmd)
         " TODO Clarify what the cmd_args field is used for
         if has_key(a:make_def, 'cmd_args')
