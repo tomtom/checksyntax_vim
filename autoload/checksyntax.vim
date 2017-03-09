@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    1528
+" @Revision:    1549
 
 if exists(':Tlibtrace') != 2
     command! -nargs=+ -bang Tlibtrace :
@@ -249,7 +249,7 @@ if !exists('g:checksyntax#prototypes')
 endif
 
 
-function! s:Open(bg, type) "{{{3
+function! s:Open(bg, type, obj) "{{{3
     let cmd = get(g:checksyntax#show_cmd, a:type, '')
     Tlibtrace 'checksyntax', a:bg, a:type, cmd
     if !empty(cmd)
@@ -282,7 +282,7 @@ if empty(g:checksyntax#prototypes.loc)
     endf
 
     function! g:checksyntax#prototypes.loc.Open(bg) dict "{{{3
-        call s:Open(a:bg, 'loc')
+        call s:Open(a:bg, 'loc', self)
     endf
 
     function! g:checksyntax#prototypes.loc.GetExpr(args) dict "{{{3
@@ -310,7 +310,7 @@ if empty(g:checksyntax#prototypes.qfl)
     endf
 
     function! g:checksyntax#prototypes.qfl.Open(bg) dict "{{{3
-        call s:Open(a:bg, 'qfl')
+        call s:Open(a:bg, 'qfl', self)
     endf
 
     function! g:checksyntax#prototypes.qfl.GetExpr(args) dict "{{{3
@@ -687,6 +687,7 @@ function! g:checksyntax#issues.AddList(name, make_def, type) dict "{{{3
         let self.type = a:type
     endif
     let issues = checksyntax#GetList(a:name, a:make_def, a:type)
+    call checksyntax#Debug('AddList: '. len(issues))
     Tlibtrace 'checksyntax', len(issues)
     if !empty(issues)
         let self.issues += issues
@@ -696,6 +697,7 @@ endf
 
 
 function! g:checksyntax#issues.Display(manually, bg) dict "{{{3
+    call checksyntax#Debug('Display: '. len(self.issues))
     if empty(self.issues)
         call g:checksyntax#prototypes[self.type].Set(self.issues)
         call CheckSyntaxSucceed(self.type, a:manually)
@@ -707,6 +709,24 @@ function! g:checksyntax#issues.Display(manually, bg) dict "{{{3
         call g:checksyntax#prototypes[self.type].Set(self.issues)
         Tlibtrace 'checksyntax', self.type, a:manually, a:bg
         call CheckSyntaxFail(self.type, a:manually, a:bg)
+    endif
+endf
+
+
+function! g:checksyntax#issues.Done(jobs, obj) dict abort "{{{3
+    if a:jobs == 0
+        let bg = a:obj.bg
+        let bg = 1
+        let manually = a:obj.manually || g:checksyntax#debug
+        call self.Display(manually, bg)
+    endif
+endf
+
+
+function! checksyntax#Debug(msg, ...) abort "{{{3
+    let level = a:0 >= 1 ? a:1 : 1
+    if g:checksyntax#debug >= level
+        echom 'CheckSyntax:' a:msg
     endif
 endf
 
@@ -764,8 +784,19 @@ function! checksyntax#Check(manually, ...)
                         \ 'altname': expand('#'),
                         \ 'manually': a:manually,
                         \ }
+            if exists('*win_getid')
+                let props.win_id = win_getid()
+                let props.win_gotoid = function('win_gotoid')
+                let props.win_getid = function('win_getid')
+            elseif exists('g:loaded_tlib') && g:loaded_tlib >= 123
+                let props.win_id = tlib#win#GetID()
+                let props.win_gotoid = function('tlib#win#GotoID')
+                let props.win_getid = function('tlib#win#GetID')
+            endif
             call g:checksyntax#issues.Reset()
+            " call checksyntax#Debug(string(defs.make_defs))
             for [name, make_def] in items(defs.make_defs)
+                call checksyntax#Debug('run '. name .' (async='. async .')')
                 Tlibtrace 'checksyntax', name, make_def
                 let make_def1 = copy(make_def)
                 let done = 0
@@ -921,13 +952,12 @@ endf
 function! s:Run_async(make_def) "{{{3
     Tlibtrace 'checksyntax', a:make_def
     let make_def = a:make_def
-    let cmd = ''
-    if has_key(make_def, 'cmd')
-        let cmd = get(make_def, 'cmd', '')
-        " let cmd .= ' '. shellescape(make_def.filename)
+    let cmd = checksyntax#GetMakerParam(make_def, g:checksyntax#async_runner, 'cmd', '')
+    if !empty(cmd)
+        " TODO Clarify what the cmd_args field is used for
         if has_key(a:make_def, 'cmd_args')
-            let cmddef = s:ExtractCompilerParams(a:make_def, '', a:make_def.cmd)
-            let cmd = cmddef.cmd
+            " let cmddef = s:ExtractCompilerParams(a:make_def, '', a:make_def.cmd)
+            " let cmd = cmddef.cmd
         else
             let cmd .= ' '. escape(make_def.filename, '"''\ ')
         endif
@@ -951,6 +981,7 @@ function! s:Run_async(make_def) "{{{3
             return rv
         catch /^Vim\%((\a\+)\)\=:E117/
             echohl Error
+            echom v:exception
             echom 'Checksyntax: Unsupported value for g:checksyntax#async_runner: '. string(g:checksyntax#async_runner)
             echohl NONE
             let g:checksyntax#async_runner = ''
@@ -1004,6 +1035,13 @@ function! s:Filename(make_def, type, mod) "{{{3
         let filename = fnamemodify(filename, a:mod)
     endif
     return escape(filename, '\')
+endf
+
+
+function! checksyntax#GetMakerParam(opts, maker, name, default) abort "{{{3
+    let mopts = get(a:opts, a:maker, {})
+    let val = get(mopts, a:name, get(a:opts, a:name, a:default))
+    return val
 endf
 
 
