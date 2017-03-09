@@ -224,7 +224,7 @@ g:checksyntax#enable_syntax_   (default: [])
     should be enabled by default.
 
                                                     *g:checksyntax#show_cmd*
-g:checksyntax#show_cmd         (default: {'qfl': 'copen', 'loc': 'lopen'})
+g:checksyntax#show_cmd         (default: {'qfl': 'copen '. g:checksyntax#list_height, 'loc': 'lopen '. g:checksyntax#list_height})
     A dictionary of VIM commands that are used to display the qf/loc 
     lists.
     If empty, do nothing.
@@ -322,6 +322,7 @@ checksyntax#AddChecker(filetype, ...)
       efm  ....... An 'errorformat' string.
       prepare .... An ex command that is run before doing anything.
       ignore_nr .. A list of error numbers that should be ignored.
+      ignore_rx .. A regexp of messages that should be ignored.
       listtype ... Either loc (default) or qfl
       include .... Include another definition
       process_list .. Process a list of issues
