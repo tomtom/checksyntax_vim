@@ -1,6 +1,6 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    133
+" @Revision:    134
 
 
 let s:prototype = {'in_mode': 'nl', 'out_mode': 'nl', 'err_mode': 'nl'}
@@ -60,9 +60,9 @@ function! checksyntax#async#vim8#Run(cmd, make_def) "{{{3
     let make_def.async_type = type
     let make_def.async_efm = checksyntax#GetMakerParam(a:make_def, 'vim8', 'efm', &errorformat)
     let opts = checksyntax#async#vim8#New({})
-    " let opts.callback = function('s:Out_cb', [], make_def)
-    let opts.out_cb = function('s:Out_cb', [], make_def)
-    let opts.err_cb = function('s:Err_cb', [], make_def)
+    let opts.callback = function('s:Out_cb', [], make_def)
+    " let opts.out_cb = function('s:Out_cb', [], make_def)
+    " let opts.err_cb = function('s:Err_cb', [], make_def)
     let opts.exit_cb = function('s:Exit_cb', [], make_def)
     call checksyntax#Debug('vim8 job: '. a:cmd)
     let job = job_start(a:cmd, opts)
