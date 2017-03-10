@@ -1,6 +1,6 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    201
+" @Revision:    204
 
 " :doc:
 " Syntax checkers for R:
@@ -12,7 +12,7 @@ if !exists('g:checksyntax#defs#r#progname')
 endif
 
 if !executable(g:checksyntax#defs#r#progname)
-    throw "Please set g:checksyntax#defs#r#progname to the full filename of Rterm/R first!"
+    throw 'Please set g:checksyntax#defs#r#progname to the full filename of Rterm/R first!'
 endif
 
 
@@ -38,16 +38,8 @@ call checksyntax#AddChecker('r?',
             \       'cmd': g:checksyntax#defs#r#progname .' '. printf(g:checksyntax#defs#r#options, ''),
             \       'input': ['lintr::lint(commandArgs(TRUE)); q()'],
             \     },
-            \     'process_list': 'checksyntax#defs#r#LintrProcessList'
+            \     'ignore_rx': g:checksyntax#defs#r#lintr_ignore_rx
             \   }
             \ )
 
-
-function! checksyntax#defs#r#LintrProcessList(list) abort "{{{3
-    let lst = a:list
-    if !empty(g:checksyntax#defs#r#lintr_ignore_rx)
-        let lst = filter(lst, 'get(v:val, "text", "") !~ g:checksyntax#defs#r#lintr_ignore_rx')
-    endif
-    return lst
-endf
 
