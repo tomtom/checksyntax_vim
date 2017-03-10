@@ -91,8 +91,12 @@ Also available via git: http://github.com/tomtom/checksyntax_vim/
 
 Optional enhancements~
 
-If quickfixsigns (vimscript #2584) is installed, lines containing syntax errors 
-will be marked with signs.
+If the quickfixsigns plugin (vimscript #2584) is installed, lines containing 
+syntax errors will be marked with signs.
+
+The tinykeymap plugin (vimscript #4199) can be used to quickly move from one 
+issue to the next by using it's quickfix or location-list maps (see 
+|g:tinykeymap#map#qfl#map| and |g:tinykeymap#map#loc#map|).
 
 For vim8+: Checks will be run asynchronously by default.
 
@@ -127,7 +131,7 @@ Contents~
         g:checksyntax#check_cygpath ........................... |g:checksyntax#check_cygpath|
         CheckSyntaxSucceed .................................... |CheckSyntaxSucceed()|
         CheckSyntaxFail ....................................... |CheckSyntaxFail()|
-        g:checksyntax#prototypes .............................. |g:checksyntax#prototypes|
+        s:prototypes .......................................... |s:prototypes|
         checksyntax#AddChecker ................................ |checksyntax#AddChecker()|
         checksyntax#Check ..................................... |checksyntax#Check()|
         checksyntax#MaybeUseCygpath ........................... |checksyntax#MaybeUseCygpath()|
@@ -137,8 +141,6 @@ Contents~
         g:checksyntax#defs#javascript#closure ................. |g:checksyntax#defs#javascript#closure|
         g:checksyntax#defs#php#args ........................... |g:checksyntax#defs#php#args|
         g:checksyntax#defs#php#phpcs_args ..................... |g:checksyntax#defs#php#phpcs_args|
-        g:checksyntax#defs#scala#scalastyle ................... |g:checksyntax#defs#scala#scalastyle|
-        g:checksyntax#defs#scala#stop_after ................... |g:checksyntax#defs#scala#stop_after|
         g:checksyntax#pmd#cmd ................................. |g:checksyntax#pmd#cmd|
 
 
@@ -294,8 +296,8 @@ CheckSyntaxSucceed(type, manually)
 CheckSyntaxFail(type, manually, bg)
     This function is called when a syntax error was found.
 
-                                                    *g:checksyntax#prototypes*
-g:checksyntax#prototypes       (default: {'loc': {}, 'qfl': {}})
+                                                    *s:prototypes*
+s:prototypes                   (default: {'loc': {}, 'qfl': {}})
     Contains prototype definitions for syntax checkers that use the 
     |location-list| ("loc") or the |quixfix|-list.
 
@@ -429,15 +431,10 @@ Syntax checkers for R:
 
 
 ------------------------------------------------------------------------
-                                                    *autoload/checksyntax/defs/scala.vim*
-                                                    *g:checksyntax#defs#scala#scalastyle*
-g:checksyntax#defs#scala#scalastyle (default: '')
-    The command to invoke scalastyle -- see http://www.scalastyle.org 
-    and especially http://www.scalastyle.org/command-line.html
+                                                    *autoload/checksyntax/defs/rmd.vim*
 
-                                                    *g:checksyntax#defs#scala#stop_after*
-g:checksyntax#defs#scala#stop_after (default: 'cleanup')
-    See `scalac -Xshow-phases` for possible values.
+Syntax checkers for Rmd:
+- See r
 
 
 ------------------------------------------------------------------------

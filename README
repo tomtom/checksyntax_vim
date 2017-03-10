@@ -88,8 +88,12 @@ Also available via git: http://github.com/tomtom/checksyntax_vim/
 
 Optional enhancements~
 
-If quickfixsigns (vimscript #2584) is installed, lines containing syntax errors 
-will be marked with signs.
+If the quickfixsigns plugin (vimscript #2584) is installed, lines containing 
+syntax errors will be marked with signs.
+
+The tinykeymap plugin (vimscript #4199) can be used to quickly move from one 
+issue to the next by using it's quickfix or location-list maps (see 
+|g:tinykeymap#map#qfl#map| and |g:tinykeymap#map#loc#map|).
 
 For vim8+: Checks will be run asynchronously by default.
 
