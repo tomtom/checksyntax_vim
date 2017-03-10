@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    1593
+" @Revision:    1595
 
 if exists(':Tlibtrace') != 2
     command! -nargs=+ -bang Tlibtrace :
@@ -567,6 +567,7 @@ endf
 
 " :nodoc:
 function! s:UpName(upname) abort "{{{3
+    Tlibtrace 'checksyntax', a:upname
     if a:upname =~# '?$'
         let update = 0
         let name = substitute(a:upname, '?$', '', '')
@@ -574,6 +575,7 @@ function! s:UpName(upname) abort "{{{3
         let update = 1
         let name = a:upname
     endif
+    Tlibtrace 'checksyntax', update, name
     return [update, name]
 endf
 
@@ -587,6 +589,7 @@ function! s:UpNameFromDef(make_def) abort "{{{3
     if empty(name)
         let name = s:Cmd(a:make_def)
     endif
+    Tlibtrace 'checksyntax', name
     return s:UpName(name)
 endf
 
