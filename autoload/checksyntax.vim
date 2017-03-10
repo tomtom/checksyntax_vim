@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    1585
+" @Revision:    1593
 
 if exists(':Tlibtrace') != 2
     command! -nargs=+ -bang Tlibtrace :
@@ -724,8 +724,18 @@ function! g:checksyntax#issues.Done(jobs, obj) dict abort "{{{3
         let bg = a:obj.bg
         let bg = 1
         let manually = a:obj.manually || g:checksyntax#debug
-        call self.Display(manually, bg)
+        " if a:obj.async_type ==# 'loc' && bufnr('%') != a:obj.bufnr
+        "     exec 'autocmd! CheckSyntax BufWinEnter <buffer='. a:obj.bufnr .'> call call(function(g:checksyntax#issues.DelayedDisplay, [a:obj.bufnr, manually, bg], self))'
+        " else
+            call self.Display(manually, bg)
+        " endif
     endif
+endf
+
+
+function! g:checksyntax#issues.DelayedDisplay(bufnr, manually, bg) abort "{{{3
+    autocmd! CheckSyntax BufWinEnter <buffer>
+    call self.Display(a:manually, a:bg)
 endf
 
 
