@@ -1,6 +1,6 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    49
+" @Revision:    51
 "
 " https://www.reddit.com/r/java/comments/4bmzd2/review_of_java_static_analysis_tools/
 " https://github.com/mcandre/linters#java
@@ -10,12 +10,12 @@
 if !exists('checksyntax#defs#java#pmd_rulesets')
     " :read: let checksyntax#defs#java#pmd_rulesets = [...]   "{{{2
     let checksyntax#defs#java#pmd_rulesets = [
-                \ "basic", "braces", "clone", "codesize", "comments", 
-                \ "design", "empty", "finalizers", "imports", "javabeans", 
-                \ "logging-jakarta-commons", "logging-java", "migrating", 
-                \ "optimizations", "strictexception", "strings", 
-                \ "sunsecure", "typeresolution", "unnecessary", 
-                \ "unusedcode"]
+                \ 'basic', 'braces', 'clone', 'codesize', 'comments', 
+                \ 'design', 'empty', 'finalizers', 'imports', 'javabeans', 
+                \ 'logging-jakarta-commons', 'logging-java', 'migrating', 
+                \ 'optimizations', 'strictexception', 'strings', 
+                \ 'sunsecure', 'typeresolution', 'unnecessary', 
+                \ 'unusedcode']
     "android", "controversial", "coupling", "j2ee", "junit", "naming", 
 endif
 
@@ -25,7 +25,7 @@ if !exists('checksyntax#defs#java#pmd_args')
 endif
 
 
-function! checksyntax#defs#java#Jlint() "{{{3
+function! checksyntax#defs#java#Jlint() abort "{{{3
     let filename = expand('%:r') .'.class'
     let dirname = expand('%:h')
     return 'jlint +all -done -source '. shellescape(dirname) .' '. shellescape(filename)

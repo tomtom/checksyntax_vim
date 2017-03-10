@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    1596
+" @Revision:    1660
 
 if exists(':Tlibtrace') != 2
     command! -nargs=+ -bang Tlibtrace :
@@ -228,8 +228,8 @@ endif
 
 if !exists('*CheckSyntaxSucceed')
     " This function is called when no syntax errors were found.
-    function! CheckSyntaxSucceed(type, manually) abort
-        call g:checksyntax#prototypes[a:type].Close()
+    function! CheckSyntaxSucceed(type, manually) abort dict
+        call s:prototypes[a:type].Close()
         if a:manually
             echo
             echo 'Syntax ok.'
@@ -240,17 +240,17 @@ endif
 
 if !exists('*CheckSyntaxFail')
     " This function is called when a syntax error was found.
-    function! CheckSyntaxFail(type, manually, bg) abort
+    function! CheckSyntaxFail(type, manually, bg) abort dict
         Tlibtrace 'checksyntax', a:type, a:manually, a:bg
-        call g:checksyntax#prototypes[a:type].Open(a:bg)
+        call s:prototypes[a:type].Open(a:bg)
     endf
 endif
 
 
-if !exists('g:checksyntax#prototypes')
+if !exists('s:prototypes')
     " Contains prototype definitions for syntax checkers that use the 
     " |location-list| ("loc") or the |quixfix|-list.
-    let g:checksyntax#prototypes = {'loc': {}, 'qfl': {}} "{{{2
+    let s:prototypes = {'loc': {}, 'qfl': {}} "{{{2
 endif
 
 
@@ -281,57 +281,57 @@ function! s:Open(bg, type, obj) abort "{{{3
 endf
 
 
-if empty(g:checksyntax#prototypes.loc)
-    function! g:checksyntax#prototypes.loc.Close() abort dict "{{{3
+if empty(s:prototypes.loc)
+    function! s:prototypes.loc.Close() abort dict "{{{3
         lclose
     endf
 
-    function! g:checksyntax#prototypes.loc.Open(bg) abort dict "{{{3
+    function! s:prototypes.loc.Open(bg) abort dict "{{{3
         call s:Open(a:bg, 'loc', self)
     endf
 
-    function! g:checksyntax#prototypes.loc.GetExpr(args) abort dict "{{{3
+    function! s:prototypes.loc.GetExpr(args) abort dict "{{{3
         " TLogDBG system(a:args)
         return s:RunCmd('lgetexpr', 'system('. string(a:args). ')')
     endf
 
-    function! g:checksyntax#prototypes.loc.Make(args) abort dict "{{{3
+    function! s:prototypes.loc.Make(args) abort dict "{{{3
         return s:RunCmd('lmake!', a:args)
     endf
 
-    function! g:checksyntax#prototypes.loc.Get() abort dict "{{{3
+    function! s:prototypes.loc.Get() abort dict "{{{3
         return copy(getloclist(0))
     endf
 
-    function! g:checksyntax#prototypes.loc.Set(list) abort dict "{{{3
+    function! s:prototypes.loc.Set(list) abort dict "{{{3
         call setloclist(0, a:list)
     endf
 endif
 
 
-if empty(g:checksyntax#prototypes.qfl)
-    function! g:checksyntax#prototypes.qfl.Close() abort dict "{{{3
+if empty(s:prototypes.qfl)
+    function! s:prototypes.qfl.Close() abort dict "{{{3
         cclose
     endf
 
-    function! g:checksyntax#prototypes.qfl.Open(bg) abort dict "{{{3
+    function! s:prototypes.qfl.Open(bg) abort dict "{{{3
         call s:Open(a:bg, 'qfl', self)
     endf
 
-    function! g:checksyntax#prototypes.qfl.GetExpr(args) abort dict "{{{3
+    function! s:prototypes.qfl.GetExpr(args) abort dict "{{{3
         " TLogDBG system(a:args)
         return s:RunCmd('cgetexpr', 'system('. string(a:args). ')')
     endf
 
-    function! g:checksyntax#prototypes.qfl.Make(args) abort dict "{{{3
+    function! s:prototypes.qfl.Make(args) abort dict "{{{3
         return s:RunCmd('make!', a:args)
     endf
 
-    function! g:checksyntax#prototypes.qfl.Get() abort dict "{{{3
+    function! s:prototypes.qfl.Get() abort dict "{{{3
         return copy(getqflist())
     endf
 
-    function! g:checksyntax#prototypes.qfl.Set(list) abort dict "{{{3
+    function! s:prototypes.qfl.Set(list) abort dict "{{{3
         call setqflist(a:list)
     endf
 endif
@@ -482,7 +482,7 @@ function! s:RunSyncWithEFM(make_def) abort "{{{3
             let cmddef = s:ExtractCompilerParams(a:make_def, '%', a:make_def.cmd)
             let cmd = s:NativeCmd(cmddef.cmd)
             Tlibtrace 'checksyntax', cmd
-            let rv = g:checksyntax#prototypes[type].GetExpr(cmd)
+            let rv = a:make_def.GetExpr(cmd)
             Tlibtrace 'checksyntax', rv, getqflist()
             return rv
         elseif has_key(a:make_def, 'exec')
@@ -680,18 +680,26 @@ endf
 let s:async_pending = {}
 
 
-let g:checksyntax#issues = {}
+let s:issues = {
+            \ 'CheckSyntaxFail': function('CheckSyntaxFail'),
+            \ 'CheckSyntaxSucceed': function('CheckSyntaxSucceed')}
 
 
-function! g:checksyntax#issues.Reset() abort dict "{{{3
-    let self.issues = []
-    let self.type = 'loc'
+function! checksyntax#NewIssuesList(type) abort "{{{3
+    let lst = copy(s:issues)
+    call lst.Reset(a:type)
+    return lst
 endf
 
-call g:checksyntax#issues.Reset()
+
+function! s:issues.Reset(...) abort dict "{{{3
+    let self.type = a:0 >= 1 ? a:1 : 'loc'
+    let self.issues = []
+    let self.jobs = {}
+endf
 
 
-function! g:checksyntax#issues.AddList(name, make_def, type) abort dict "{{{3
+function! s:issues.AddList(name, make_def, type) abort dict "{{{3
     Tlibtrace 'checksyntax', a:name, a:make_def, a:type
     if a:type ==# 'qfl'
         let self.type = a:type
@@ -706,40 +714,59 @@ function! g:checksyntax#issues.AddList(name, make_def, type) abort dict "{{{3
 endf
 
 
-function! g:checksyntax#issues.Display(manually, bg) abort dict "{{{3
+function! s:issues.Display(manually, bg, ...) abort dict "{{{3
     call checksyntax#Debug('Display: '. len(self.issues))
+    let obj = a:0 >= 1 ? a:1 : s:prototypes[self.type]
     if empty(self.issues)
-        call g:checksyntax#prototypes[self.type].Set(self.issues)
-        call CheckSyntaxSucceed(self.type, a:manually)
+        call obj.Set(self.issues)
+        call self.CheckSyntaxSucceed(self.type, a:manually)
     else
         Tlibtrace 'checksyntax', self.issues
         call sort(self.issues, 's:CompareIssues')
         Tlibtrace 'checksyntax', self.issues
         Tlibtrace 'checksyntax', self.type
-        call g:checksyntax#prototypes[self.type].Set(self.issues)
+        call obj.Set(self.issues)
         Tlibtrace 'checksyntax', self.type, a:manually, a:bg
-        call CheckSyntaxFail(self.type, a:manually, a:bg)
+        call self.CheckSyntaxFail(self.type, a:manually, a:bg)
     endif
 endf
 
 
-function! g:checksyntax#issues.Done(jobs, obj) dict abort "{{{3
-    if a:jobs == 0
-        let bg = a:obj.bg
+function! s:issues.WaitFor(make_def) abort dict "{{{3
+    if has_key(self.jobs, a:make_def.job_id)
+        echom 'Checksyntax#WaitFor: job_id already registered:' a:make_def.job_id string(keys(self.jobs))
+    endif
+    let self.jobs[a:make_def.job_id] = a:make_def
+endf
+
+
+function! s:issues.Done(make_def) dict abort "{{{3
+    let njobs = checksyntax#RemoveJob(a:make_def.job_id)
+    if has_key(self.jobs, a:make_def.job_id)
+        call remove(self.jobs, a:make_def.job_id)
+    else
+        echom 'CheckSyntax#Done: Didn''t expect job:' a:make_def.job_id
+    endif
+    let list = self.AddList(a:make_def.name, a:make_def, a:make_def.async_type)
+    Tlibtrace 'checksyntax2', list
+    Tlibtrace 'checksyntax', self.name, len(list)
+    call checksyntax#Debug(printf('Processing %s (%s items)', a:make_def.name, len(list)))
+    if empty(self.jobs)
+        let bg = a:make_def.bg
         let bg = 1
-        let manually = a:obj.manually || g:checksyntax#debug
-        " if a:obj.async_type ==# 'loc' && bufnr('%') != a:obj.bufnr
-        "     exec 'autocmd! CheckSyntax BufWinEnter <buffer='. a:obj.bufnr .'> call call(function(g:checksyntax#issues.DelayedDisplay, [a:obj.bufnr, manually, bg], self))'
+        let manually = a:make_def.manually || g:checksyntax#debug
+        " if a:make_def.async_type ==# 'loc' && bufnr('%') != a:make_def.bufnr
+        "     exec 'autocmd! CheckSyntax BufWinEnter <buffer='. a:make_def.bufnr .'> call call(function(s:issues.DelayedDisplay, [a:make_def.bufnr, manually, bg, a:make_def], self))'
         " else
-            call self.Display(manually, bg)
+        call self.Display(manually, bg, a:make_def)
         " endif
     endif
 endf
 
 
-function! g:checksyntax#issues.DelayedDisplay(bufnr, manually, bg) abort "{{{3
+function! s:issues.DelayedDisplay(bufnr, manually, bg, obj) abort dict "{{{3
     autocmd! CheckSyntax BufWinEnter <buffer>
-    call self.Display(a:manually, a:bg)
+    call self.Display(a:manually, a:bg, a:obj)
 endf
 
 
@@ -769,6 +796,8 @@ function! checksyntax#Check(manually, ...) abort
     let bd = expand('%:p:h')
     let will_display = 0
     try
+        let global_issues = checksyntax#NewIssuesList('qfl')
+        let buffer_issues = checksyntax#NewIssuesList('loc')
         let defs = s:GetDefsByFiletype(a:manually, filetype)
         Tlibtrace 'checksyntax', defs
         if has_key(defs, 'make_defs') && !empty(defs.make_defs)
@@ -787,16 +816,16 @@ function! checksyntax#Check(manually, ...) abort
             endif
             let async = !empty(g:checksyntax#async_runner) && defs.run_alternatives =~? '\<async\>'
             Tlibtrace 'checksyntax', async
-            if !empty(s:async_pending)
-                if !a:manually && async
-                    echohl WarningMsg
-                    echo 'CheckSyntax: Still waiting for async results ...'
-                    echohl NONE
-                    return
-                else
-                    let s:async_pending = {}
-                endif
-            endif
+            " if !empty(s:async_pending)
+            "     if !a:manually && async
+            "         echohl WarningMsg
+            "         echo 'CheckSyntax: Still waiting for async results ...'
+            "         echohl NONE
+            "         return
+            "     else
+            "         let s:async_pending = {}
+            "     endif
+            " endif
             let props = {
                         \ 'bg': bg,
                         \ 'bufnr': bufnr('%'),
@@ -804,21 +833,13 @@ function! checksyntax#Check(manually, ...) abort
                         \ 'altname': expand('#'),
                         \ 'manually': a:manually,
                         \ }
-            if exists('*win_getid')
-                let props.win_id = win_getid()
-                let props.win_gotoid = function('win_gotoid')
-                let props.win_getid = function('win_getid')
-            elseif exists('g:loaded_tlib') && g:loaded_tlib >= 123
-                let props.win_id = tlib#win#GetID()
-                let props.win_gotoid = function('tlib#win#GotoID')
-                let props.win_getid = function('tlib#win#GetID')
-            endif
-            call g:checksyntax#issues.Reset()
-            " call checksyntax#Debug(string(defs.make_defs))
             for [name, make_def] in items(defs.make_defs)
                 call checksyntax#Debug('run '. name .' (async='. async .')')
                 Tlibtrace 'checksyntax', name, make_def, async
                 let make_def1 = copy(make_def)
+                let type = get(make_def1, 'listtype', 'loc')
+                let make_def1 = extend(make_def1, s:prototypes[type], 'keep')
+                let make_def1.issues = type ==# 'loc' ? buffer_issues : global_issues
                 let done = 0
                 if async
                     call extend(make_def1, props)
@@ -839,7 +860,8 @@ function! checksyntax#Check(manually, ...) abort
     finally
         let s:run_alternatives_all = 0
         if will_display
-            call g:checksyntax#issues.Display(a:manually, bg)
+            call global_issues.Display(a:manually, bg)
+            call buffer_issues.Display(a:manually, bg)
         endif
     endtry
     redraw!
@@ -941,7 +963,12 @@ function! s:WithCompiler(compiler, exec, default) abort "{{{3
                 exec 'compiler' c
                 Tlibtrace 'checksyntax', &makeprg
                 if !empty(&makeprg)
-                    exec a:exec
+                    if has_key(a:exec, 'call')
+                        call call(a:exec.call, [])
+                    endif
+                    if has_key(a:exec, 'return')
+                        return call(a:exec.return, [])
+                    endif
                 endif
                 break
             endif
@@ -973,7 +1000,7 @@ function! s:RunSyncChecker(filetype, make_def) abort
             " <+TODO+> Use s:ExtractCompilerParams and run s:RunSyncWithEFM
             let args = get(a:make_def, 'compiler_args', '%')
             let rv = s:WithCompiler(a:make_def.compiler,
-                        \ 'call g:checksyntax#prototypes[type].Make('. string(args) .')',
+                        \ {'call': function(a:make_def.Make, [args])},
                         \ 1)
         else
             let rv = s:RunSyncWithEFM(a:make_def)
@@ -1011,7 +1038,7 @@ function! s:Run_async(make_def) abort "{{{3
         endif
     elseif has_key(make_def, 'compiler')
         let compiler_def = s:WithCompiler(make_def.compiler,
-                    \ 'return s:ExtractCompilerParams('. string(a:make_def) .', "")',
+                    \ {'return': function('s:ExtractCompilerParams', [a:make_def, ''])},
                     \ {})
         Tlibtrace 'checksyntax', compiler_def
         if !empty(compiler_def)
@@ -1025,6 +1052,7 @@ function! s:Run_async(make_def) abort "{{{3
             let cmd = s:NativeCmd(cmd)
             Tlibtrace 'checksyntax', cmd
             let rv = checksyntax#async#{g:checksyntax#async_runner}#Run(cmd, make_def)
+            call a:make_def.issues.WaitFor(a:make_def)
             call checksyntax#AddJob(make_def)
             return rv
         catch /^Vim\%((\a\+)\)\=:E117/
@@ -1106,30 +1134,33 @@ function! s:ExtractCompilerParams(make_def, args, ...) abort "{{{3
 endf
 
 
-let s:status_expr = '"PendingChecks=".checksyntax#Status()'
+let s:status_expr = '"Checks=".checksyntax#Status()'
 
 function! checksyntax#AddJob(make_def) abort "{{{3
+    Tlibtrace 'checksyntax', a:make_def.job_id
     let s:async_pending[a:make_def.job_id] = a:make_def
-    call checksyntax#SetStatusMessage()
+    " call checksyntax#SetStatusMessage()
     if exists('g:tstatus_exprs')
         if index(g:tstatus_exprs, s:status_expr) == -1
             call add(g:tstatus_exprs, s:status_expr)
         endif
+        call TStatusForceUpdate()
     endif
 endf
 
 
 function! checksyntax#RemoveJob(job_id) abort "{{{3
+    Tlibtrace 'checksyntax', a:job_id
     let rv = has_key(s:async_pending, a:job_id)
     if rv
         call remove(s:async_pending, a:job_id)
-        call checksyntax#SetStatusMessage()
+        " call checksyntax#SetStatusMessage()
         if empty(s:async_pending) && exists('g:tstatus_exprs')
             let idx = index(g:tstatus_exprs, s:status_expr)
             if idx != -1
                 call remove(g:tstatus_exprs, idx)
-                call TStatusForceUpdate()
             endif
+            call TStatusForceUpdate()
         endif
     endif
     return rv ? len(s:async_pending) : -1
@@ -1141,14 +1172,19 @@ function! checksyntax#Status() abort "{{{3
 endf
 
 
-function! checksyntax#SetStatusMessage() abort "{{{3
-    let pending = checksyntax#Status()
-    if pending > 0
-        let g:checksyntax_status = pending
-    elseif exists('g:checksyntax_status')
-        unlet g:checksyntax_status
-    endif
-endf
+" function! checksyntax#SetStatusMessage() abort "{{{3
+"     let pending = checksyntax#Status()
+"     if pending > 0
+"         let g:checksyntax_status = pending
+"     elseif exists('g:checksyntax_status')
+"         unlet g:checksyntax_status
+"     endif
+" endf
+
+
+" if exists(':TStatusregister') == 2
+"     TStatusregister g:checksyntax_status=Checks
+" endif
 
 
 function! s:Run_sync(name, filetype, make_def) abort "{{{3
@@ -1163,7 +1199,7 @@ function! s:Run_sync(name, filetype, make_def) abort "{{{3
     exec get(make_def, 'prepare', '')
     if s:RunSyncChecker(a:filetype, make_def)
         let type = get(make_def, 'listtype', 'loc')
-        call g:checksyntax#issues.AddList(a:name, make_def, type)
+        call make_def.issues.AddList(a:name, make_def, type)
         return 1
     else
         return 0
@@ -1173,7 +1209,7 @@ endf
 
 function! checksyntax#GetList(name, make_def, type) abort "{{{3
     Tlibtrace 'checksyntax', a:type
-    let list = g:checksyntax#prototypes[a:type].Get()
+    let list = a:make_def.Get()
     Tlibtrace 'checksyntax', list
     Tlibtrace 'checksyntax', 1, len(list), has_key(a:make_def, 'process_list')
     if !empty(list) && has_key(a:make_def, 'process_list')
@@ -1300,8 +1336,4 @@ function! checksyntax#SetupSyntax(syntax) abort "{{{3
     endfor
 endf
 
-
-" if exists(':TStatusregister') == 2
-"     TStatusregister g:checksyntax_status=PendingChecks
-" endif
 

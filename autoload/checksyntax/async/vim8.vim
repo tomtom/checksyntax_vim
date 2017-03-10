@@ -1,6 +1,6 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    134
+" @Revision:    145
 
 
 let s:prototype = {'in_mode': 'nl', 'out_mode': 'nl', 'err_mode': 'nl'}
@@ -20,27 +20,21 @@ endf
 
 
 function! s:Exit_cb(job, status) abort dict "{{{3
-    Tlibtrace 'checksyntax', a:job, a:status
-    let jobs = checksyntax#RemoveJob(self.job_id)
-    Tlibtrace 'checksyntax', jobs
-    call checksyntax#Debug('vim8 exit: '. jobs)
-    if jobs != -1
-        let errorformat = &errorformat
-        try
-            Tlibtrace 'checksyntax', self.async_type, self.bufnr, bufnr('%')
-            if self.async_type != 'loc' || self.bufnr == bufnr('%')
-                let &errorformat = self.async_efm
-                Tlibtrace 'checksyntax', &errorformat
-                call checksyntax#Debug('vim8 &errorformat='. &errorformat, 2)
-                exec self.async_cmd 'self.lines'
-                let list = g:checksyntax#issues.AddList(self.name, self, self.async_type)
-                call checksyntax#Debug(printf('Processing %s (%s items)', self.name, len(list)))
-                call g:checksyntax#issues.Done(jobs, self)
-            endif
-        finally
-            let &errorformat = errorformat
-        endtry
-    endif
+    Tlibtrace 'checksyntax', a:job, a:status, self.job_id
+    call checksyntax#Debug('vim8 exit: '. self.job_id)
+    let errorformat = &errorformat
+    try
+        Tlibtrace 'checksyntax', self.async_type, self.bufnr, bufnr('%')
+        if self.async_type !=# 'loc' || self.bufnr == bufnr('%')
+            let &errorformat = self.async_efm
+            Tlibtrace 'checksyntax', &errorformat
+            call checksyntax#Debug('vim8 &errorformat='. &errorformat, 2)
+            exec self.async_cmd 'self.lines'
+            call self.issues.Done(self)
+        endif
+    finally
+        let &errorformat = errorformat
+    endtry
 endf
 
 
@@ -49,14 +43,14 @@ function! checksyntax#async#vim8#New(ext) abort "{{{3
     return o
 endf
 
-function! checksyntax#async#vim8#Run(cmd, make_def) "{{{3
+function! checksyntax#async#vim8#Run(cmd, make_def) abort "{{{3
     Tlibtrace 'checksyntax', a:cmd
     Tlibtrace 'checksyntax', a:make_def
     Tlibtrace 'checksyntax', getcwd()
     let make_def = a:make_def
     let make_def.lines = []
     let type = get(a:make_def, 'listtype', 'loc')
-    let make_def.async_cmd = type == 'loc' ? 'lgetexpr' : 'cgetexpr'
+    let make_def.async_cmd = type ==# 'loc' ? 'lgetexpr' : 'cgetexpr'
     let make_def.async_type = type
     let make_def.async_efm = checksyntax#GetMakerParam(a:make_def, 'vim8', 'efm', &errorformat)
     let opts = checksyntax#async#vim8#New({})
