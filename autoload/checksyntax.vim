@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    1595
+" @Revision:    1596
 
 if exists(':Tlibtrace') != 2
     command! -nargs=+ -bang Tlibtrace :
@@ -453,10 +453,11 @@ endf
 function! checksyntax#GetChecker(filetype, ...) abort "{{{3
     call checksyntax#Require(a:filetype)
     let alts = get(get(s:checkers, a:filetype, {}), 'alternatives', {})
-    if a:0 == 0
+    let name_rx = a:0 >= 1 ? a:1 : ''
+    if empty(name_rx)
         return values(alts)
     else
-        return values(filter(copy(alts), 'index(a:000, v:key) != -1'))
+        return values(filter(copy(alts), 'v:val.name =~# name_rx'))
     endif
 endf
 
