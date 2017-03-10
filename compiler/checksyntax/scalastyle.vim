@@ -2,7 +2,7 @@
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2017-03-07.
 " @Last Change: 2017-03-10.
-" @Revision:    22
+" @Revision:    23
 
 let s:cpo_save = &cpo
 set cpo&vim
@@ -24,19 +24,21 @@ if !exists('g:checksyntax_scalastyle_cmd')
 endif
 
 
-function! CheckSyntaxScalaStyleCmd() abort "{{{3
-    let build = findfile('build.sbt', '.;')
-    if !empty(build)
-        let config = fnamemodify(build, ':h') .'/scalastyle-config.xml'
-        if filereadable(config)
-            return 'sbt scalastyle'
+if !exists('*CheckSyntaxScalaStyleCmd')
+    function! CheckSyntaxScalaStyleCmd() abort "{{{3
+        let build = findfile('build.sbt', '.;')
+        if !empty(build)
+            let config = fnamemodify(build, ':h') .'/scalastyle-config.xml'
+            if filereadable(config)
+                return 'sbt scalastyle'
+            endif
         endif
-    endif
-    if !empty(g:checksyntax_scalastyle_cmd)
-        return g:checksyntax_scalastyle_cmd .' %'
-    endif
-    return ''
-endf
+        if !empty(g:checksyntax_scalastyle_cmd)
+            return g:checksyntax_scalastyle_cmd .' %'
+        endif
+        return ''
+    endf
+endif
 
 exec 'CompilerSet makeprg='. escape(CheckSyntaxScalaStyleCmd(), ' \')
 CompilerSet errorformat=%t%\\\\S%\\\\+\ file=%f\ message=%m\ line=%l\ column=%c
