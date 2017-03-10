@@ -1,7 +1,8 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    25
+" @Revision:    26
 
+scriptencoding utf-8
 
 if !exists('g:checksyntax#defs#php#cmd')
     let g:checksyntax#defs#php#cmd = 'php'   "{{{2
