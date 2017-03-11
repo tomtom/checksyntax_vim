@@ -1,6 +1,6 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    44
+" @Revision:    45
 
 
 if !exists('g:checksyntax#defs#rust#args')
@@ -24,7 +24,6 @@ call checksyntax#AddChecker('rust?',
             \   {
             \     'cmdexpr': 'checksyntax#defs#rust#GuessCmd()',
             \     'efm': '%f:%l:%c: %m',
-            \     'convert_filename': checksyntax#MaybeUseCygpath('rustc'),
             \   },
             \ )
 
