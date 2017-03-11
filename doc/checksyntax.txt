@@ -39,26 +39,24 @@ Supported filetypes~
 The syntax checks are performed by external syntax checker. This software has 
 to be installed on your computer. Pre-defined syntax checkers are:
 
-  bash         ... Use shellcheck, bash -n
-  c, cpp       ... Use splint
+  bash         ... shellcheck, bash -n
+  c, cpp       ... splint
   haskell      ... hlint, ghc-mod-check
-  html         ... Use tidy
-  java         ... Use
-                    jlint (http://jlint.sourceforge.net),
-                    checkstyle (http://checkstyle.sourceforge.net),
-                    pmd (http://pmd.sourceforge.net)
-  javascript   ... Use jshint, esprima, gjslint, jslint, jsl, pmd
-  lua          ... Use luac (run luac -p)
-  perl         ... Use perl (run perl -Wc)
-  php          ... Use php (run php -l)
-  python       ... Use pyflakes or pylint
-  r            ... Use lintr
-  ruby         ... Use ruby (run ruby -c)
-  tex, latex   ... Use chktex (run chktex -q -v0)
-  typescript   ... Use tsc
-  viki         ... Use deplate
-  xhtml        ... Use tidy
-  xml, docbk   ... Use xmllint, pmd
+  html         ... tidy
+  java         ... jlint, checkstyle, pmd
+  javascript   ... jshint, esprima, gjslint, jslint, jsl, pmd
+  lua          ... luac (run luac -p)
+  perl         ... perl (run perl -Wc)
+  php          ... php (run php -l)
+  python       ... pyflakes or pylint
+  r            ... lintr
+  ruby         ... ruby (run ruby -c)
+  tex, latex   ... chktex (run chktex -q -v0)
+  typescript   ... tsc
+  viki         ... deplate
+  vim          ... vint
+  xhtml        ... tidy
+  xml, docbk   ... xmllint, pmd
 
 Syntax checker definitions are kept in:
 autoload/checksyntax/defs/{&filetype}.vim
@@ -70,17 +68,23 @@ Run this command to find out, which filetypes are supported: >
 
 Trouble shooting~
 
-If the checksyntax plugin doesn't seem to work, please proceed as follows:
+It's possible that a newer version of a linter changes its command-line 
+arguments or the output format in a way that breaks the checksyntax plugin. 
+Since I personally use only a small subset of the provided checkers, it's 
+likely that I won't notice the problem. If the checksyntax plugin doesn't seem 
+to work, please proceed as follows:
 
 1. Check if the errorformat is correctly defined. Look at either:
     - `autoload/checksyntax/defs/LINTER.vim` or
     - `compiler/checksyntax/LINTER.vim`.
-   If the linter is defined as a compiler, you can also try to manually invoke 
-   the compiler: >
+   If the linter is defined as a compiler, you can try to invoke the compiler 
+   manually: >
      compiler checksyntax/LINTER
      lmake
+
 2. Use `:let g:checksyntax#debug = 2` to get a high level view of what is going 
    on when you invoke |:CheckSyntax|.
+
 3. Install the tlib plugin (vimscript #1863 or 
    https://github.com/tomtom/tlib_vim) and try: >
      :Tlibtraceset --file=checksyntax.log +checksyntax
