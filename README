@@ -24,10 +24,11 @@ for a given filetype and if the software is installed on your computer.
 
 Automatic invocation:
 In order to automatically run a syntax check when saving a file, please set 
-|g:checksyntax#auto_enable_rx| to an appropriate value. If the variable is set 
-to '.', which matches all filetypes, automatic syntax checks are enabled for 
-all supported filetypes. Automatic checks are equivalent to running 
-|:CheckSyntax| with no <bang>.
+|g:checksyntax#auto_filetypes| or |g:checksyntax#auto_enable_rx| to an 
+appropriate value. If |g:checksyntax#auto_enable_rx| is set to '.', which 
+matches all filetypes, automatic syntax checks are enabled for all supported 
+filetypes. Automatic checks are equivalent to running |:CheckSyntax| with no 
+<bang>.
 
 
 Supported filetypes~
