@@ -52,8 +52,7 @@ to be installed on your computer. Pre-defined syntax checkers are:
   perl         ... Use perl (run perl -Wc)
   php          ... Use php (run php -l)
   python       ... Use pyflakes or pylint
-  r            ... Use codetools::checkUsage, lint::lint, or 
-                   svTools::lint
+  r            ... Use lintr
   ruby         ... Use ruby (run ruby -c)
   tex, latex   ... Use chktex (run chktex -q -v0)
   typescript   ... Use tsc
