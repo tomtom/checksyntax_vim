@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    1668
+" @Revision:    1671
 
 if exists(':Tlibtrace') != 2
     command! -nargs=+ -bang Tlibtrace :
@@ -756,7 +756,7 @@ function! s:issues.Done(make_def) dict abort "{{{3
     endif
     let list = self.AddList(a:make_def.name, a:make_def, a:make_def.async_type)
     Tlibtrace 'checksyntax2', list
-    Tlibtrace 'checksyntax', self.name, len(list)
+    Tlibtrace 'checksyntax', a:make_def.name, len(list)
     call checksyntax#Debug(printf('Processing %s (%s items)', a:make_def.name, len(list)))
     if empty(self.jobs)
         let bg = a:make_def.bg
@@ -798,7 +798,7 @@ function! checksyntax#Check(manually, ...) abort
     " let bg   = a:0 >= 3 && !empty(a:3)  && a:3 !=# '*' ? a:3 : 1
     let bg   = !a:manually || g:checksyntax#background
     let arg_preferred_rx = a:0 >= 3 && a:3 !=# '' ? a:3 : ''
-    Tlibtrace 'checksyntax', a:manually, bang, filetype, bg
+    Tlibtrace 'checksyntax', a:manually, bang, filetype, bg, arg_preferred_rx
     let s:run_alternatives_all = bang
     let wd = getcwd()
     let bd = expand('%:p:h')
@@ -841,6 +841,7 @@ function! checksyntax#Check(manually, ...) abort
                         \ 'altname': expand('#'),
                         \ 'manually': a:manually,
                         \ }
+            Tlibtrace 'checksyntax', keys(defs.make_defs)
             for [name, make_def] in items(defs.make_defs)
                 call checksyntax#Debug('run '. name .' (async='. async .')')
                 Tlibtrace 'checksyntax', name, make_def, async

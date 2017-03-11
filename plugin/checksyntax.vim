@@ -4,7 +4,7 @@
 " @Created:     04-Mai-2005.
 " @Last Change: 2017-03-11.
 " GetLatestVimScripts: 1431 0 :AutoInstall: checksyntax.vim
-" @Revision:    465
+" @Revision:    466
 
 if exists('g:loaded_checksyntax')
     finish
@@ -64,7 +64,7 @@ augroup CheckSyntax
     endif
     if exists('g:checksyntax_auto') && g:checksyntax_auto >= 2
         autocmd BufEnter * if !exists('b:checksyntax_runs') && !exists('s:vimleave')
-                    \ | call checksyntax#Check(0, 0, &ft, 1)
+                    \ | call checksyntax#Check(0, 0, &ft)
                     \ | endif
     endif
     autocmd Syntax * call checksyntax#SetupSyntax(expand('<amatch>'))
