@@ -85,7 +85,7 @@ If the checksyntax plugin doesn't seem to work, please proceed as follows:
    https://github.com/tomtom/tlib_vim) and try: >
      :Tlibtraceset --file=checksyntax.log +checksyntax
 <   Invoke |:CheckSyntax| and send me the resulting log file per e-mail. You 
-   can use `:CheckSyntax FILETYPE LINTER` to invoke a specific synax checker.
+   can use `:CheckSyntax FILETYPE LINTER` to invoke a specific syntax checker.
 
 
 -----------------------------------------------------------------------
