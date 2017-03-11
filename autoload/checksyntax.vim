@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    1660
+" @Revision:    1665
 
 if exists(':Tlibtrace') != 2
     command! -nargs=+ -bang Tlibtrace :
@@ -940,6 +940,19 @@ function! s:CompareIssues(i1, i2) abort "{{{3
 endf
 
 
+let s:compiler_params = {}
+
+function! s:GetCompilerParams(make_def) abort "{{{3
+    let compiler = a:make_def.compiler
+    if !has_key(s:compiler_params, compiler)
+        let s:compiler_params[compiler] = s:WithCompiler(compiler,
+                    \ {'return': function('s:ExtractCompilerParams', [a:make_def, ''])},
+                    \ {})
+    endif
+    return s:compiler_params[compiler]
+endf
+
+
 function! s:WithCompiler(compiler, exec, default) abort "{{{3
     Tlibtrace 'checksyntax', a:compiler, a:exec, a:default
     if exists('g:current_compiler')
@@ -1037,9 +1050,7 @@ function! s:Run_async(make_def) abort "{{{3
             let cmd .= ' '. escape(make_def.filename, '"''\ ')
         endif
     elseif has_key(make_def, 'compiler')
-        let compiler_def = s:WithCompiler(make_def.compiler,
-                    \ {'return': function('s:ExtractCompilerParams', [a:make_def, ''])},
-                    \ {})
+        let compiler_def = s:GetCompilerParams(make_def)
         Tlibtrace 'checksyntax', compiler_def
         if !empty(compiler_def)
             let cmd = compiler_def.cmd
