@@ -65,11 +65,23 @@ Run this command to find out, which filetypes are supported: >
   :echo globpath(&rtp, 'autoload/checksyntax/defs/*.vim')
 
 
-Credits:
+Trouble shooting~
 
-This plugin was originally based on Klaus Horsten's php_console 
-(vimscript #779) and it is the successor of php_check_syntax.vim 
-(vimscript #1272).
+If the checksyntax plugin doesn't seem to work, please proceed as follows:
+
+1. Check if the errorformat is correctly defined. Look at either:
+    - `autoload/checksyntax/defs/LINTER.vim` or
+    - `compiler/checksyntax/LINTER.vim`.
+   If the linter is defined as a compiler, you can also try to manually invoke 
+   the compiler: >
+     compiler checksyntax/LINTER
+     lmake
+2. Use `:let g:checksyntax#debug = 2` to get a high level view of what is going 
+   on when you invoke |:CheckSyntax|.
+3. Install the tlib plugin (vimscript #1863 or 
+   https://github.com/tomtom/tlib_vim) and try: >
+     :Tlibtraceset --file=checksyntax.log +checksyntax
+<   Invoke |:CheckSyntax| and send me the resulting log file per e-mail.
 
 
 -----------------------------------------------------------------------
