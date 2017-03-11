@@ -244,3 +244,65 @@ version: "4.03"
   - g:checksyntax_enable_syntax: disable by default
   MD5 checksum: 2870d7ccd62e1d7990665b07123c9da0
 
+version: "5.00"
+  - Renamed g:checksyntax_enable_syntax to g:checksyntax#enable_syntax (allow g:checksyntax#enable_syntax_{&ft}; g:checksyntax#enable_syntax_
+  - Trailing whitespace: Ignore before cursor position
+  - tabs: highlight tabs
+  - checkergen: JIT generation of checker definitions (e.g. multiple targets for haxe)
+  - FIX #20: missing comma in defs/lua.vim
+  - FIX #21: s:Open(): lines was undefined
+  - VimCheckSyntaxError: if =: ignore text after a "|" char
+  - s:Open(): redraw! after resize
+  - checksyntax#defs#haxe#Gen(): chxml is undefined if :HaxeCtags does not exist
+  - FIX #22: mention perl support in docs
+  - checksyntax#GetList(): Return only unique items
+  - async_handler.get: Set bg & manually
+  - Haskell: Support for hlint
+  - vim syntax: Highlight "else if"
+  - haskell: Support for ghc-mod check
+  - checksyntax#Check(): check if key "make_defs" exists
+  - Support for shellcheck
+  - Initial support for rust
+  - Scala: use fsc for basic checks
+  - Scala: use -Xlint
+  - FIX #24: Default value for g:checksyntax#async_runner
+  - Add flake8 for checking python syntax and fix a bug
+  - Simple definition for checking sourcode written in Google Go
+  - Merge pull request #26 from thorn1976/master
+  - s:GetDefsByFiletype(): Return {} if buffer was modified
+  - Duplicate helptags
+  - Merge pull request #25 from yan12125/master
+  - FIX #25: s:GetValidAlternatives(): correct handling of "first" option
+  - FIX #27: perl: Don't include -W flag
+  - checksyntax#Check(): preferred_rx as 3th optional argument
+  - checksyntax#RemoveJob(): Call TStatusForceUpdate() if necessary
+  - haxe: Support for checksyntax
+  - Add PHP_CodeSniffer checker for php.
+  - phpcs: Use correct autoload variable names
+  - php: Support for phpcs
+  - tstatus integration
+  - javascript: Updated gjslint definition
+  - Merge pull request #31 from machinshin/patch-1
+  - FIX javascript/gjslint efm
+  - Support for vim8 async jobs
+  - Updated r checker
+  - Misc improvments to async checks
+  - vim8: Revert callbacks
+  - Implemented some checkers as compilers for easier testing
+  - Run vint on autoload/checksyntax.vim, chktex.vim
+  - Support for vint (vim source files)
+  - Support for csslint
+  - Done(): How to handle loclists, when the buffer has changed?
+  - Re-implemented scala checkers to compilers
+  - checksyntax#GetChecker(): Optional is a regexp matching the names of eligible checkers
+  - php: scriptencoding
+  - r: Use ignore_rx
+  - scalastyle: Define CheckSyntaxScalaStyleCmd() only once
+  - Support for rmd (use r)
+  - Misc refactoring, edits
+  - Retrieve compiler parameters only once
+  - Re-Implemented more checkers as compilers; removed some if_executable and convert_filename entries (those should be automatically detected)
+  - :CheckSyntax, checksyntax#Check(): optional arguments have changed; background is set via g:checksyntax#background
+  - checksyntax#Check(): FIX optional arguments in autocommand
+  MD5 checksum: b346b86f808dc7ca3bc312103dd0d0be
+
