@@ -139,9 +139,12 @@ Contents~
         g:checksyntax#defs#haxe#use_checkstyle ................ |g:checksyntax#defs#haxe#use_checkstyle|
         g:checksyntax#defs#haxe#checkstyle_args ............... |g:checksyntax#defs#haxe#checkstyle_args|
         g:checksyntax#defs#javascript#closure ................. |g:checksyntax#defs#javascript#closure|
-        g:checksyntax#defs#php#args ........................... |g:checksyntax#defs#php#args|
-        g:checksyntax#defs#php#phpcs_args ..................... |g:checksyntax#defs#php#phpcs_args|
         g:checksyntax#pmd#cmd ................................. |g:checksyntax#pmd#cmd|
+        g:checksyntax_fsc_lint_stop_after ..................... |g:checksyntax_fsc_lint_stop_after|
+        g:checksyntax_php_lint_args ........................... |g:checksyntax_php_lint_args|
+        g:checksyntax_phpcs_cmd ............................... |g:checksyntax_phpcs_cmd|
+        g:checksyntax_phpcs_args .............................. |g:checksyntax_phpcs_args|
+        g:checksyntax_scalastyle_cmd .......................... |g:checksyntax_scalastyle_cmd|
 
 
 ------------------------------------------------------------------------
@@ -389,41 +392,6 @@ g:checksyntax#defs#javascript#closure (default: '')
 
 
 ------------------------------------------------------------------------
-                                                    *autoload/checksyntax/defs/php.vim*
-                                                    *g:checksyntax#defs#php#args*
-g:checksyntax#defs#php#args    (default: '-l -n -d display_errors=1 -d error_log= -d error_reporting=E_ALL')
-    Displaying errors for php files is surprisingly fragile since it 
-    depends on the php version and the php.ini file. If you get 
-    duplicate errors or no errors at all, change the command-line 
-    arguments defined with this variable. Please consider the 
-    information kindly collected by Björn Oelke:
-
-      Somehow the values in the php.ini and those passed via '--define' 
-      seem to be independent, so either value in checksyntax' def file 
-      seems to be a problem with one of the possible values in the 
-      php.ini:
-
-      | cmd | php.ini | Errors |
-      +-----+---------+--------+
-      | 1   | On      | 2      |
-      | 0   | On      | 1      |
-      | 1   | Off     | 1      |
-      | 0   | Off     | 0      |
-
-      There's an additional flag in the manpage called '--no-php-ini', 
-      that could solve the problem.
-
-    You can run `php -i | grep display_errors` to find out if 
-    display_errors is On because of the php.ini. By default, the 
-    setting in php.ini is ignored ("-n" command-line flag).
-
-                                                    *g:checksyntax#defs#php#phpcs_args*
-g:checksyntax#defs#php#phpcs_args (default: '')
-    For passing arguments into phpcs. Can be used to set options such 
-    as '--standard=PSR2 --ignore=foo.php'
-
-
-------------------------------------------------------------------------
                                                     *autoload/checksyntax/defs/r.vim*
 
 Syntax checkers for R:
@@ -461,6 +429,63 @@ Setting |g:checksyntax_enable_syntax| enables the following checks:
   (like `g:foo`). Otherwise it was an error anyway.
 - Variables with scope (|g:|, |l:|, |a:var| etc.) in function 
   argument position
+
+
+------------------------------------------------------------------------
+                                                    *compiler/checksyntax/fsc_lint.vim*
+                                                    *g:checksyntax_fsc_lint_stop_after*
+g:checksyntax_fsc_lint_stop_after (default: 'cleanup')
+    See `scalac -Xshow-phases` for possible values.
+
+
+------------------------------------------------------------------------
+                                                    *compiler/checksyntax/php_lint.vim*
+                                                    *g:checksyntax_php_lint_args*
+g:checksyntax_php_lint_args    (default: '-l -n -d display_errors=1 -d error_log= -d error_reporting=E_ALL')
+    Displaying errors for php files is surprisingly fragile since it 
+    depends on the php version and the php.ini file. If you get 
+    duplicate errors or no errors at all, change the command-line 
+    arguments defined with this variable. Please consider the 
+    information kindly collected by Björn Oelke:
+
+      Somehow the values in the php.ini and those passed via '--define' 
+      seem to be independent, so either value in checksyntax' def file 
+      seems to be a problem with one of the possible values in the 
+      php.ini:
+
+      | cmd | php.ini | Errors |
+      +-----+---------+--------+
+      | 1   | On      | 2      |
+      | 0   | On      | 1      |
+      | 1   | Off     | 1      |
+      | 0   | Off     | 0      |
+
+      There's an additional flag in the manpage called '--no-php-ini', 
+      that could solve the problem.
+
+    You can run `php -i | grep display_errors` to find out if 
+    display_errors is On because of the php.ini. By default, the 
+    setting in php.ini is ignored ("-n" command-line flag).
+
+
+------------------------------------------------------------------------
+                                                    *compiler/checksyntax/phpcs.vim*
+                                                    *g:checksyntax_phpcs_cmd*
+g:checksyntax_phpcs_cmd        (default: 'phpcs')
+    The phpcs command.
+
+                                                    *g:checksyntax_phpcs_args*
+g:checksyntax_phpcs_args       (default: '')
+    For passing arguments into phpcs. Can be used to set options such 
+    as '--standard=PSR2 --ignore=foo.php'
+
+
+------------------------------------------------------------------------
+                                                    *compiler/checksyntax/scalastyle.vim*
+                                                    *g:checksyntax_scalastyle_cmd*
+g:checksyntax_scalastyle_cmd   (default: '')
+    The command to invoke scalastyle -- see http://www.scalastyle.org 
+    and especially http://www.scalastyle.org/command-line.html
 
 
 
