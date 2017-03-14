@@ -1,6 +1,6 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    151
+" @Revision:    152
 
 
 let s:prototype = {'in_mode': 'nl', 'out_mode': 'nl', 'err_mode': 'nl'}
@@ -15,7 +15,9 @@ endf
 
 function! s:Err_cb(ch, msg) abort "{{{3
     Tlibtrace 'checksyntax', a:msg
-    echoerr a:msg
+    echohl ErrorMsg
+    echom a:msg
+    echohl NONE
 endf
 
 

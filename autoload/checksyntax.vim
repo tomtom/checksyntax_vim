@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    1697
+" @Revision:    1698
 
 if exists(':Tlibtrace') != 2
     command! -nargs=+ -bang Tlibtrace :
@@ -589,8 +589,8 @@ function! checksyntax#Require(filetype) abort "{{{3
     if empty(a:filetype)
         return 0
     else
-        if a:filetype !=# 'general' && !has_key(s:loaded_checkers, 'general')
-            call checksyntax#Require('general')
+        if a:filetype !=# '__common__' && !has_key(s:loaded_checkers, '__common__')
+            call checksyntax#Require('__common__')
         endif
         if !has_key(s:loaded_checkers, a:filetype)
             exec 'runtime! autoload/checksyntax/defs/'. a:filetype .'.vim'
