@@ -1,6 +1,6 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    82
+" @Revision:    85
 
 
 let s:async_handler = {}
@@ -21,7 +21,8 @@ function! s:async_handler.get(temp_file_name) dict abort
             " let lines = readfile(a:temp_file_name) " DBG
             " Tlibtrace 'checksyntax', lines
             " echom "DBG" self.async_getexpr a:temp_file_name
-            exec self.async_getexpr a:temp_file_name
+            let lines = readfile(a:temp_file_name)
+            exec self.async_getexpr self.WrapGetExpr('lines')
             call self.issues.Done(self)
         endif
     finally
@@ -34,7 +35,7 @@ function! s:AsyncCommandHandler(make_def) abort
     Tlibtrace 'checksyntax', a:make_def
     let type = get(a:make_def, 'listtype', 'loc')
     let async_handler = {
-                \ 'async_getexpr': type ==# 'loc' ? 'lgetfile' : 'cgetfile',
+                \ 'async_getexpr': type ==# 'loc' ? 'lgetexpr' : 'cgetexpr',
                 \ 'async_type': type,
                 \ 'async_efm': get(a:make_def, 'efm', &errorformat),
                 \ }

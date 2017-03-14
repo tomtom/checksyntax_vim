@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    1687
+" @Revision:    1697
 
 if exists(':Tlibtrace') != 2
     command! -nargs=+ -bang Tlibtrace :
@@ -254,14 +254,10 @@ if !exists('*CheckSyntaxFail')
 endif
 
 
-if !exists('s:prototypes')
-    " Contains prototype definitions for syntax checkers that use the 
-    " |location-list| ("loc") or the |quixfix|-list.
-    let s:prototypes = {'loc': {}, 'qfl': {}} "{{{2
-endif
+let s:prototype_base = {}
 
 
-function! s:Open(bg, type, obj) abort "{{{3
+function! s:prototype_base.OpenList(bg, type) abort dict "{{{3
     let cmd = get(g:checksyntax#show_cmd, a:type, '')
     Tlibtrace 'checksyntax', a:bg, a:type, cmd
     if !empty(cmd)
@@ -288,63 +284,7 @@ function! s:Open(bg, type, obj) abort "{{{3
 endf
 
 
-if empty(s:prototypes.loc)
-    function! s:prototypes.loc.Close() abort dict "{{{3
-        lclose
-    endf
-
-    function! s:prototypes.loc.Open(bg) abort dict "{{{3
-        call s:Open(a:bg, 'loc', self)
-    endf
-
-    function! s:prototypes.loc.GetExpr(args) abort dict "{{{3
-        " TLogDBG system(a:args)
-        return s:RunCmd(get(self, 'getexpr', 'lgetexpr'), 'system('. string(a:args). ')')
-    endf
-
-    function! s:prototypes.loc.Make(args) abort dict "{{{3
-        return s:RunCmd('lmake!', a:args)
-    endf
-
-    function! s:prototypes.loc.Get() abort dict "{{{3
-        return copy(getloclist(0))
-    endf
-
-    function! s:prototypes.loc.Set(list) abort dict "{{{3
-        call setloclist(0, a:list)
-    endf
-endif
-
-
-if empty(s:prototypes.qfl)
-    function! s:prototypes.qfl.Close() abort dict "{{{3
-        cclose
-    endf
-
-    function! s:prototypes.qfl.Open(bg) abort dict "{{{3
-        call s:Open(a:bg, 'qfl', self)
-    endf
-
-    function! s:prototypes.qfl.GetExpr(args) abort dict "{{{3
-        " TLogDBG system(a:args)
-        return s:RunCmd(get(self, 'getexpr', 'cgetexpr'), 'system('. string(a:args). ')')
-    endf
-
-    function! s:prototypes.qfl.Make(args) abort dict "{{{3
-        return s:RunCmd('make!', a:args)
-    endf
-
-    function! s:prototypes.qfl.Get() abort dict "{{{3
-        return copy(getqflist())
-    endf
-
-    function! s:prototypes.qfl.Set(list) abort dict "{{{3
-        call setqflist(a:list)
-    endf
-endif
-
-
-function! s:RunCmd(cmd, args) abort "{{{3
+function! s:prototype_base.RunCmd(cmd, args) abort dict "{{{3
     try
         Tlibtrace 'checksyntax', a:cmd, a:args, &efm
         exec 'silent' a:cmd a:args
@@ -355,6 +295,84 @@ function! s:RunCmd(cmd, args) abort "{{{3
         echohl NONE
         return 0
     endtry
+endf
+
+
+function! s:prototype_base.WrapGetExpr(getexpr) abort dict "{{{3
+    if has_key(self, 'preprocess_output')
+        return printf('call(self.preprocess_output, [%s])', a:getexpr)
+    else
+        return a:getexpr
+    endif
+endf
+
+
+let s:prototypes = {
+            \ 'loc': copy(s:prototype_base),
+            \ 'qfl': copy(s:prototype_base)}
+
+
+function! s:prototypes.loc.Close() abort dict "{{{3
+    lclose
+endf
+
+
+function! s:prototypes.loc.Open(bg) abort dict "{{{3
+    call self.OpenList(a:bg, 'loc')
+endf
+
+
+function! s:prototypes.loc.GetExpr(args) abort dict "{{{3
+    " TLogDBG system(a:args)
+    let check = self.WrapGetExpr('system('. string(a:args). ')')
+    return self.RunCmd(get(self, 'getexpr', 'lgetexpr'), check)
+endf
+
+
+function! s:prototypes.loc.Make(args) abort dict "{{{3
+    return self.RunCmd('lmake!', a:args)
+endf
+
+
+function! s:prototypes.loc.Get() abort dict "{{{3
+    return copy(getloclist(0))
+endf
+
+
+function! s:prototypes.loc.Set(list) abort dict "{{{3
+    call setloclist(0, a:list)
+endf
+
+
+function! s:prototypes.qfl.Close() abort dict "{{{3
+    cclose
+endf
+
+
+function! s:prototypes.qfl.Open(bg) abort dict "{{{3
+    call self.OpenList(a:bg, 'qfl')
+endf
+
+
+function! s:prototypes.qfl.GetExpr(args) abort dict "{{{3
+    " TLogDBG system(a:args)
+    let check = self.WrapGetExpr('system('. string(a:args). ')')
+    return self.RunCmd(get(self, 'getexpr', 'cgetexpr'), check)
+endf
+
+
+function! s:prototypes.qfl.Make(args) abort dict "{{{3
+    return self.RunCmd('make!', a:args)
+endf
+
+
+function! s:prototypes.qfl.Get() abort dict "{{{3
+    return copy(getqflist())
+endf
+
+
+function! s:prototypes.qfl.Set(list) abort dict "{{{3
+    call setqflist(a:list)
 endf
 
 

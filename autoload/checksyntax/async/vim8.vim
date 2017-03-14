@@ -1,6 +1,6 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    148
+" @Revision:    151
 
 
 let s:prototype = {'in_mode': 'nl', 'out_mode': 'nl', 'err_mode': 'nl'}
@@ -29,7 +29,7 @@ function! s:Exit_cb(job, status) abort dict "{{{3
             let &errorformat = self.async_efm
             Tlibtrace 'checksyntax', &errorformat
             call checksyntax#Debug('vim8 &errorformat='. &errorformat, 2)
-            exec self.async_getexpr 'self.lines'
+            exec self.async_getexpr self.WrapGetExpr('self.lines')
             call self.issues.Done(self)
         endif
     finally

@@ -1,6 +1,6 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    274
+" @Revision:    285
 
 
 if !exists('g:checksyntax#defs#general#coala_cmd')
@@ -15,18 +15,18 @@ if !empty(g:checksyntax#defs#general#coala_cmd)
     endif
 
 
-    function! checksyntax#defs#general#CoalaProcessList(list) abort "{{{3
-        let json = join(map(copy(a:list), 'v:val.text'))
+    function! checksyntax#defs#general#CoalaPreProcessOutput(lines) abort "{{{3
+        let json = join(a:lines)
         let items = json_decode(json)
         let issues = []
         for itemlist in values(items.results)
             for item in itemlist
                 for affected in item.affected_code
-                    let issue = {
-                                \ 'bufnr': 0,
-                                \ 'col': affected.start.column,
-                                \ 'lnum': affected.start.line,
-                                \ 'text': item.origin .': '. substitute(item.message, '\n', '|', 'g')}
+                    let issue = printf('%s:%d:%d: %s',
+                                \ affected.file,
+                                \ affected.start.line,
+                                \ affected.start.column,
+                                \ item.origin .': '. substitute(item.message, '\n', '|', 'g'))
                     call add(issues, issue)
                 endfor
             endfor
@@ -40,9 +40,9 @@ if !empty(g:checksyntax#defs#general#coala_cmd)
                 \     'name': 'coala',
                 \     'inject': g:checksyntax#defs#general#coala_filetypes,
                 \     'cmd': g:checksyntax#defs#general#coala_cmd,
-                \     'efm': '%m',
+                \     'efm': '%f:%l:%c: %m',
                 \     'if': '!empty(findfile(".coafile", ".;"))',
-                \     'process_list': function('checksyntax#defs#general#CoalaProcessList'),
+                \     'preprocess_output': function('checksyntax#defs#general#CoalaPreProcessOutput'),
                 \   }
                 \ )
 
