@@ -1,6 +1,6 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    81
+" @Revision:    82
 
 
 let s:async_handler = {}
@@ -17,11 +17,11 @@ function! s:async_handler.get(temp_file_name) dict abort
             Tlibtrace 'checksyntax', &errorformat
             call checksyntax#Debug('vim8 &errorformat='. &errorformat, 2)
             Tlibtrace 'checksyntax', self.async_efm
-            Tlibtrace 'checksyntax', self.async_cmd, a:temp_file_name
+            Tlibtrace 'checksyntax', self.async_getexpr, a:temp_file_name
             " let lines = readfile(a:temp_file_name) " DBG
             " Tlibtrace 'checksyntax', lines
-            " echom "DBG" self.async_cmd a:temp_file_name
-            exec self.async_cmd a:temp_file_name
+            " echom "DBG" self.async_getexpr a:temp_file_name
+            exec self.async_getexpr a:temp_file_name
             call self.issues.Done(self)
         endif
     finally
@@ -34,7 +34,7 @@ function! s:AsyncCommandHandler(make_def) abort
     Tlibtrace 'checksyntax', a:make_def
     let type = get(a:make_def, 'listtype', 'loc')
     let async_handler = {
-                \ 'async_cmd': type ==# 'loc' ? 'lgetfile' : 'cgetfile',
+                \ 'async_getexpr': type ==# 'loc' ? 'lgetfile' : 'cgetfile',
                 \ 'async_type': type,
                 \ 'async_efm': get(a:make_def, 'efm', &errorformat),
                 \ }

@@ -299,7 +299,7 @@ if empty(s:prototypes.loc)
 
     function! s:prototypes.loc.GetExpr(args) abort dict "{{{3
         " TLogDBG system(a:args)
-        return s:RunCmd('lgetexpr', 'system('. string(a:args). ')')
+        return s:RunCmd(get(self, 'getexpr', 'lgetexpr'), 'system('. string(a:args). ')')
     endf
 
     function! s:prototypes.loc.Make(args) abort dict "{{{3
@@ -327,7 +327,7 @@ if empty(s:prototypes.qfl)
 
     function! s:prototypes.qfl.GetExpr(args) abort dict "{{{3
         " TLogDBG system(a:args)
-        return s:RunCmd('cgetexpr', 'system('. string(a:args). ')')
+        return s:RunCmd(get(self, 'getexpr', 'cgetexpr'), 'system('. string(a:args). ')')
     endf
 
     function! s:prototypes.qfl.Make(args) abort dict "{{{3

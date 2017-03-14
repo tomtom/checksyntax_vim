@@ -1,6 +1,6 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    145
+" @Revision:    148
 
 
 let s:prototype = {'in_mode': 'nl', 'out_mode': 'nl', 'err_mode': 'nl'}
@@ -29,7 +29,7 @@ function! s:Exit_cb(job, status) abort dict "{{{3
             let &errorformat = self.async_efm
             Tlibtrace 'checksyntax', &errorformat
             call checksyntax#Debug('vim8 &errorformat='. &errorformat, 2)
-            exec self.async_cmd 'self.lines'
+            exec self.async_getexpr 'self.lines'
             call self.issues.Done(self)
         endif
     finally
@@ -50,13 +50,17 @@ function! checksyntax#async#vim8#Run(cmd, make_def) abort "{{{3
     let make_def = a:make_def
     let make_def.lines = []
     let type = get(a:make_def, 'listtype', 'loc')
-    let make_def.async_cmd = type ==# 'loc' ? 'lgetexpr' : 'cgetexpr'
+    let make_def.async_getexpr = checksyntax#GetMakerParam(a:make_def, 'vim8', 'getexpr', type ==# 'loc' ? 'lgetexpr' : 'cgetexpr')
     let make_def.async_type = type
     let make_def.async_efm = checksyntax#GetMakerParam(a:make_def, 'vim8', 'efm', &errorformat)
     let opts = checksyntax#async#vim8#New({})
-    let opts.callback = function('s:Out_cb', [], make_def)
-    " let opts.out_cb = function('s:Out_cb', [], make_def)
-    " let opts.err_cb = function('s:Err_cb', [], make_def)
+    let ecb = checksyntax#GetMakerParam(a:make_def, 'vim8', 'use_err_cb', 0)
+    if ecb
+        let opts.out_cb = function('s:Out_cb', [], make_def)
+        let opts.err_cb = function('s:Err_cb', [], make_def)
+    else
+        let opts.callback = function('s:Out_cb', [], make_def)
+    endif
     let opts.exit_cb = function('s:Exit_cb', [], make_def)
     call checksyntax#Debug('vim8 job: '. a:cmd)
     let job = job_start(a:cmd, opts)

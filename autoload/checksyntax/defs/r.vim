@@ -1,6 +1,6 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    204
+" @Revision:    220
 
 " :doc:
 " Syntax checkers for R:
@@ -37,9 +37,9 @@ call checksyntax#AddChecker('r?',
             \     'vim8': {
             \       'cmd': g:checksyntax#defs#r#progname .' '. printf(g:checksyntax#defs#r#options, ''),
             \       'input': ['lintr::lint(commandArgs(TRUE)); q()'],
+            \       'use_err_cb': 1,
             \     },
             \     'ignore_rx': g:checksyntax#defs#r#lintr_ignore_rx
             \   }
             \ )
-
 
