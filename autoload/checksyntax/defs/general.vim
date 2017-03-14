@@ -1,6 +1,6 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    287
+" @Revision:    288
 
 
 if !exists('g:checksyntax#defs#general#coala_cmd')
@@ -41,6 +41,7 @@ if !empty(g:checksyntax#defs#general#coala_cmd) && exists('*json_decode')
                 \     'inject': g:checksyntax#defs#general#coala_filetypes,
                 \     'cmd': g:checksyntax#defs#general#coala_cmd,
                 \     'efm': '%f:%l:%c: %m',
+                \     'use_err_cb': 1,
                 \     'if': '!empty(findfile(".coafile", ".;"))',
                 \     'preprocess_output': function('checksyntax#defs#general#CoalaPreProcessOutput'),
                 \   }
