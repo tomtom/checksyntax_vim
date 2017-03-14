@@ -157,7 +157,6 @@ Contents~
         g:checksyntax#check_cygpath ........................... |g:checksyntax#check_cygpath|
         CheckSyntaxSucceed .................................... |CheckSyntaxSucceed()|
         CheckSyntaxFail ....................................... |CheckSyntaxFail()|
-        s:prototypes .......................................... |s:prototypes|
         checksyntax#AddChecker ................................ |checksyntax#AddChecker()|
         checksyntax#Check ..................................... |checksyntax#Check()|
         checksyntax#MaybeUseCygpath ........................... |checksyntax#MaybeUseCygpath()|
@@ -329,11 +328,6 @@ CheckSyntaxSucceed(type, manually)
                                                     *CheckSyntaxFail()*
 CheckSyntaxFail(type, manually, bg)
     This function is called when a syntax error was found.
-
-                                                    *s:prototypes*
-s:prototypes                   (default: {'loc': {}, 'qfl': {}})
-    Contains prototype definitions for syntax checkers that use the 
-    |location-list| ("loc") or the |quixfix|-list.
 
                                                     *checksyntax#AddChecker()*
 checksyntax#AddChecker(filetype, ...)
