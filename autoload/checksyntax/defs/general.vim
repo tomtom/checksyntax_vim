@@ -1,6 +1,6 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    286
+" @Revision:    287
 
 
 if !exists('g:checksyntax#defs#general#coala_cmd')
@@ -8,7 +8,7 @@ if !exists('g:checksyntax#defs#general#coala_cmd')
 endif
 
 
-if !empty(g:checksyntax#defs#general#coala_cmd)
+if !empty(g:checksyntax#defs#general#coala_cmd) && exists('*json_decode')
 
     if !exists('g:checksyntax#defs#general#coala_filetypes')
         let g:checksyntax#defs#general#coala_filetypes = ['c', 'cpp', 'csharp', 'cmake', 'coffeescript', 'css', 'dart', 'fortran', 'go', 'haskell', 'html', 'java', 'javascript', 'jsp', 'tex', 'lua', 'markdown', 'perl', 'php', 'python', 'r', 'rst', 'ruby', 'scala', 'scss', 'sh', 'sql', 'swift', 'typescript', 'verilog', 'vhdl', 'vim', 'xml', 'yaml']   "{{{2
