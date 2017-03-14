@@ -1,8 +1,8 @@
 " @Author:      Tom Link (micathom AT gmail com)
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2017-03-07.
-" @Last Change: 2017-03-11.
-" @Revision:    24
+" @Last Change: 2017-03-13.
+" @Revision:    25
 
 let s:cpo_save = &cpo
 set cpo&vim
@@ -22,7 +22,7 @@ endif
 
 
 CompilerSet makeprg=ruby\ -c\ %
-if g:checksyntax_ruby_cmd =~ '\<jruby'
+if g:checksyntax_ruby_cmd =~# '\<jruby'
     CompilerSet errorformat=SyntaxError\ in\ %f:%l:%m
 else
     CompilerSet errorformat=

@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    1671
+" @Revision:    1687
 
 if exists(':Tlibtrace') != 2
     command! -nargs=+ -bang Tlibtrace :
@@ -421,7 +421,7 @@ function! checksyntax#AddChecker(filetype, ...) abort "{{{3
         if !has_key(s:checkers, filetype)
             let s:checkers[filetype] = {'alternatives': {}, 'order': []}
         endif
-        for make_def in alternatives
+        for make_def in alternatives + s:GetInjected(filetype)
             " Copy top_level_fields
             for upkey in s:top_level_fields
                 let [kupdate, key] = s:UpName(upkey)
@@ -431,6 +431,9 @@ function! checksyntax#AddChecker(filetype, ...) abort "{{{3
             endfor
             " If there are other fields, add make_def
             if !empty(make_def)
+                if has_key(make_def, 'inject')
+                    call s:Inject(make_def)
+                endif
                 if has_key(make_def, 'cmdexpr')
                     let make_def.cmd = eval(make_def.cmdexpr)
                 endif
@@ -453,6 +456,32 @@ function! checksyntax#AddChecker(filetype, ...) abort "{{{3
                 endif
             endif
         endfor
+    endif
+endf
+
+
+let s:inject = {}
+
+function! s:Inject(make_def) abort "{{{3
+    let make_def0 = copy(a:make_def)
+    for ft in remove(make_def0, 'inject')
+        if has_key(s:checkers, ft)
+            call checksyntax#AddChecker(ft, make_def0)
+        else
+            if !has_key(s:inject, ft)
+                let s:inject[ft] = []
+            endif
+            call add(s:inject[ft], make_def0)
+        endif
+    endfor
+endf
+
+
+function! s:GetInjected(filetype) abort "{{{3
+    if has_key(s:inject, a:filetype)
+        return remove(s:inject, a:filetype)
+    else
+        return []
     endif
 endf
 
@@ -542,6 +571,9 @@ function! checksyntax#Require(filetype) abort "{{{3
     if empty(a:filetype)
         return 0
     else
+        if a:filetype !=# 'general' && !has_key(s:loaded_checkers, 'general')
+            call checksyntax#Require('general')
+        endif
         if !has_key(s:loaded_checkers, a:filetype)
             exec 'runtime! autoload/checksyntax/defs/'. a:filetype .'.vim'
             let s:loaded_checkers[a:filetype] = 1
