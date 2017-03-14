@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    1698
+" @Revision:    1701
 
 if exists(':Tlibtrace') != 2
     command! -nargs=+ -bang Tlibtrace :
@@ -1326,7 +1326,7 @@ function! s:CompleteItem(name, make_def, val) abort "{{{3
     if !empty(a:name)
         let text = get(a:val, 'text', '')
         if !empty(text)
-            let a:val.text = a:name .': '. text
+            let a:val.text = printf('%s (%s)', text, a:name)
         endif
     endif
     Tlibtrace 'checksyntax', a:val
