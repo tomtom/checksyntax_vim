@@ -13,10 +13,10 @@ function! s:Out_cb(ch, msg) abort dict "{{{3
 endf
 
 
-function! s:Err_cb(ch, msg) abort "{{{3
+function! s:Err_cb(ch, msg) abort dict "{{{3
     Tlibtrace 'checksyntax', a:msg
     echohl ErrorMsg
-    echom a:msg
+    echom 'CheckSyntax' self.name .':' a:msg
     echohl NONE
 endf
 
