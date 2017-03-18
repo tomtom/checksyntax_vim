@@ -55,6 +55,14 @@ to be installed on your computer. Pre-defined syntax checkers are:
   xhtml        ... tidy
   xml, docbk   ... xmllint, pmd
 
+Checkers with support for many filetypes:
+
+  coala        ... c, cpp, csharp, cmake, coffeescript, css, dart, fortran, go, 
+                   haskell, html, java, javascript, jsp, tex, lua, markdown, 
+                   perl, php, python, r, rst, ruby, scala, scss, sh, sql, 
+                   swift, typescript, verilog, vhdl, vim, xml, yaml and maybe 
+                   others
+
 Syntax checker definitions are kept in:
 autoload/checksyntax/defs/{&filetype}.vim
 
