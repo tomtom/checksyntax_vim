@@ -1,6 +1,6 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    84
+" @Revision:    97
 
 " :doc:
 "                                                     *checksyntax_enable_syntax-vim*
@@ -35,6 +35,11 @@ syn match VimCheckSyntaxError /\%(^\||\)\s*fu\%[nction]!\?\s[^(]\+([^)]\{-}\<\w:
 
 syn match VimCheckSyntaxError /\<else\>\s\+\k\+/ containedin=ALLBUT,vimLineComment,vimString
 
+" Prefer ==# or ==? etc.
+syn match VimCheckSyntaxWarning /\s\zs[!=][=~]\ze\s*['"]/ containedin=ALLBUT,vimLineComment,vimString
+
+" Prefer single quotes
+" syn match VimCheckSyntaxWarning /"[^"]*"/ containedin=ALLBUT,vimLineComment,vimString,Constant,vimSynRegPat
 
 hi def link VimCheckSyntaxError CheckSyntaxError
 hi def link VimCheckSyntaxWarning CheckSyntaxWarning
