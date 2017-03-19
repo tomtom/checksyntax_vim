@@ -335,7 +335,12 @@ endf
 
 
 function! s:prototypes.loc.Get() abort dict "{{{3
-    return copy(getloclist(0))
+    let issues = copy(getloclist(0))
+    try
+        lolder
+    catch /^Vim\%((\a\+)\)\=:E380/
+    endtry
+    return issues
 endf
 
 
@@ -367,7 +372,12 @@ endf
 
 
 function! s:prototypes.qfl.Get() abort dict "{{{3
-    return copy(getqflist())
+    let issues = copy(getqflist())
+    try
+        colder
+    catch /^Vim\%((\a\+)\)\=:E380/
+    endtry
+    return issues
 endf
 
 
