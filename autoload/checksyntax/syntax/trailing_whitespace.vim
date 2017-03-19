@@ -1,10 +1,13 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    13
+" @Revision:    14
 
 
-" Trailing space
-syn match VimCheckSyntaxTrailingWhitespace /\s\+\%(\%#\)\@!$/ containedin=ALL
+if empty(&buftype)
 
-hi def link VimCheckSyntaxTrailingWhitespace CheckSyntaxWarning
+    " Trailing space
+    syn match VimCheckSyntaxTrailingWhitespace /\s\+\%(\%#\)\@!$/ containedin=ALL
 
+    hi def link VimCheckSyntaxTrailingWhitespace CheckSyntaxWarning
+
+endif
