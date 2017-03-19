@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    1720
+" @Revision:    1721
 
 if exists(':Tlibtrace') != 2
     command! -nargs=+ -bang Tlibtrace :
@@ -342,7 +342,7 @@ endf
 function! s:prototypes.loc.Get() abort dict "{{{3
     let issues = copy(getloclist(0))
     try
-        lolder
+        silent lolder
     catch /^Vim\%((\a\+)\)\=:E380/
     endtry
     return issues
@@ -379,7 +379,7 @@ endf
 function! s:prototypes.qfl.Get() abort dict "{{{3
     let issues = copy(getqflist())
     try
-        colder
+        silent colder
     catch /^Vim\%((\a\+)\)\=:E380/
     endtry
     return issues
