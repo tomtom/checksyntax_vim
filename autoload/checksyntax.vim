@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    1701
+" @Revision:    1720
 
 if exists(':Tlibtrace') != 2
     command! -nargs=+ -bang Tlibtrace :
@@ -50,17 +50,22 @@ if !exists('g:checksyntax#enable_syntax')
     "   let b:checksyntax_enable_syntax = ['trailing_whitespace']
     "
     " If you want to enable this for all file of filetype X, add this 
-    " line to in `after/syntax/X.vim` or use
+    " line to in `after/syntax/X.vim` or use >
     "
     "   let g:checksyntax#enable_syntax_X = ['trailing_whitespace']
-    let g:checksyntax#enable_syntax = []   "{{{2
+    let g:checksyntax#enable_syntax = ['vim']   "{{{2
+endif
+
+
+if !exists('g:checksyntax#syntax_allow_tabs')
+    let g:checksyntax#syntax_allow_tabs = ['help', 'make']   "{{{2
 endif
 
 
 if !exists('g:checksyntax#enable_syntax_')
     " A list of syntax checks (see |g:checksyntax#enable_syntax|) that 
     " should be enabled by default.
-    let g:checksyntax#enable_syntax_ = []   "{{{2
+    let g:checksyntax#enable_syntax_ = ['tabs', 'trailing_whitespace']   "{{{2
 endif
 
 
