@@ -1,6 +1,6 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    97
+" @Revision:    109
 
 " :doc:
 "                                                     *checksyntax_enable_syntax-vim*
@@ -8,7 +8,6 @@
 "
 " Setting |g:checksyntax_enable_syntax| enables the following checks:
 "
-" - Assignment in |:if| expression
 " - `else if` instead of |:elseif|
 " - Propably wrong arguments for |bufnr()| or |winnr()|
 " - Don't ignore/simplify the return value of |exists()| for cmdnames
@@ -19,7 +18,8 @@
 "   argument position
 
 
-syn match VimCheckSyntaxError /\%(^\||\)\s*\zs\<if\>\%('[^']*'\|"[^"]*"\|[^|]\)\{-}[^=!<>]=[^=~<>#?]/ containedin=ALLBUT,vimLineComment,vimString
+" syn match VimCheckSyntaxError /\%(^\||\)\s*\zs\<if\>\%('[^']*'\|"[^"]*"\|[^|]\)\{-}[^=!<>]=[^=~<>#?]/ containedin=ALLBUT,vimLineComment,vimString
+" syn match VimCheckSyntaxError /\%(\<let\s\+\k\+\s\{-}\)\@<![^=!<>]\zs=\ze[^=~<>#?[:space:]]/ containedin=ALLBUT,vimLineComment,vimString
 
 syn match VimCheckSyntaxError /\%(^\||\)\s*\zs\<\(els\|else \)if\>/ containedin=ALLBUT,vimLineComment,vimString
 
@@ -40,6 +40,7 @@ syn match VimCheckSyntaxWarning /\s\zs[!=][=~]\ze\s*['"]/ containedin=ALLBUT,vim
 
 " Prefer single quotes
 " syn match VimCheckSyntaxWarning /"[^"]*"/ containedin=ALLBUT,vimLineComment,vimString,Constant,vimSynRegPat
+
 
 hi def link VimCheckSyntaxError CheckSyntaxError
 hi def link VimCheckSyntaxWarning CheckSyntaxWarning
