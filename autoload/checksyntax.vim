@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    1721
+" @Revision:    1722
 
 if exists(':Tlibtrace') != 2
     command! -nargs=+ -bang Tlibtrace :
@@ -57,15 +57,10 @@ if !exists('g:checksyntax#enable_syntax')
 endif
 
 
-if !exists('g:checksyntax#syntax_allow_tabs')
-    let g:checksyntax#syntax_allow_tabs = ['help', 'make']   "{{{2
-endif
-
-
 if !exists('g:checksyntax#enable_syntax_')
     " A list of syntax checks (see |g:checksyntax#enable_syntax|) that 
     " should be enabled by default.
-    let g:checksyntax#enable_syntax_ = ['tabs', 'trailing_whitespace']   "{{{2
+    let g:checksyntax#enable_syntax_ = ['inconsistent_whitespace', 'trailing_whitespace']   "{{{2
 endif
 
 
