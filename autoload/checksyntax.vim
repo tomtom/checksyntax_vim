@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    1722
+" @Revision:    1741
 
 if exists(':Tlibtrace') != 2
     command! -nargs=+ -bang Tlibtrace :
@@ -236,6 +236,7 @@ endif
 if !exists('*CheckSyntaxSucceed')
     " This function is called when no syntax errors were found.
     function! CheckSyntaxSucceed(type, manually) abort dict
+        Tlibtrace 'checksyntax', a:type, a:manually
         call s:prototypes[a:type].Close()
         if a:manually
             echo
@@ -313,11 +314,13 @@ let s:prototypes = {
 
 
 function! s:prototypes.loc.Close() abort dict "{{{3
+    Tlibtrace 'checksyntax', 'lclose'
     lclose
 endf
 
 
 function! s:prototypes.loc.Open(bg) abort dict "{{{3
+    Tlibtrace 'checksyntax', 'log.Open', a:bg
     call self.OpenList(a:bg, 'loc')
 endf
 
@@ -355,6 +358,7 @@ endf
 
 
 function! s:prototypes.qfl.Open(bg) abort dict "{{{3
+    Tlibtrace 'checksyntax', 'qfl.Open', a:bg
     call self.OpenList(a:bg, 'qfl')
 endf
 
@@ -543,7 +547,7 @@ function! s:RunSyncWithEFM(make_def) abort "{{{3
     endif
     try
         if has_key(a:make_def, 'cmd')
-            let cmddef = s:ExtractCompilerParams(a:make_def, '%', a:make_def.cmd)
+            let cmddef = s:GetCompilerDef(a:make_def, '%', a:make_def.cmd, &errorformat)
             let cmd = s:NativeCmd(cmddef.cmd)
             Tlibtrace 'checksyntax', cmd
             let rv = a:make_def.GetExpr(cmd)
@@ -785,7 +789,7 @@ function! s:issues.Display(manually, bg, ...) abort dict "{{{3
     call checksyntax#Debug('Display: '. len(self.issues))
     let obj = a:0 >= 1 ? a:1 : s:prototypes[self.type]
     if empty(self.issues)
-        call obj.Set(self.issues)
+        " call obj.Set(self.issues)
         call self.CheckSyntaxSucceed(self.type, a:manually)
     else
         Tlibtrace 'checksyntax', self.issues
@@ -901,6 +905,7 @@ function! checksyntax#Check(manually, ...) abort
                         \ 'altname': expand('#'),
                         \ 'manually': a:manually,
                         \ }
+            Tlibtrace 'checksyntax', props
             Tlibtrace 'checksyntax', keys(defs.make_defs)
             for [name, make_def] in items(defs.make_defs)
                 call checksyntax#Debug('run '. name .' (async='. async .')')
@@ -1009,67 +1014,98 @@ function! s:CompareIssues(i1, i2) abort "{{{3
 endf
 
 
-let s:compiler_params = {}
-
 function! s:GetCompilerParams(make_def) abort "{{{3
     let compiler = a:make_def.compiler
-    if !has_key(s:compiler_params, compiler)
-        let s:compiler_params[compiler] = s:WithCompiler(compiler,
-                    \ {'return': function('s:ExtractCompilerParams', [a:make_def, ''])},
+    Tlibtrace 'checksyntax', compiler
+    let compiler_params = s:WithCompiler(compiler,
+                    \ {'return': function('s:GetCompilerDef', [a:make_def, ''])},
                     \ {})
+    Tlibtrace 'checksyntax', compiler_params
+    return compiler_params
+endf
+
+
+let s:compiler_params = {}
+
+function! s:ExtractVimCompilerParams(compiler) abort "{{{3
+    if !has_key(s:compiler_params, a:compiler)
+        if exists('g:current_compiler')
+            let gcc = g:current_compiler
+        else
+            let gcc = ''
+        endif
+        if exists('b:current_compiler')
+            let bcc = b:current_compiler
+        else
+            let bcc = ''
+        endif
+        let efm = &errorformat
+        let mprg = &makeprg
+        let compiler_params = {}
+        try
+            set makeprg=
+            exec 'compiler' a:compiler
+            Tlibtrace 'checksyntax', &makeprg
+            if !empty(&makeprg)
+                for var in ['&errorformat', '&makeprg']
+                    exec 'let compiler_params[var] =' var
+                endfor
+            endif
+        catch /^Vim\%((\a\+)\)\=:E666/
+        finally
+            if gcc !=# ''
+                let g:current_compiler = gcc
+            else
+                unlet! g:current_compiler
+            endif
+            if bcc !=# ''
+                let g:current_compiler = bcc
+            else
+                unlet! g:current_compiler
+            endif
+            let &errorformat = efm
+            let &makeprg = mprg
+        endtry
+        let s:compiler_params[a:compiler] = compiler_params
+        return compiler_params
+    else
+        return s:compiler_params[a:compiler]
     endif
-    return s:compiler_params[compiler]
 endf
 
 
 function! s:WithCompiler(compiler, exec, default) abort "{{{3
     Tlibtrace 'checksyntax', a:compiler, a:exec, a:default
-    if exists('g:current_compiler')
-        let gcc = g:current_compiler
-    else
-        let gcc = ''
-    endif
-    if exists('b:current_compiler')
-        let bcc = b:current_compiler
-    else
-        let bcc = ''
-    endif
-    let efm = &errorformat
-    let mprg = &makeprg
-    try
-        for c in [a:compiler, 'checksyntax/'. a:compiler]
-            let found = findfile('compiler/'. c .'.vim', &runtimepath)
-            Tlibtrace 'checksyntax', c, found
-            if !empty(found)
-                set makeprg=
-                exec 'compiler' c
-                Tlibtrace 'checksyntax', &makeprg
-                if !empty(&makeprg)
-                    if has_key(a:exec, 'call')
-                        call call(a:exec.call, [])
-                    endif
-                    if has_key(a:exec, 'return')
-                        return call(a:exec.return, [])
-                    endif
-                endif
-                break
-            endif
-        endfor
-    finally
-        if gcc !=# ''
-            let g:current_compiler = gcc
-        else
-            unlet! g:current_compiler
+    let compiler_params = s:ExtractVimCompilerParams(a:compiler)
+    Tlibtrace 'checksyntax', compiler_params
+    if !empty(compiler_params)
+        let errorformat = compiler_params['&errorformat']
+        let makeprg = compiler_params['&makeprg']
+        let args = [makeprg, errorformat]
+        if has_key(a:exec, 'call')
+            call call(a:exec.call, args)
         endif
-        if bcc !=# ''
-            let g:current_compiler = bcc
-        else
-            unlet! g:current_compiler
+        if has_key(a:exec, 'return')
+            return call(a:exec.return, args)
         endif
-        let &errorformat = efm
-        let &makeprg = mprg
-    endtry
+    endif
     return a:default
+endf
+
+
+function! s:Make(make_def, makeprg, errorformat) abort "{{{3
+    Tlibtrace 'checksyntax', a:makeprg, a:errorformat
+    let args = get(a:make_def, 'compiler_args', '%')
+    let errorformat = &errorformat
+    let makeprg = &makeprg
+    let &errorformat = a:errorformat
+    let &makeprg = a:makeprg
+    try
+        call a:make_def.Make(args)
+    finally
+        let &errorformat = errorformat
+        let &makeprg = makeprg
+    endtry
 endf
 
 
@@ -1079,10 +1115,9 @@ function! s:RunSyncChecker(filetype, make_def) abort
     let type = get(a:make_def, 'listtype', 'loc')
     try
         if has_key(a:make_def, 'compiler')
-            " <+TODO+> Use s:ExtractCompilerParams and run s:RunSyncWithEFM
-            let args = get(a:make_def, 'compiler_args', '%')
+            " <+TODO+> Use s:GetCompilerDef and run s:RunSyncWithEFM
             let rv = s:WithCompiler(a:make_def.compiler,
-                        \ {'call': function(a:make_def.Make, [args])},
+                        \ {'call': function('s:Make', [a:make_def])},
                         \ 1)
         else
             let rv = s:RunSyncWithEFM(a:make_def)
@@ -1113,7 +1148,7 @@ function! s:Run_async(make_def) abort "{{{3
     if !empty(cmd)
         " TODO Clarify what the cmd_args field is used for
         if has_key(a:make_def, 'cmd_args')
-            " let cmddef = s:ExtractCompilerParams(a:make_def, '', a:make_def.cmd)
+            " let cmddef = s:GetCompilerDef(a:make_def, '', a:make_def.cmd)
             " let cmd = cmddef.cmd
         else
             let cmd .= ' '. escape(make_def.filename, '"''\ ')
@@ -1201,13 +1236,14 @@ function! checksyntax#GetMakerParam(opts, maker, name, default) abort "{{{3
 endf
 
 
-function! s:ExtractCompilerParams(make_def, args, ...) abort "{{{3
+function! s:GetCompilerDef(make_def, args, ...) abort "{{{3
     let cmd = a:0 >= 1 ? a:1 : &makeprg
+    let efm = a:0 >= 2 ? a:2 : &errorformat
     let args = get(a:make_def, 'compiler_args', a:args)
     let cmd = s:ReplaceMakeArgs(a:make_def, cmd, args)
     let compiler_def = {
                 \ 'cmd': cmd,
-                \ 'efm': &errorformat
+                \ 'efm': efm
                 \ }
     Tlibtrace 'checksyntax', compiler_def
     return compiler_def
