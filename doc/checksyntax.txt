@@ -446,7 +446,6 @@ Simple syntax checks for the vim 'filetype'~
 
 Setting |g:checksyntax_enable_syntax| enables the following checks:
 
-- Assignment in |:if| expression
 - `else if` instead of |:elseif|
 - Propably wrong arguments for |bufnr()| or |winnr()|
 - Don't ignore/simplify the return value of |exists()| for cmdnames
