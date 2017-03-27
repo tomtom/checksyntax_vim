@@ -859,6 +859,12 @@ endf
 " If background is true, display the list of issues in the background, 
 " i.e. the active window will keep the focus.
 function! checksyntax#Check(manually, ...) abort
+    if !empty(&buftype)
+        if g:checksyntax#debug
+            echom 'Checksyntax: Cannot check a buffer with buftype='. &buftype
+        endif
+        return
+    endif
     let bang = a:0 >= 1 ? !empty(a:1) : 0
     let filetype   = a:0 >= 2 && a:2 !=# '' && a:2 !=# '*' ? a:2 : &filetype
     " let bg   = a:0 >= 3 && !empty(a:3)  && a:3 !=# '*' ? a:3 : 1
