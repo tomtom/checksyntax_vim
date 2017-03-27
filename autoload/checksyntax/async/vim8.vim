@@ -1,6 +1,6 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    167
+" @Revision:    169
 
 
 let s:prototype = {'in_mode': 'nl', 'out_mode': 'nl', 'err_mode': 'nl'}
@@ -32,8 +32,8 @@ function! s:Exit_cb(job, status) abort dict "{{{3
             Tlibtrace 'checksyntax', &errorformat
             call checksyntax#Debug('vim8 &errorformat='. &errorformat, 2)
             try
-                exec 'silent' self.async_getexpr self.WrapGetExpr('self.lines')
-                call self.issues.Done(self)
+                exec 'noautocmd silent' self.async_getexpr self.WrapGetExpr('self.lines')
+                call self.issues.AsyncDone(self)
             catch /^Vim\%((\a\+)\)\=:E523/
                 echom 'CheckSyntax: A strange E523 error occurred. Please try again!'
             endtry

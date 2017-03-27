@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    1741
+" @Revision:    1749
 
 if exists(':Tlibtrace') != 2
     command! -nargs=+ -bang Tlibtrace :
@@ -328,7 +328,7 @@ endf
 function! s:prototypes.loc.GetExpr(args) abort dict "{{{3
     " TLogDBG system(a:args)
     let check = self.WrapGetExpr('system('. string(a:args). ')')
-    return self.RunCmd(get(self, 'getexpr', 'lgetexpr'), check)
+    noautocmd return self.RunCmd(get(self, 'getexpr', 'lgetexpr'), check)
 endf
 
 
@@ -340,8 +340,9 @@ endf
 function! s:prototypes.loc.Get() abort dict "{{{3
     let issues = copy(getloclist(0))
     try
-        silent lolder
+        silent noautocmd lolder
     catch /^Vim\%((\a\+)\)\=:E380/
+        noautocmd call setloclist(0, [], 'r')
     endtry
     return issues
 endf
@@ -366,7 +367,7 @@ endf
 function! s:prototypes.qfl.GetExpr(args) abort dict "{{{3
     " TLogDBG system(a:args)
     let check = self.WrapGetExpr('system('. string(a:args). ')')
-    return self.RunCmd(get(self, 'getexpr', 'cgetexpr'), check)
+    noautocmd return self.RunCmd(get(self, 'getexpr', 'cgetexpr'), check)
 endf
 
 
@@ -378,8 +379,9 @@ endf
 function! s:prototypes.qfl.Get() abort dict "{{{3
     let issues = copy(getqflist())
     try
-        silent colder
+        silent noautocmd colder
     catch /^Vim\%((\a\+)\)\=:E380/
+        noautocmd call setqflist([], 'r')
     endtry
     return issues
 endf
@@ -811,7 +813,7 @@ function! s:issues.WaitFor(make_def) abort dict "{{{3
 endf
 
 
-function! s:issues.Done(make_def) dict abort "{{{3
+function! s:issues.AsyncDone(make_def) dict abort "{{{3
     let njobs = checksyntax#RemoveJob(a:make_def.job_id)
     if has_key(self.jobs, a:make_def.job_id)
         call remove(self.jobs, a:make_def.job_id)
