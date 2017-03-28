@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    1749
+" @Revision:    1751
 
 if exists(':Tlibtrace') != 2
     command! -nargs=+ -bang Tlibtrace :
@@ -865,12 +865,24 @@ function! checksyntax#Check(manually, ...) abort
         endif
         return
     endif
+    if !filereadable(expand('%:p'))
+        if g:checksyntax#debug
+            echom 'Checksyntax: Cannot check a buffer that cannot be read:' expand('%')
+        endif
+        return
+    endif
     let bang = a:0 >= 1 ? !empty(a:1) : 0
     let filetype   = a:0 >= 2 && a:2 !=# '' && a:2 !=# '*' ? a:2 : &filetype
     " let bg   = a:0 >= 3 && !empty(a:3)  && a:3 !=# '*' ? a:3 : 1
     let bg   = !a:manually || g:checksyntax#background
     let arg_preferred_rx = a:0 >= 3 && a:3 !=# '' ? a:3 : ''
     Tlibtrace 'checksyntax', a:manually, bang, filetype, bg, arg_preferred_rx
+    if empty(filetype)
+        if g:checksyntax#debug
+            echom 'Checksyntax: Cannot check a buffer the filetype is empty'
+        endif
+        return
+    endif
     let s:run_alternatives_all = bang
     let wd = getcwd()
     let bd = expand('%:p:h')
