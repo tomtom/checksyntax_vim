@@ -1,4 +1,4 @@
-if !exists(':CheckSyntax')
+if exists(':CheckSyntax') != 2
     finish
 endif
 
