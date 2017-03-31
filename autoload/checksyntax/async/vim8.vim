@@ -1,6 +1,6 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    169
+" @Revision:    173
 
 
 let s:prototype = {'in_mode': 'nl', 'out_mode': 'nl', 'err_mode': 'nl'}
@@ -78,8 +78,19 @@ function! checksyntax#async#vim8#Run(cmd, make_def) abort "{{{3
         for line in input
             sleep 200m
             Tlibtrace 'checksyntax', line
-            call checksyntax#Debug('vim8 input: '. line, 2)
-            call ch_sendraw(ch, line ."\n")
+            if type(line) == 1
+                let text = line
+            elseif type(line) == 4
+                if has_key(line, 'var')
+                    let text = a:make_def[line.var]
+                else
+                    throw 'Checksyntax/vim8: Unsupported input dict: '. string(line)
+                endif
+            else
+                throw 'Checksyntax/vim8: Unsupported input value: '. string(line)
+            endif
+            call checksyntax#Debug('vim8 input: '. text, 2)
+            call ch_sendraw(ch, text ."\n")
         endfor
     endif
     Tlibtrace 'checksyntax', job_status(job)
