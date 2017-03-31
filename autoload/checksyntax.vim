@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    1752
+" @Revision:    1757
 
 if exists(':Tlibtrace') != 2
     command! -nargs=+ -bang Tlibtrace :
@@ -1172,7 +1172,17 @@ function! s:Run_async(make_def) abort "{{{3
             " let cmd = cmddef.cmd
         else
             " let cmd .= ' '. escape(make_def.filename, '"''\ ')
-            let cmd .= ' '. shellescape(make_def.filename)
+            let escape = checksyntax#GetMakerParam(make_def, g:checksyntax#async_runner, 'escape_arg', 'shellescape')
+            if escape ==# 'escape'
+                let filename = escape(make_def.filename, '"''\ ')
+            elseif escape ==# 'shellescape'
+                let filename = shellescape(make_def.filename)
+            elseif empty(escape)
+                let filename = make_def.filename
+            else
+                throw 'CheckSyntax: Run_async: Invalid value for escape_arg: '. string(escape)
+            endif
+            let cmd .= ' '. filename
         endif
     elseif has_key(make_def, 'compiler')
         let compiler_def = s:GetCompilerParams(make_def)
