@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    1757
+" @Revision:    1758
 
 if exists(':Tlibtrace') != 2
     command! -nargs=+ -bang Tlibtrace :
@@ -792,6 +792,7 @@ function! s:issues.Display(manually, bg, ...) abort dict "{{{3
     let obj = a:0 >= 1 ? a:1 : s:prototypes[self.type]
     if empty(self.issues)
         " call obj.Set(self.issues)
+        call obj.Set(self.issues)
         call self.CheckSyntaxSucceed(self.type, a:manually)
     else
         Tlibtrace 'checksyntax', self.issues
