@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    1758
+" @Revision:    1803
 
 if exists(':Tlibtrace') != 2
     command! -nargs=+ -bang Tlibtrace :
@@ -1484,4 +1484,62 @@ function! checksyntax#SetupSyntax(syntax) abort "{{{3
     endfor
 endf
 
+
+let s:fix_cache = {}
+
+function! checksyntax#Fix(line1, line2, prefix) abort "{{{3
+    if !has_key(s:fix_cache, &filetype)
+        redir => fnss
+        exec 'silent function /checksyntax#\%(Quickfix\w\+\|defs#'. &filetype .'#Fix\w\+\)'
+        redir END
+        let fns = split(fnss, '\n')
+        let fns = map(fns, 'matchstr(v:val, ''\C^fu\S\+\s\+checksyntax#\zs[^(]\+'')')
+        let s:fix_cache[&filetype] = copy(fns)
+    else
+        let fns = copy(s:fix_cache[&filetype])
+    endif
+    if empty(fns)
+        echom 'CheckSyntax: No known fixes for filetype:' &filetype
+    else
+        let fn = tlib#input#List('s', 'Select fix:', fns)
+        if !empty(fn)
+            echom 'Checksyntax FIX:' a:line1 .','. a:line2 fn
+            call checksyntax#{fn}(a:line1, a:line2)
+        endif
+    endif
+endf
+
+
+function! checksyntax#QuickfixTrailingWhitespace(...) abort "{{{3
+    let l1 = a:0 >= 1 ? a:1 : 1
+    let l2 = a:0 >= 2 ? a:2 : line('$')
+    exec l1 .','. l2 's/\s\+$//ge'
+endf
+
+
+function! checksyntax#QuickfixTrailingWhitespaceExpceptInComments(...) abort "{{{3
+    let l1 = a:0 >= 1 ? a:1 : 1
+    let l2 = a:0 >= 2 ? a:2 : line('$')
+    let pos = getpos('.')
+    try
+        exec l1
+        norm! 0
+        let lp = l1 - 1
+        while search('\s\+$', 'cW') > 0  
+            let ll = line('.')
+            if ll == lp || ll > l2
+                break
+            endif
+            let lp = ll
+            norm! g_
+            let sname = synIDattr(synIDtrans(synID(line('.'), col('.'), 1)), 'name')
+            if sname !=# 'Comment'
+                s/\s\+$//
+            endif
+            norm! j0
+        endwh
+    finally
+        call setpos('.', pos)
+    endtry
+endf
 

@@ -2,9 +2,9 @@
 " @Author:      Tom Link (micathom AT gmail com)
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     04-Mai-2005.
-" @Last Change: 2017-03-11.
+" @Last Change: 2017-04-03.
 " GetLatestVimScripts: 1431 0 :AutoInstall: checksyntax.vim
-" @Revision:    466
+" @Revision:    468
 
 if exists('g:loaded_checksyntax')
     finish
@@ -24,6 +24,9 @@ endif
 " With the bang !, run all alternatives (see 
 " |g:checksyntax#run_alternatives|).
 command! -bang -nargs=* CheckSyntax call checksyntax#Check(1, "<bang>", <f-args>)
+
+
+command! -range -bar -nargs=? Checksyntaxfix call checksyntax#Fix(<line1>, <line2>, <q-args>)
 
 
 " @TPluginInclude
