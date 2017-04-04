@@ -1173,7 +1173,7 @@ function! s:Run_async(make_def) abort "{{{3
             " let cmd = cmddef.cmd
         else
             " let cmd .= ' '. escape(make_def.filename, '"''\ ')
-            let escape = checksyntax#GetMakerParam(make_def, g:checksyntax#async_runner, 'escape_arg', 'shellescape')
+            let escape = checksyntax#GetMakerParam(make_def, g:checksyntax#async_runner, 'escape_arg', &shell =~# '\.exe$' ? 'shellescape' : 'escape')
             if escape ==# 'escape'
                 let filename = escape(make_def.filename, '"''\ ')
             elseif escape ==# 'shellescape'
