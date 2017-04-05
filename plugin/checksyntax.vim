@@ -2,9 +2,9 @@
 " @Author:      Tom Link (micathom AT gmail com)
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     04-Mai-2005.
-" @Last Change: 2017-04-03.
+" @Last Change: 2017-04-05.
 " GetLatestVimScripts: 1431 0 :AutoInstall: checksyntax.vim
-" @Revision:    468
+" @Revision:    469
 
 if exists('g:loaded_checksyntax')
     finish
@@ -29,7 +29,6 @@ command! -bang -nargs=* CheckSyntax call checksyntax#Check(1, "<bang>", <f-args>
 command! -range -bar -nargs=? Checksyntaxfix call checksyntax#Fix(<line1>, <line2>, <q-args>)
 
 
-" @TPluginInclude
 if !exists('g:checksyntax_key_single')
     " Map for running the preferred syntax checkers on the current 
     " buffer.
@@ -37,11 +36,15 @@ if !exists('g:checksyntax_key_single')
 endif
 
 
-" @TPluginInclude
 if !exists('g:checksyntax_key_all')
     " Map for running all suitable syntax checkers on the current 
     " buffer.
     let g:checksyntax_key_all = '<C-F5>'   "{{{2
+endif
+
+
+if !exists('g:checksyntax_key_quickfix')
+    let g:checksyntax_key_quickfix = '<Leader>cf'   "{{{2
 endif
 
 
@@ -87,6 +90,9 @@ if !hasmapto(':CheckSyntax')
     endif
     if empty(maparg(g:checksyntax_key_all, 'i'))
         exec 'inoremap' g:checksyntax_key_all '<c-o>:CheckSyntax!<cr>'
+    endif
+    if empty(maparg(g:checksyntax_key_quickfix, 'n')) && !empty(g:checksyntax_key_quickfix)
+        exec 'noremap' g:checksyntax_key_quickfix ':Checksyntaxfix<cr>'
     endif
 endif
 
