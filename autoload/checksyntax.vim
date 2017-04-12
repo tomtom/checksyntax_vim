@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    1803
+" @Revision:    1811
 
 if exists(':Tlibtrace') != 2
     command! -nargs=+ -bang Tlibtrace :
@@ -821,19 +821,21 @@ function! s:issues.AsyncDone(make_def) dict abort "{{{3
     else
         echom 'CheckSyntax#Done: Didn''t expect job:' a:make_def.job_id
     endif
-    let list = self.AddList(a:make_def.name, a:make_def, a:make_def.async_type)
-    Tlibtrace 'checksyntax2', list
-    Tlibtrace 'checksyntax', a:make_def.name, len(list)
-    call checksyntax#Debug(printf('Processing %s (%s items)', a:make_def.name, len(list)))
-    if empty(self.jobs)
-        let bg = a:make_def.bg
-        let bg = 1
-        let manually = a:make_def.manually || g:checksyntax#debug
-        " if a:make_def.async_type ==# 'loc' && bufnr('%') != a:make_def.bufnr
-        "     exec 'autocmd! CheckSyntax BufWinEnter <buffer='. a:make_def.bufnr .'> call call(function(s:issues.DelayedDisplay, [a:make_def.bufnr, manually, bg, a:make_def], self))'
-        " else
-        call self.Display(manually, bg, a:make_def)
-        " endif
+    if a:make_def.async_type !=# 'loc' || a:make_def.bufnr == bufnr('%')
+        let list = self.AddList(a:make_def.name, a:make_def, a:make_def.async_type)
+        Tlibtrace 'checksyntax2', list
+        Tlibtrace 'checksyntax', a:make_def.name, len(list)
+        call checksyntax#Debug(printf('Processing %s (%s items)', a:make_def.name, len(list)))
+        if empty(self.jobs)
+            let bg = a:make_def.bg
+            let bg = 1
+            let manually = a:make_def.manually || g:checksyntax#debug
+            " if a:make_def.async_type ==# 'loc' && bufnr('%') != a:make_def.bufnr
+            "     exec 'autocmd! CheckSyntax BufWinEnter <buffer='. a:make_def.bufnr .'> call call(function(s:issues.DelayedDisplay, [a:make_def.bufnr, manually, bg, a:make_def], self))'
+            " else
+            call self.Display(manually, bg, a:make_def)
+            " endif
+        endif
     endif
 endf
 
@@ -1199,8 +1201,8 @@ function! s:Run_async(make_def) abort "{{{3
             let cmd = s:NativeCmd(cmd)
             Tlibtrace 'checksyntax', cmd
             let rv = checksyntax#async#{g:checksyntax#async_runner}#Run(cmd, make_def)
-            call a:make_def.issues.WaitFor(a:make_def)
             call checksyntax#AddJob(make_def)
+            call a:make_def.issues.WaitFor(a:make_def)
             return rv
         catch /^Vim\%((\a\+)\)\=:E117/
             echohl Error
@@ -1286,6 +1288,9 @@ let s:status_expr = '"Checks=".checksyntax#Status()'
 
 function! checksyntax#AddJob(make_def) abort "{{{3
     Tlibtrace 'checksyntax', a:make_def.job_id
+    if g:checksyntax#debug
+        echom "checksyntax#AddJob" string(a:make_def.job_id)
+    endif
     let s:async_pending[a:make_def.job_id] = a:make_def
     " call checksyntax#SetStatusMessage()
     if exists('g:tstatus_exprs')
@@ -1299,6 +1304,9 @@ endf
 
 function! checksyntax#RemoveJob(job_id) abort "{{{3
     Tlibtrace 'checksyntax', a:job_id
+    if g:checksyntax#debug
+        echom "checksyntax#RemoveJob" string(a:job_id)
+    endif
     let rv = has_key(s:async_pending, a:job_id)
     if rv
         call remove(s:async_pending, a:job_id)
@@ -1317,6 +1325,11 @@ endf
 
 function! checksyntax#Status() abort "{{{3
     return len(s:async_pending)
+endf
+
+
+function! checksyntax#GetAsyncPending() abort "{{{3
+    return copy(s:async_pending)
 endf
 
 
