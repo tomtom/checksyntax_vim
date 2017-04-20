@@ -1,6 +1,6 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    246
+" @Revision:    247
 
 " :doc:
 " Syntax checkers for R:
@@ -44,6 +44,13 @@ function! checksyntax#defs#r#FixSpaceAroundInfixOperators(...) abort "{{{3
     let l1 = a:0 >= 1 ? a:1 : 1
     let l2 = a:0 >= 2 ? a:2 : line('$')
     exec l1 .','. l2 's/\S\zs'. g:checksyntax#defs#r#infix_operators .'\ze\S/ \0 /ge'
+endf
+
+
+function! checksyntax#defs#r#FixAssignments(...) abort "{{{3
+    let l1 = a:0 >= 1 ? a:1 : 1
+    let l2 = a:0 >= 2 ? a:2 : line('$')
+    exec l1 .','. l2 's/^\s*\S\+\s*\zs=\ze[^=]/ <- /gec'
 endf
 
 
