@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    1811
+" @Revision:    1813
 
 if exists(':Tlibtrace') != 2
     command! -nargs=+ -bang Tlibtrace :
@@ -861,6 +861,12 @@ endf
 " If filetype is empty, the current buffer's 'filetype' will be used.
 " If background is true, display the list of issues in the background, 
 " i.e. the active window will keep the focus.
+"                                                     *b:checksyntax_disable*
+" The current buffer will be skipped if any of the following conditions 
+" is true:
+" - 'buftype' isn't empty
+" - The file isn't readable
+" - b:checksyntax_disable is set
 function! checksyntax#Check(manually, ...) abort
     if !empty(&buftype)
         if g:checksyntax#debug
@@ -871,6 +877,12 @@ function! checksyntax#Check(manually, ...) abort
     if !filereadable(expand('%:p'))
         if g:checksyntax#debug
             echom 'Checksyntax: Cannot check a buffer that cannot be read:' expand('%')
+        endif
+        return
+    endif
+    if exists('b:checksyntax_disable')
+        if g:checksyntax#debug
+            echom 'Checksyntax: Disabled for this buffer (b:checksyntax_disable)'
         endif
         return
     endif
