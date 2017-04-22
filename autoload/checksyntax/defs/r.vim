@@ -1,6 +1,6 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    247
+" @Revision:    248
 
 " :doc:
 " Syntax checkers for R:
@@ -50,7 +50,7 @@ endf
 function! checksyntax#defs#r#FixAssignments(...) abort "{{{3
     let l1 = a:0 >= 1 ? a:1 : 1
     let l2 = a:0 >= 2 ? a:2 : line('$')
-    exec l1 .','. l2 's/^\s*\S\+\s*\zs=\ze[^=]/ <- /gec'
+    exec l1 .','. l2 's/^\s*\S\+\zs\s*=\s*\ze[^=]/ <- /gec'
 endf
 
 
